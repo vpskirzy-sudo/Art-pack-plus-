@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360" role="img" aria-label="Гофрокороб с открытыми клапанами">
+  <title>Гофрокороб с открытыми клапанами</title>
+  <defs>
+    <linearGradient id="bgA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F6EEE1"/><stop offset="1" stop-color="#E2D2BB"/>
+    </linearGradient>
+    <linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EFE7DA"/><stop offset="1" stop-color="#D8C6AC"/>
+    </linearGradient>
+    <pattern id="fl" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="none"/><rect width="2.4" height="6" fill="#000" opacity=".5"/>
+    </pattern>
+    <radialGradient id="lt" cx=".42" cy=".3" r=".7">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="360" fill="url(#bgA)"/>
+  <rect width="480" height="360" fill="url(#lt)"/>
+<ellipse cx="253" cy="194" rx="85" ry="28" fill="#3A2A16" opacity=".17"/><polygon points="165.5,183.0 266.0,241.0 266.0,157.0 165.5,99.0" fill="#C08947"/><polygon points="165.5,183.0 266.0,241.0 266.0,157.0 165.5,99.0" fill="url(#fl)" opacity=".22"/><polygon points="340.5,198.0 266.0,241.0 266.0,157.0 340.5,114.0" fill="#9A6A31"/><polygon points="340.5,198.0 266.0,241.0 266.0,157.0 340.5,114.0" fill="url(#fl)" opacity=".30"/><polygon points="240.0,56.0 340.5,114.0 266.0,157.0 165.5,99.0" fill="#8A5C29"/><polygon points="240.0,56.0 340.5,114.0 379.2,57.6 278.7,-0.4" fill="#EAC79A"/><polygon points="165.5,99.0 266.0,157.0 227.3,145.4 126.8,87.4" fill="#CE9958"/><polygon points="240.0,56.0 165.5,99.0 115.3,40.0 189.8,-3.0" fill="#E2B77E"/><polygon points="340.5,114.0 266.0,157.0 316.2,156.0 390.7,113.0" fill="#A9783C"/>
+</svg>

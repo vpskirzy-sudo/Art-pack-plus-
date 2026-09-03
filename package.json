@@ -1,0 +1,16 @@
+{
+  "name": "art-pak-plus-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Статический сайт ООО «Арт-Пак Плюс» — производство упаковки из гофрокартона",
+  "scripts": {
+    "build": "python3 tools/build.py",
+    "art": "python3 tools/generate_art.py && python3 tools/generate_products.py",
+    "check:responsive": "node tools/checks/responsive.js",
+    "check:functional": "node tools/checks/functional.js",
+    "check": "npm run check:responsive && npm run check:functional"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.49.1"
+  }
+}
