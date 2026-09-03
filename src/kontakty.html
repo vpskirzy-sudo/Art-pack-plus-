@@ -1,0 +1,146 @@
+<section class="phead">
+  <div class="wrap phead__in">
+    <nav class="crumbs" aria-label="Хлебные крошки">
+      <a href="index.html">Главная</a><span>/</span><span>Контакты и карта</span>
+    </nav>
+    <span class="eyebrow">Контакты</span>
+    <h1 class="h1">Свяжитесь с нами</h1>
+    <p class="lead">Ответим в рабочее время, посчитаем тираж и предложим конструкцию упаковки
+      под ваш товар.</p>
+  </div>
+</section>
+
+<section class="section section--dark section--tight">
+  <div class="wrap">
+    <div class="grid grid--2">
+      <div class="reveal">
+        <div class="ct" style="border-top:0">
+          <div class="ct__ico">{{icon:phone}}</div>
+          <div><div class="ct__l">Телефоны</div><div class="ct__v">{{phones}}</div></div>
+        </div>
+        <div class="ct">
+          <div class="ct__ico">{{icon:fax}}</div>
+          <div><div class="ct__l">Факс</div><div class="ct__v">{{fax}}</div></div>
+        </div>
+        <div class="ct">
+          <div class="ct__ico">{{icon:mail}}</div>
+          <div><div class="ct__l">E-mail</div>
+            <div class="ct__v"><a href="mailto:{{email}}">{{email}}</a></div></div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="ct" style="border-top:0">
+          <div class="ct__ico">{{icon:pin}}</div>
+          <div><div class="ct__l">Адрес производства</div><div class="ct__v">{{address}}</div></div>
+        </div>
+        <div class="ct">
+          <div class="ct__ico">{{icon:clock}}</div>
+          <div><div class="ct__l">Режим работы</div><div class="ct__v">{{hours}}</div></div>
+        </div>
+        <div class="ct">
+          <div class="ct__ico">{{icon:shield}}</div>
+          <div><div class="ct__l">Реквизиты</div><div class="ct__v">{{legal}}<span>УНП {{unp}}</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Заявка ================= -->
+<section class="section" id="zayavka">
+  <div class="wrap">
+    <div class="grid grid--2">
+      <div class="reveal">
+        <span class="eyebrow">Заявка на расчёт</span>
+        <h2 class="h2">Расскажите о задаче</h2>
+        <p class="lead" style="margin-top:16px">Заполните форму — она соберёт письмо и откроет
+          вашу почтовую программу. Если удобнее, просто напишите на
+          <a href="mailto:{{email}}" style="color:var(--accent);font-weight:600">{{email}}</a>
+          или позвоните по телефону {{phone1}}.</p>
+        <p class="lead" style="margin-top:14px">Чтобы расчёт был точным, укажите габариты товара
+          или готовой коробки, примерный тираж и нужна ли печать.</p>
+
+        <div class="ct" style="border-top:1px solid rgba(22,32,43,.10);margin-top:26px">
+          <div class="ct__ico" style="background:rgba(224,123,38,.12);color:var(--accent)">{{icon:clock}}</div>
+          <div><div class="ct__l" style="color:var(--text-dim)">Когда ответим</div>
+            <div class="ct__v" style="color:var(--text)">В рабочее время — {{hours}}</div></div>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <form class="form" data-subject="Заявка на расчёт упаковки с сайта" novalidate>
+          <div class="form__row">
+            <div class="field">
+              <label for="f-name">Имя *</label>
+              <input id="f-name" name="name" type="text" placeholder="Как к вам обращаться" required>
+              <span class="field__err">Укажите, пожалуйста, имя</span>
+            </div>
+            <div class="field">
+              <label for="f-phone">Телефон *</label>
+              <input id="f-phone" name="phone" type="tel" placeholder="+375 (__) ___-__-__" required>
+              <span class="field__err">Укажите телефон для связи</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-email">E-mail</label>
+            <input id="f-email" name="email" type="email" placeholder="you@company.by">
+            <span class="field__err">Проверьте адрес электронной почты</span>
+          </div>
+          <div class="form__row">
+            <div class="field">
+              <label for="f-product">Что нужно изготовить</label>
+              <select id="f-product" name="product">
+                <option value="">Выберите изделие</option>
+                <option>Четырёхклапанные короба</option>
+                <option>Гофроящики</option>
+                <option>Гофролотки</option>
+                <option>Обечайки</option>
+                <option>Гофроконтейнеры</option>
+                <option>Коробки для пиццы</option>
+                <option>Упаковка для маркетплейсов</option>
+                <option>Прокладки и решётки</option>
+                <option>Картон для защиты пола</option>
+                <option>Оборудование</option>
+                <option>Другое</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-qty">Тираж, шт.</label>
+              <input id="f-qty" name="qty" type="text" inputmode="numeric" placeholder="например, 2000">
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-size">Размеры, мм (Д × Ш × В)</label>
+            <input id="f-size" name="size" type="text" placeholder="например, 400 × 300 × 250">
+          </div>
+          <div class="field">
+            <label for="f-msg">Комментарий</label>
+            <textarea id="f-msg" name="message" placeholder="Что упаковываем, нужна ли печать, сроки"></textarea>
+          </div>
+          <button class="btn btn--primary btn--wide" type="submit">Отправить заявку {{icon:arrow}}</button>
+          <p class="form__ok">Спасибо! Мы подготовили письмо — отправьте его из своей почтовой программы,
+            и мы свяжемся с вами.</p>
+          <p class="form__note">Нажимая кнопку, вы соглашаетесь на обработку указанных данных
+            для ответа на обращение.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Карта ================= -->
+<section class="section section--paper section--tight">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">Как нас найти</span>
+      <h2 class="h2">Производство в Заславле, 20 км от Минска</h2>
+      <p class="lead">{{address}}</p>
+    </div>
+    <div class="map reveal">
+      <iframe
+        src="https://yandex.by/map-widget/v1/?text=%D0%97%D0%B0%D1%81%D0%BB%D0%B0%D0%B2%D0%BB%D1%8C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%92%D0%BE%D0%BA%D0%B7%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F%208%D0%91&z=16"
+        title="Карта проезда: Заславль, улица Вокзальная, 8Б"
+        loading="lazy" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>

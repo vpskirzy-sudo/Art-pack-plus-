@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360" role="img" aria-label="Прокладки и решётки из гофрокартона">
+  <title>Прокладки и решётки из гофрокартона</title>
+  <defs>
+    <linearGradient id="bgA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F6EEE1"/><stop offset="1" stop-color="#E2D2BB"/>
+    </linearGradient>
+    <linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EFE7DA"/><stop offset="1" stop-color="#D8C6AC"/>
+    </linearGradient>
+    <pattern id="fl" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="none"/><rect width="2.4" height="6" fill="#000" opacity=".5"/>
+    </pattern>
+    <radialGradient id="lt" cx=".42" cy=".3" r=".7">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="360" fill="url(#bgA)"/>
+  <rect width="480" height="360" fill="url(#lt)"/>
+<ellipse cx="255" cy="220" rx="95" ry="32" fill="#3A2A16" opacity=".17"/><polygon points="156.9,238.0 271.2,304.0 271.2,296.0 156.9,230.0" fill="#CE9958"/><polygon points="354.3,256.0 271.2,304.0 271.2,296.0 354.3,248.0" fill="#9A6A31"/><polygon points="240.0,182.0 354.3,248.0 271.2,296.0 156.9,230.0" fill="#E2B77E"/><polygon points="156.9,225.0 271.2,291.0 271.2,283.0 156.9,217.0" fill="#C08947"/><polygon points="354.3,243.0 271.2,291.0 271.2,283.0 354.3,235.0" fill="#9A6A31"/><polygon points="240.0,169.0 354.3,235.0 271.2,283.0 156.9,217.0" fill="#EAC79A"/><polygon points="156.9,212.0 271.2,278.0 271.2,270.0 156.9,204.0" fill="#CE9958"/><polygon points="354.3,230.0 271.2,278.0 271.2,270.0 354.3,222.0" fill="#9A6A31"/><polygon points="240.0,156.0 354.3,222.0 271.2,270.0 156.9,204.0" fill="#E2B77E"/><polygon points="156.9,199.0 271.2,265.0 271.2,257.0 156.9,191.0" fill="#C08947"/><polygon points="354.3,217.0 271.2,265.0 271.2,257.0 354.3,209.0" fill="#9A6A31"/><polygon points="240.0,143.0 354.3,209.0 271.2,257.0 156.9,191.0" fill="#EAC79A"/><polygon points="156.9,186.0 271.2,252.0 271.2,244.0 156.9,178.0" fill="#CE9958"/><polygon points="354.3,204.0 271.2,252.0 271.2,244.0 354.3,196.0" fill="#9A6A31"/><polygon points="240.0,130.0 354.3,196.0 271.2,244.0 156.9,178.0" fill="#E2B77E"/><line x1="259.9" y1="155.5" x2="201.0" y2="189.5" stroke="#7A4F22" stroke-width="5" opacity=".55" stroke-linecap="round"/><line x1="285.0" y1="170.0" x2="226.1" y2="204.0" stroke="#7A4F22" stroke-width="5" opacity=".55" stroke-linecap="round"/><line x1="310.2" y1="184.5" x2="251.3" y2="218.5" stroke="#7A4F22" stroke-width="5" opacity=".55" stroke-linecap="round"/>
+</svg>

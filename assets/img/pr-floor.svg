@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360" role="img" aria-label="Картон для защиты пола">
+  <title>Картон для защиты пола</title>
+  <defs>
+    <linearGradient id="bgA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F6EEE1"/><stop offset="1" stop-color="#E2D2BB"/>
+    </linearGradient>
+    <linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EFE7DA"/><stop offset="1" stop-color="#D8C6AC"/>
+    </linearGradient>
+    <pattern id="fl" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="none"/><rect width="2.4" height="6" fill="#000" opacity=".5"/>
+    </pattern>
+    <radialGradient id="lt" cx=".42" cy=".3" r=".7">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="360" fill="url(#bgA)"/>
+  <rect width="480" height="360" fill="url(#lt)"/>
+<ellipse cx="240" cy="246" rx="185" ry="56" fill="#3A2A16" opacity=".12"/><polygon points="222.7,130.0 387.2,225.0 266.0,295.0 101.4,200.0" fill="#CE9958"/><polygon points="222.7,130.0 387.2,225.0 266.0,295.0 101.4,200.0" fill="url(#fl)" opacity=".14"/><polygon points="222.7,180.0 387.2,275.0 387.2,266.0 222.7,171.0" fill="#A9783C"/><polygon points="222.7,180.0 101.4,250.0 101.4,241.0 222.7,171.0" fill="#9A6A31"/><polygon points="222.7,171.0 387.2,266.0 266.0,336.0 101.4,241.0" fill="#EAC79A"/><polygon points="222.7,171.0 387.2,266.0 266.0,336.0 101.4,241.0" fill="url(#fl)" opacity=".16"/><polygon points="266.0,336.0 317.9,306.0 363.0,271.0 314.5,305.0" fill="#E2B77E"/><polygon points="266.0,336.0 314.5,305.0 363.0,271.0 317.9,306.0" fill="#8A5C29" opacity=".35"/><polygon points="222.7,170.4 387.2,265.4 371.6,274.4 207.1,179.4" fill="#E07B26" opacity=".45"/>
+</svg>

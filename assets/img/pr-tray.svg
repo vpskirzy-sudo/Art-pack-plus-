@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360" role="img" aria-label="Гофролоток">
+  <title>Гофролоток</title>
+  <defs>
+    <linearGradient id="bgA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F6EEE1"/><stop offset="1" stop-color="#E2D2BB"/>
+    </linearGradient>
+    <linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EFE7DA"/><stop offset="1" stop-color="#D8C6AC"/>
+    </linearGradient>
+    <pattern id="fl" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="none"/><rect width="2.4" height="6" fill="#000" opacity=".5"/>
+    </pattern>
+    <radialGradient id="lt" cx=".42" cy=".3" r=".7">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="360" fill="url(#bgA)"/>
+  <rect width="480" height="360" fill="url(#lt)"/>
+<ellipse cx="256" cy="229" rx="96" ry="32" fill="#3A2A16" opacity=".17"/><polygon points="156.9,216.0 271.2,282.0 271.2,240.0 156.9,174.0" fill="#CE9958"/><polygon points="156.9,216.0 271.2,282.0 271.2,240.0 156.9,174.0" fill="url(#fl)" opacity=".22"/><polygon points="354.3,234.0 271.2,282.0 271.2,240.0 354.3,192.0" fill="#A9783C"/><polygon points="354.3,234.0 271.2,282.0 271.2,240.0 354.3,192.0" fill="url(#fl)" opacity=".30"/><polygon points="240.0,126.0 354.3,192.0 271.2,240.0 156.9,174.0" fill="#EAC79A"/><polygon points="240.0,132.0 343.9,192.0 271.2,234.0 167.3,174.0" fill="#8A5C29"/>
+</svg>
