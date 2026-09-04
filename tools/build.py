@@ -14,6 +14,8 @@
 import os
 import re
 
+from products_data import CATEGORIES
+
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 SRC = os.path.join(ROOT, "src")
 
@@ -140,9 +142,9 @@ def header(active):
 
 
 def footer():
-    prod = "".join(f'<li><a href="produkciya.html">{t}</a></li>' for t in
-                   ("Гофрокороба", "Гофролотки", "Обечайки", "Гофроконтейнеры",
-                    "Упаковка для маркетплейсов", "Коробки для пиццы"))
+    # Список продукции в подвале — из каталога, чтобы не расходился с сайтом
+    prod = "".join(f'<li><a href="produkciya-{c["slug"]}.html">{c["name"]}</a></li>'
+                   for c in CATEGORIES[:6])
     comp = "".join(f'<li><a href="{f}">{t}</a></li>' for f, t in NAV[1:])
     tels = "".join(f'<li><a href="tel:{t}">{d}</a></li>' for d, t in PHONES)
     return f'''<footer class="footer">
@@ -213,26 +215,236 @@ LAYOUT = '''<!DOCTYPE html>
 '''
 
 
-def render(name):
-    title, desc = PAGES[name]
-    with open(os.path.join(SRC, name), encoding="utf-8") as fh:
-        body = fh.read()
+def substitute(body):
+    """Подстановка иконок и контактов в тело страницы."""
     body = re.sub(r"\{\{icon:(\w+)(?::([\w-]+))?\}\}",
                   lambda m: icon(m.group(1), m.group(2) or ""), body)
-    body = (body.replace("{{email}}", EMAIL).replace("{{fax}}", FAX)
+    return (body.replace("{{email}}", EMAIL).replace("{{fax}}", FAX)
                 .replace("{{address}}", ADDRESS).replace("{{hours}}", HOURS)
                 .replace("{{unp}}", UNP).replace("{{legal}}", LEGAL_HTML)
                 .replace("{{phones}}", phones_html())
                 .replace("{{phone1}}", PHONES[0][0]).replace("{{tel1}}", PHONES[0][1]))
-    html = LAYOUT.format(title=title, desc=desc, header=header(name), body=body, footer=footer())
+
+
+def write_page(name, title, desc, body, active=None):
+    """Собирает страницу из каркаса и записывает её в корень проекта."""
+    html = LAYOUT.format(title=title, desc=desc,
+                         header=header(active or name), body=substitute(body), footer=footer())
     with open(os.path.join(ROOT, name), "w", encoding="utf-8") as fh:
         fh.write(html)
     return len(html)
 
 
+def render(name):
+    title, desc = PAGES[name]
+    with open(os.path.join(SRC, name), encoding="utf-8") as fh:
+        body = fh.read()
+    if name == "produkciya.html":                      # сетка карточек — из данных каталога
+        body = body.replace("{{catalog}}", catalog_grid())
+    return write_page(name, title, desc, body)
+
+
+# --- Каталог продукции ----------------------------------------------------
+def catalog_grid():
+    """Сетка карточек подгрупп на странице «Продукция» — с кнопкой «Подробнее»."""
+    cards = []
+    for c in CATEGORIES:
+        badge = f'<span class="prod__badge">{c["badge"]}</span>' if c["badge"] else ""
+        specs = "".join(f'<span class="prod__spec">{s}</span>' for s in c["specs"])
+        cards.append(f'''      <article class="prod reveal" data-cat="{c['cat']}">
+        <div class="prod__pic">{badge}
+          <img src="assets/img/{c['img']}" alt="{c['name']}"></div>
+        <div class="prod__body">
+          <h3 class="prod__t">{c['name']}</h3>
+          <p class="prod__d">{c['desc']}</p>
+          <div class="prod__specs">{specs}</div>
+          <a class="btn btn--outline btn--sm prod__more" href="produkciya-{c['slug']}.html">
+            Подробнее {icon('arrow')}</a>
+        </div>
+      </article>''')
+    return "\n\n".join(cards)
+
+
+def price_table(cat):
+    """Таблица прайса подгруппы. Пока строк нет — честное «Цена по запросу»."""
+    if not cat["rows"]:
+        return f'''<div class="ptable__empty reveal">
+        <p class="ptable__empty-t">Цена по запросу</p>
+        <p class="ptable__empty-d">Пришлите размеры и тираж — рассчитаем стоимость
+          «{cat['name'].lower()}» под вашу задачу и вышлем прайс в тот же день.</p>
+        <div class="cta__acts">
+          <a class="btn btn--primary" href="kontakty.html#zayavka">Запросить цену {icon('arrow')}</a>
+          <a class="btn btn--outline" href="tel:{PHONES[0][1]}">{icon('phone')}{PHONES[0][0]}</a>
+        </div>
+      </div>'''
+
+    cols = cat["columns"]
+    head = table_head(cols)
+    body = []
+    num = 0
+    for row in cat["rows"]:
+        num += 1
+        cells = []
+        for col in cols:
+            key = col["key"]
+            if key == "no":
+                val = str(num)
+            elif key == "photo":
+                img = row.get("photo")
+                val = (f'<img class="ptable__photo" src="assets/img/{img}" '
+                       f'alt="{row.get("name", cat["name"])}" loading="lazy">' if img else "—")
+            else:
+                val = row.get(key, "—")
+            nw = " ptable__nowrap" if col.get("nowrap") else ""
+            cells.append(f'<td class="ptable__c ptable__c--{key}{nw}" '
+                         f'style="text-align:{col.get("align", "left")}" '
+                         f'data-label="{col["title"]}">{val}</td>')
+        body.append("<tr>" + "".join(cells) + "</tr>")
+
+    note = cat.get("note") or ("Цены указаны без НДС. Итоговая стоимость зависит от тиража, "
+                               "марки картона и печати — уточняйте у отдела продаж.")
+    return f'''<div class="ptable__wrap reveal">
+        <table class="ptable">
+          <thead>{head}</thead>
+          <tbody>{"".join(body)}</tbody>
+        </table>
+      </div>
+      <p class="ptable__note">{note}</p>'''
+
+
+def table_head(cols):
+    """Шапка таблицы. Соседние колонки с общим `group` уходят под один заголовок."""
+    if not any(c.get("group") for c in cols):
+        return "<tr>" + "".join(
+            f'<th style="text-align:{c.get("align", "left")}">{c["title"]}</th>'
+            for c in cols) + "</tr>"
+
+    top, low = [], []
+    i = 0
+    while i < len(cols):
+        g = cols[i].get("group")
+        if not g:
+            top.append(f'<th rowspan="2" style="text-align:{cols[i].get("align", "left")}">'
+                       f'{cols[i]["title"]}</th>')
+            i += 1
+            continue
+        j = i
+        while j < len(cols) and cols[j].get("group") == g:
+            j += 1
+        top.append(f'<th colspan="{j - i}" class="ptable__group">{g}</th>')
+        low += [f'<th style="text-align:{c.get("align", "left")}">{c["title"]}</th>'
+                for c in cols[i:j]]
+        i = j
+    return f'<tr>{"".join(top)}</tr><tr>{"".join(low)}</tr>'
+
+
+def text_sections(cat):
+    """Текстовые блоки внизу страницы подгруппы (требования площадок и т. п.)."""
+    if not cat.get("sections"):
+        return ""
+    blocks = []
+    for sec in cat["sections"]:
+        lead = f'<p class="lead ptext__lead">{sec["lead"]}</p>' if sec.get("lead") else ""
+        items = "".join(f"<li>{it}</li>" for it in sec.get("items", []))
+        lst = f'<ul class="ptext__list">{items}</ul>' if items else ""
+        after = f'<p class="ptext__after">{sec["after"]}</p>' if sec.get("after") else ""
+        blocks.append(f'''<article class="ptext reveal">
+          <h3 class="ptext__t">{sec["t"]}</h3>
+          {lead}{lst}{after}
+        </article>''')
+    return f'''<section class="section section--tight">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">Требования</span>
+      <h2 class="h2 h2--tight">Что нужно знать до заказа</h2>
+    </div>
+    <div class="ptext__grid">{"".join(blocks)}</div>
+  </div>
+</section>
+
+'''
+
+
+def product_page(cat):
+    """Страница одной подгруппы: описание, таблица прайса, заявка."""
+    specs = "".join(f'<span class="prod__spec">{s}</span>' for s in cat["specs"])
+    body = f'''<section class="phead">
+  <div class="wrap">
+    <div class="phead__in">
+      <nav class="crumbs" aria-label="Хлебные крошки">
+        <a href="index.html">Главная</a><span class="crumbs__sep">{icon('crumb')}</span><a href="produkciya.html">Продукция</a><span class="crumbs__sep">{icon('crumb')}</span><span>{cat['name']}</span>
+      </nav>
+      <span class="eyebrow">Продукция</span>
+      <h1 class="h1">{cat['name']}</h1>
+      <p class="lead">{cat['desc']}</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="grid grid--2">
+      <div class="reveal">
+        <img class="pdetail__pic" src="assets/img/{cat['img']}" alt="{cat['name']}">
+      </div>
+      <div class="reveal">
+        <h2 class="h2 h2--tight">Что это за упаковка</h2>
+        <p class="lead" style="margin-top:18px">{cat['long']}</p>
+        <div class="prod__specs" style="margin-top:22px">{specs}</div>
+        <div class="cta__acts">
+          <a class="btn btn--primary" href="kontakty.html#zayavka">Рассчитать заказ {icon('arrow')}</a>
+          <a class="btn btn--outline" href="produkciya.html">Вся продукция</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--paper">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">{cat.get("table_eyebrow", "Прайс")}</span>
+      <h2 class="h2">{cat.get("table_t", "Номенклатура и цены")}</h2>
+    </div>
+    {price_table(cat)}
+  </div>
+</section>
+
+{text_sections(cat)}<section class="section section--tight">
+  <div class="wrap">
+    <div class="cta reveal">
+      <div class="cta__in">
+        <div>
+          <h2 class="h2">Нужен нестандартный размер?</h2>
+          <p class="lead" style="margin-top:16px">Изготовим по вашим габаритам и чертежу.
+            Пришлите размеры товара — предложим конструкцию и посчитаем тираж.</p>
+          <div class="cta__acts">
+            <a class="btn btn--primary" href="kontakty.html#zayavka">Оставить заявку {icon('arrow')}</a>
+            <a class="btn btn--ghost" href="uslugi.html">Наши услуги</a>
+          </div>
+        </div>
+        <div>
+          <div class="ct" style="border-top:0"><div class="ct__ico">{icon('phone')}</div>
+            <div><div class="ct__l">Отдел продаж</div><div class="ct__v">{phones_html()}</div></div></div>
+          <div class="ct"><div class="ct__ico">{icon('mail')}</div>
+            <div><div class="ct__l">E-mail</div><div class="ct__v"><a href="mailto:{EMAIL}">{EMAIL}</a></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+'''
+    return write_page(f"produkciya-{cat['slug']}.html",
+                      f"{cat['name']} — цены и номенклатура | {LEGAL}",
+                      f"{cat['desc']} Номенклатура, размеры и цены без НДС.",
+                      body, active="produkciya.html")
+
+
 def main():
     for name in PAGES:
         print(f"{name}: {render(name)} байт")
+    for cat in CATEGORIES:
+        print(f"produkciya-{cat['slug']}.html: {product_page(cat)} байт")
 
 
 if __name__ == "__main__":
