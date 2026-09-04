@@ -113,6 +113,28 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   await p.click('[data-filter="all"]');
   ok('«Всё» возвращает 9', await p.locator('.prod:visible').count() === 9);
 
+  console.log('Каталог: карточки → страницы подгрупп:');
+  ok('у каждой карточки есть кнопка «Подробнее»',
+     await p.locator('.prod__more').count() === await p.locator('.prod').count());
+  const slugs = await p.locator('.prod__more').evaluateAll(
+    els => els.map(e => e.getAttribute('href')));
+  ok('все кнопки ведут на существующие страницы подгрупп',
+     slugs.length > 0 && slugs.every(h => /^produkciya-.+\.html$/.test(h) && fs.existsSync(B + h)));
+  ok('переход по кнопке открывает страницу этой же подгруппы', await (async () => {
+      const cardTitle = await p.locator('.prod').first().locator('.prod__t').innerText();
+      await p.locator('.prod__more').first().click();
+      await p.waitForLoadState('domcontentloaded');
+      const h1 = await p.locator('h1').innerText();
+      return h1.trim() === cardTitle.trim(); })());
+  ok('в крошках подгруппы три уровня: Главная → Продукция → товар',
+     (await p.locator('.crumbs a').count()) === 2);
+  ok('пункт меню «Продукция» подсвечен и на странице подгруппы',
+     await p.locator('.nav__link.is-active').evaluate(e => e.textContent.trim() === 'Продукция'));
+  ok('пока прайса нет — показан честный блок «Цена по запросу», а не пустая таблица',
+     await p.locator('.ptable__empty').count() === 1 && await p.locator('.ptable').count() === 0);
+  ok('на странице подгруппы есть кнопка запроса цены',
+     (await p.locator('.ptable__empty .btn--primary').innerText()).includes('Запросить цену'));
+
   console.log('Разделители «/»:');
   await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
   ok('в хлебных крошках нет косой черты',
