@@ -44,14 +44,14 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       return c === 'rgb(255, 255, 255)'; })());
 
   console.log('Счётчики и анимации:');
-  // Блок цифр на главной убран (осталась только «Продукция» сразу после
-  // крафт-карточек) — счётчик с годом теперь только на странице о компании.
-  await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
-  ok('год выводится без разделителя разрядов',
-     (await p.locator('[data-count="2016"]').textContent()).trim() === '2016');
-  await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+  // Блок цифр убран целиком — и с главной, и с «О компании» (дублировал уже
+  // сказанное в тексте и в карточках принципов работы). Проверяем, что
+  // счётчиков-«стат» не осталось нигде на сайте.
   ok('блока цифр («2016 / 1–4 / 20 км») на главной больше нет',
      await p.locator('.stats').count() === 0);
+  await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
+  ok('блока цифр на «О компании» тоже больше нет', await p.locator('.stats').count() === 0);
+  await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
   ok('блоки проявляются при прокрутке', await (async () => {
       await p.evaluate(() => { document.documentElement.style.scrollBehavior='auto'; window.scrollTo(0, 1200); });
       await p.waitForTimeout(700);
@@ -168,10 +168,12 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
      }));
   ok('плюсиков-разворотов на вкладках «О компании» больше нет',
      await p.locator('.acc--frame .acc__ico').count() === 0);
-  ok('рамка вкладок угольного цвета, фон — охра/золото', await p.locator('.acc--frame').evaluate(e => {
+  ok('рамки вокруг таблицы больше нет, фон приглушённый (не яркая охра)', await p.locator('.acc--frame').evaluate(e => {
       const cs = getComputedStyle(e);
-      return cs.borderTopColor === 'rgb(44, 34, 24)' && cs.backgroundColor === 'rgb(212, 168, 67)';
+      return cs.borderStyle === 'none' && cs.backgroundColor === 'rgb(241, 228, 196)';
   }));
+  ok('закруглённые углы таблицы не тронуты', await p.locator('.acc--frame')
+      .evaluate(e => parseFloat(getComputedStyle(e).borderRadius) > 0));
   ok('по умолчанию открыта первая вкладка', await p.locator('.acc--frame .acc__item').first()
       .evaluate(e => e.classList.contains('is-open')));
   ok('наведение на третью вкладку открывает её и закрывает первую', await (async () => {
@@ -183,6 +185,17 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('панель раскрывается поворотом, а не просто списком (эффект «листа»)',
      await p.locator('.acc--frame .acc__panel > div').nth(2)
        .evaluate(e => getComputedStyle(e).transform !== 'none'));
+  ok('уход курсора со всей таблицы сворачивает последнюю открытую вкладку', await (async () => {
+      await p.mouse.move(50, 50);
+      await p.waitForTimeout(250);
+      return await p.locator('.acc--frame .acc__item').nth(2).evaluate(e => !e.classList.contains('is-open')); })());
+
+  console.log('Карточки «На что мы отвечаем перед заказчиком»:');
+  ok('карточек шесть, все тёмные (card--dark)', await p.locator('.card--dark').count() === 6);
+  ok('заголовки карточек — фирменный оранжевый', await p.locator('.card--dark .card__t').first()
+      .evaluate(e => getComputedStyle(e).color === 'rgb(244, 155, 63)'));
+  ok('фон карточек — тёмный градиент, а не прежний белый', await p.locator('.card--dark').first()
+      .evaluate(e => getComputedStyle(e).backgroundImage.includes('gradient')));
 
   console.log('Мобильное меню:');
   await p.setViewportSize({ width: 390, height: 844 });

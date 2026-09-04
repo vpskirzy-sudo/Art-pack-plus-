@@ -82,30 +82,6 @@
     }
   }
 
-  /* --- Счётчики в блоке «цифры» ------------------------------------------ */
-  var nums = $$('[data-count]');
-  if (nums.length && 'IntersectionObserver' in window) {
-    var io2 = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        var el = en.target, to = parseFloat(el.dataset.count), suf = el.dataset.suffix || '';
-        var plain = el.hasAttribute('data-plain');   // годы и т.п. — без разделителя разрядов
-        var t0 = null, D = 1400;
-        var step = function (ts) {
-          if (!t0) t0 = ts;
-          var p = Math.min((ts - t0) / D, 1);
-          var e = 1 - Math.pow(1 - p, 3);
-          var v = Math.round(to * e);
-          el.textContent = (plain ? String(v) : v.toLocaleString('ru-RU')) + suf;
-          if (p < 1) requestAnimationFrame(step);
-        };
-        requestAnimationFrame(step);
-        io2.unobserve(el);
-      });
-    }, { threshold: 0.4 });
-    nums.forEach(function (el) { io2.observe(el); });
-  }
-
   /* --- Фильтр каталога продукции ----------------------------------------- */
   var filters = $$('.filter');
   if (filters.length) {
@@ -141,6 +117,8 @@
      Курсор навёлся на вкладку — она открывается, предыдущая сама
      складывается. Клик и фокус с клавиатуры работают так же — без мыши
      навести панель нельзя, поэтому это не единственный способ её открыть.
+     Курсор ушёл со всей таблицы — последняя открытая вкладка сворачивается
+     тем же движением, что и при переключении между вкладками.
      ---------------------------------------------------------------------- */
   $$('.acc--frame').forEach(function (acc) {
     var items = $$('.acc__item', acc);
@@ -157,6 +135,7 @@
       btn.addEventListener('focus', function () { openItem(item); });
       btn.addEventListener('click', function (e) { e.preventDefault(); openItem(item); });
     });
+    acc.addEventListener('mouseleave', function () { openItem(null); });
   });
 
   /* --- Кнопка «наверх» ---------------------------------------------------- */
