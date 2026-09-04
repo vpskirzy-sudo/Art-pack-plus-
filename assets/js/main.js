@@ -35,26 +35,19 @@
   }
 
   /* --- Слайдер на главной -----------------------------------------------
-     Слайды меняются только сами: кнопок перелистывания нет. Полоски внизу —
-     индикатор прогресса, а не элементы управления.
+     Фон меняется сам — это чисто задний план, без кнопок и индикаторов.
+     Текст над ним статичный (лежит вне .slide в разметке), поэтому смена
+     картинки его не трогает.
      ---------------------------------------------------------------------- */
   var hero = $('.hero');
   if (hero) {
     var slides = $$('.slide', hero);
-    var dots   = $$('.hero__dot', hero);
     var idx    = 0, timer = null;
-    var DUR    = 7000;
+    var DUR    = 4200;
 
     var show = function (n) {
       idx = (n + slides.length) % slides.length;
       slides.forEach(function (s, i) { s.classList.toggle('is-active', i === idx); });
-      dots.forEach(function (d, i) {
-        d.classList.remove('is-active');
-        if (i === idx) {                       // перезапуск CSS-анимации полосы
-          void d.offsetWidth;
-          d.classList.add('is-active');
-        }
-      });
     };
 
     // Тем, кто отключил анимации в системе, слайды не крутим — показываем первый.
@@ -62,7 +55,6 @@
     var stop = function () { if (timer) { clearInterval(timer); timer = null; } };
     var play = function () { stop(); if (!calm) timer = setInterval(function () { show(idx + 1); }, DUR); };
 
-    hero.style.setProperty('--slide-dur', DUR + 'ms');
     show(0);
     play();
 
