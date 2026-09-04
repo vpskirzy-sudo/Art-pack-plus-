@@ -248,10 +248,122 @@ def p_floor():
     return doc("Картон для защиты пола", "".join(s))
 
 
+# ------------------------------------------------------------ гофрокартон
+# Виды картона показываем срезом: по длинной грани видна волна гофры,
+# по числу слоёв сразу читается двух-, трёх- или пятислойный лист.
+LINER, LINER_D = "#E4BC84", "#C79457"
+FLUTE_BG, FLUTE_LN = "#F2E2C7", "#B9884A"
+PAPER_W = "#F1EFE9"
+
+
+def dark(hexc, k=.82):
+    """Тот же цвет, но темнее — для боковой грани."""
+    r, g, b = (int(hexc[i:i + 2], 16) for i in (1, 3, 5))
+    return "#%02X%02X%02X" % (int(r * k), int(g * k), int(b * k))
+
+
+def board_body(cx, cy, w, d, stack, top="flat", period=17):
+    """Лист картона в изометрии: срез со слоями + верхняя поверхность.
+
+    stack — слои снизу вверх: (вид, высота, цвет), вид = liner | flute.
+    top   — вид сверху: flat (лайнер), ridge (открытая гофра), chrome (мел)."""
+    P = lambda X, Y, Z: pt(cx, cy, X, Y, Z)
+    H = sum(h for _, h, _ in stack)
+    s = [shadow(cx, cy, w, d)]
+    z = 0.0
+    for kind, h, fill in stack:
+        z1, z2 = z, z + h
+        lf = [P(0, d, z1), P(w, d, z1), P(w, d, z2), P(0, d, z2)]
+        rf = [P(w, 0, z1), P(w, d, z1), P(w, d, z2), P(w, 0, z2)]
+        s.append(face(lf, fill))
+        s.append(face(rf, dark(fill)))
+        if kind == "flute":
+            zm, amp = (z1 + z2) / 2, max(h / 2 - 1.4, 1.2)
+            pts, x = [], 0.0
+            while x <= w:
+                pts.append(P(x, d, zm + amp * math.sin(2 * math.pi * x / period)))
+                x += 1.5
+            dpth = " ".join(("M" if i == 0 else "L") + f"{a:.1f} {b:.1f}"
+                            for i, (a, b) in enumerate(pts))
+            s.append(f'<path d="{dpth}" fill="none" stroke="{FLUTE_LN}" '
+                     f'stroke-width="2.1" stroke-linejoin="round" opacity=".9"/>')
+            # на торце гофра видна как ряд склеек
+            for k in range(1, 5):
+                a, b = P(w, d * k / 5, z1 + .8), P(w, d * k / 5, z2 - .8)
+                s.append(f'<line x1="{a[0]:.1f}" y1="{a[1]:.1f}" x2="{b[0]:.1f}" '
+                         f'y2="{b[1]:.1f}" stroke="{FLUTE_LN}" stroke-width="1.4" opacity=".5"/>')
+        z = z2
+
+    tf = [P(0, 0, H), P(w, 0, H), P(w, d, H), P(0, d, H)]
+    if top == "ridge":                       # двухслойный: гофра открыта сверху
+        x = 0.0
+        while x < w:
+            a = [P(x, 0, H), P(min(x + period * .5, w), 0, H),
+                 P(min(x + period * .5, w), d, H), P(x, d, H)]
+            b = [P(min(x + period * .5, w), 0, H), P(min(x + period, w), 0, H),
+                 P(min(x + period, w), d, H), P(min(x + period * .5, w), d, H)]
+            s.append(face(a, "#EFD2A4")); s.append(face(b, "#D0A469"))
+            x += period
+    elif top == "chrome":                    # хром-эрзац: мелованная поверхность
+        s.append(face(tf, PAPER_W))
+        s.append(face([P(0, 0, H), P(w * .55, 0, H), P(w * .25, d, H), P(0, d, H)],
+                      "#FFFFFF", ".55"))
+    else:
+        s.append(face(tf, stack[-1][2]))
+        s.append(flute(tf, ".12"))
+    return "".join(s), H
+
+
+STACK3 = [("liner", 3.4, LINER), ("flute", 11, FLUTE_BG), ("liner", 3.4, LINER)]
+STACK5 = [("liner", 3.2, LINER), ("flute", 9, FLUTE_BG), ("liner", 3.2, LINER),
+          ("flute", 9, FLUTE_BG), ("liner", 3.2, LINER)]
+STACK2 = [("liner", 3.4, LINER), ("flute", 11, FLUTE_BG)]
+STACKM = [("liner", 2.4, PAPER_W), ("flute", 4.5, "#F7F5F0"), ("liner", 2.4, PAPER_W)]
+STACKC = [("liner", 3.0, "#E9E5DC"), ("liner", 3.0, PAPER_W)]
+
+
+def p_kb2():
+    b, _ = board_body(240, 176, 210, 148, STACK2, top="ridge")
+    return doc("Двухслойный гофрокартон", b)
+
+
+def p_kb3():
+    b, _ = board_body(240, 176, 210, 148, STACK3)
+    return doc("Трёхслойный гофрокартон", b)
+
+
+def p_kb5():
+    b, _ = board_body(240, 172, 210, 148, STACK5)
+    return doc("Пятислойный гофрокартон", b)
+
+
+def p_kbmicro():
+    b, _ = board_body(240, 180, 210, 148, STACKM, period=9)
+    return doc("Микрогофрокартон", b, bg="b")
+
+
+def p_kbchrome():
+    b, _ = board_body(240, 178, 210, 148, STACKC, top="chrome")
+    return doc("Хром-эрзац", b, bg="b")
+
+
+def p_board():
+    """Карточка каталога: три листа разной слойности стопкой со сдвигом."""
+    s = []
+    for (cx, cy, st, tp) in ((208, 232, STACK5, "flat"),
+                             (240, 186, STACK3, "flat"),
+                             (272, 140, STACK2, "ridge")):
+        b, _ = board_body(cx, cy, 168, 118, st, top=tp)
+        s.append(b)
+    return doc("Гофрокартон: двух-, трёх- и пятислойный лист", "".join(s))
+
+
 ITEMS = {
     "pr-box4.svg": p_box4, "pr-box-open.svg": p_box_open, "pr-tray.svg": p_tray,
     "pr-sleeve.svg": p_sleeve, "pr-pizza.svg": p_pizza, "pr-container.svg": p_container,
     "pr-sheets.svg": p_sheets, "pr-market.svg": p_market, "pr-floor.svg": p_floor,
+    "pr-board.svg": p_board, "pr-kb2.svg": p_kb2, "pr-kb3.svg": p_kb3,
+    "pr-kb5.svg": p_kb5, "pr-kbmicro.svg": p_kbmicro, "pr-kbchrome.svg": p_kbchrome,
 }
 
 

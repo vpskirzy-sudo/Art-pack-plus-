@@ -109,7 +109,9 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   await p.click('[data-filter="market"]');
   ok('фильтр «для маркетплейсов» оставляет 1', await p.locator('.prod:visible').count() === 1);
   await p.click('[data-filter="korob"]');
-  ok('фильтр «короба и ящики» оставляет 3', await p.locator('.prod:visible').count() === 3);
+  ok('фильтр «короба и ящики» оставляет 2', await p.locator('.prod:visible').count() === 2);
+  await p.click('[data-filter="material"]');
+  ok('фильтр «гофрокартон» оставляет 1', await p.locator('.prod:visible').count() === 1);
   await p.click('[data-filter="all"]');
   ok('«Всё» возвращает 9', await p.locator('.prod:visible').count() === 9);
 
@@ -130,6 +132,37 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
      (await p.locator('.crumbs a').count()) === 2);
   ok('пункт меню «Продукция» подсвечен и на странице подгруппы',
      await p.locator('.nav__link.is-active').evaluate(e => e.textContent.trim() === 'Продукция'));
+  console.log('Прайс подгрупп:');
+  await p.goto('file://' + B + 'produkciya-gofroyashchiki.html', { waitUntil:'domcontentloaded' });
+  ok('у гофроящиков 7 позиций прайса', await p.locator('.ptable tbody tr').count() === 7);
+  ok('колонки тиражей собраны под общей шапкой «Цена без НДС»',
+     (await p.locator('.ptable__group').innerText()).toLowerCase().includes('цена без ндс') &&
+     await p.locator('.ptable__group').getAttribute('colspan') === '3');
+  ok('строки пронумерованы автоматически',
+     await p.locator('.ptable tbody tr').last().locator('td').first().innerText() === '7');
+  ok('цены перенесены как в прайсе (577×392×323 П-32 → 3,6 / 3,2 / 3,0)',
+     await p.locator('.ptable tbody tr').first().evaluate(
+       tr => [...tr.querySelectorAll('td')].slice(3).map(td => td.textContent.trim()).join('|')
+     ) === '3,6|3,2|3,0');
+  ok('под таблицей — условия доставки со старого сайта',
+     (await p.locator('.ptable__note').innerText()).includes('30 рублей'));
+
+  await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'domcontentloaded' });
+  ok('у пиццы свои тиражи — от 3000 / 5000 / 10 000 шт.',
+     (await p.locator('.ptable thead').innerText()).includes('10 000'));
+
+  await p.goto('file://' + B + 'produkciya-gofrokarton.html', { waitUntil:'domcontentloaded' });
+  ok('виды гофрокартона: 5 позиций без колонки цены',
+     await p.locator('.ptable tbody tr').count() === 5 &&
+     await p.locator('.ptable__group').count() === 0);
+
+  await p.goto('file://' + B + 'produkciya-upakovka-dlya-marketpleysov.html', { waitUntil:'domcontentloaded' });
+  ok('требования площадок вынесены в отдельные блоки', await p.locator('.ptext').count() === 4);
+  ok('есть блоки Wildberries и OZON', await (async () => {
+      const t = await p.locator('.ptext__grid').innerText();
+      return t.includes('Wildberries') && t.includes('OZON'); })());
+
+  await p.goto('file://' + B + 'produkciya-obechayki.html', { waitUntil:'domcontentloaded' });
   ok('пока прайса нет — показан честный блок «Цена по запросу», а не пустая таблица',
      await p.locator('.ptable__empty').count() === 1 && await p.locator('.ptable').count() === 0);
   ok('на странице подгруппы есть кнопка запроса цены',

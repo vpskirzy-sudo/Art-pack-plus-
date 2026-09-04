@@ -14,7 +14,7 @@
 import os
 import re
 
-from products_data import CATEGORIES, COLUMNS
+from products_data import CATEGORIES
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 SRC = os.path.join(ROOT, "src")
@@ -142,9 +142,9 @@ def header(active):
 
 
 def footer():
-    prod = "".join(f'<li><a href="produkciya.html">{t}</a></li>' for t in
-                   ("Гофрокороба", "Гофролотки", "Обечайки", "Гофроконтейнеры",
-                    "Упаковка для маркетплейсов", "Коробки для пиццы"))
+    # Список продукции в подвале — из каталога, чтобы не расходился с сайтом
+    prod = "".join(f'<li><a href="produkciya-{c["slug"]}.html">{c["name"]}</a></li>'
+                   for c in CATEGORIES[:6])
     comp = "".join(f'<li><a href="{f}">{t}</a></li>' for f, t in NAV[1:])
     tels = "".join(f'<li><a href="tel:{t}">{d}</a></li>' for d, t in PHONES)
     return f'''<footer class="footer">
@@ -278,28 +278,91 @@ def price_table(cat):
         </div>
       </div>'''
 
-    head = "".join(f'<th style="text-align:{col.get("align", "left")}">{col["title"]}</th>'
-                   for col in COLUMNS)
+    cols = cat["columns"]
+    head = table_head(cols)
     body = []
+    num = 0
     for row in cat["rows"]:
+        num += 1
         cells = []
-        for col in COLUMNS:
-            val = row.get(col["key"], "—")
-            if col["key"] == "photo":
-                val = (f'<img class="ptable__photo" src="assets/img/{val}" '
-                       f'alt="{row.get("name", cat["name"])}" loading="lazy">'
-                       if val and val != "—" else "—")
-            cells.append(f'<td style="text-align:{col.get("align", "left")}" '
+        for col in cols:
+            key = col["key"]
+            if key == "no":
+                val = str(num)
+            elif key == "photo":
+                img = row.get("photo")
+                val = (f'<img class="ptable__photo" src="assets/img/{img}" '
+                       f'alt="{row.get("name", cat["name"])}" loading="lazy">' if img else "—")
+            else:
+                val = row.get(key, "—")
+            nw = " ptable__nowrap" if col.get("nowrap") else ""
+            cells.append(f'<td class="ptable__c ptable__c--{key}{nw}" '
+                         f'style="text-align:{col.get("align", "left")}" '
                          f'data-label="{col["title"]}">{val}</td>')
         body.append("<tr>" + "".join(cells) + "</tr>")
+
+    note = cat.get("note") or ("Цены указаны без НДС. Итоговая стоимость зависит от тиража, "
+                               "марки картона и печати — уточняйте у отдела продаж.")
     return f'''<div class="ptable__wrap reveal">
         <table class="ptable">
-          <thead><tr>{head}</tr></thead>
+          <thead>{head}</thead>
           <tbody>{"".join(body)}</tbody>
         </table>
       </div>
-      <p class="ptable__note">Цены указаны без НДС. Итоговая стоимость зависит от тиража,
-        марки картона и печати — уточняйте у отдела продаж.</p>'''
+      <p class="ptable__note">{note}</p>'''
+
+
+def table_head(cols):
+    """Шапка таблицы. Соседние колонки с общим `group` уходят под один заголовок."""
+    if not any(c.get("group") for c in cols):
+        return "<tr>" + "".join(
+            f'<th style="text-align:{c.get("align", "left")}">{c["title"]}</th>'
+            for c in cols) + "</tr>"
+
+    top, low = [], []
+    i = 0
+    while i < len(cols):
+        g = cols[i].get("group")
+        if not g:
+            top.append(f'<th rowspan="2" style="text-align:{cols[i].get("align", "left")}">'
+                       f'{cols[i]["title"]}</th>')
+            i += 1
+            continue
+        j = i
+        while j < len(cols) and cols[j].get("group") == g:
+            j += 1
+        top.append(f'<th colspan="{j - i}" class="ptable__group">{g}</th>')
+        low += [f'<th style="text-align:{c.get("align", "left")}">{c["title"]}</th>'
+                for c in cols[i:j]]
+        i = j
+    return f'<tr>{"".join(top)}</tr><tr>{"".join(low)}</tr>'
+
+
+def text_sections(cat):
+    """Текстовые блоки внизу страницы подгруппы (требования площадок и т. п.)."""
+    if not cat.get("sections"):
+        return ""
+    blocks = []
+    for sec in cat["sections"]:
+        lead = f'<p class="lead ptext__lead">{sec["lead"]}</p>' if sec.get("lead") else ""
+        items = "".join(f"<li>{it}</li>" for it in sec.get("items", []))
+        lst = f'<ul class="ptext__list">{items}</ul>' if items else ""
+        after = f'<p class="ptext__after">{sec["after"]}</p>' if sec.get("after") else ""
+        blocks.append(f'''<article class="ptext reveal">
+          <h3 class="ptext__t">{sec["t"]}</h3>
+          {lead}{lst}{after}
+        </article>''')
+    return f'''<section class="section section--tight">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">Требования</span>
+      <h2 class="h2 h2--tight">Что нужно знать до заказа</h2>
+    </div>
+    <div class="ptext__grid">{"".join(blocks)}</div>
+  </div>
+</section>
+
+'''
 
 
 def product_page(cat):
@@ -340,14 +403,14 @@ def product_page(cat):
 <section class="section section--paper">
   <div class="wrap">
     <div class="head reveal">
-      <span class="eyebrow">Прайс</span>
-      <h2 class="h2">Номенклатура и цены</h2>
+      <span class="eyebrow">{cat.get("table_eyebrow", "Прайс")}</span>
+      <h2 class="h2">{cat.get("table_t", "Номенклатура и цены")}</h2>
     </div>
     {price_table(cat)}
   </div>
 </section>
 
-<section class="section section--tight">
+{text_sections(cat)}<section class="section section--tight">
   <div class="wrap">
     <div class="cta reveal">
       <div class="cta__in">
