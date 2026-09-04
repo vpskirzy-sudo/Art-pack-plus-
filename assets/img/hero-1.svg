@@ -35,6 +35,10 @@
     <rect width="7" height="7" fill="none"/>
     <rect x="0" width="3" height="7" fill="#000" opacity=".18"/>
   </pattern>
+  <linearGradient id="gate" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFBF2"/><stop offset=".55" stop-color="#FFEFD2"/>
+    <stop offset="1" stop-color="#FFD9A2"/>
+  </linearGradient>
   <radialGradient id="glow" cx=".5" cy=".5" r=".5">
     <stop offset="0" stop-color="#FFF6E8" stop-opacity=".95"/>
     <stop offset=".55" stop-color="#FFE3BC" stop-opacity=".35"/>

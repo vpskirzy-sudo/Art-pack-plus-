@@ -34,7 +34,10 @@
     });
   }
 
-  /* --- Слайдер на главной ------------------------------------------------ */
+  /* --- Слайдер на главной -----------------------------------------------
+     Слайды меняются только сами: кнопок перелистывания нет. Полоски внизу —
+     индикатор прогресса, а не элементы управления.
+     ---------------------------------------------------------------------- */
   var hero = $('.hero');
   if (hero) {
     var slides = $$('.slide', hero);
@@ -55,38 +58,19 @@
       });
       if (cur) cur.textContent = String(idx + 1).padStart(2, '0');
     };
-    // Пользователям, отключившим анимации в системе, слайды сами не листаем —
-    // только по стрелкам, точкам, клавишам и свайпу.
+
+    // Тем, кто отключил анимации в системе, слайды не крутим — показываем первый.
     var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var play  = function () { stop(); if (!calm) timer = setInterval(function () { show(idx + 1); }, DUR); };
-    var stop  = function () { if (timer) { clearInterval(timer); timer = null; } };
+    var stop = function () { if (timer) { clearInterval(timer); timer = null; } };
+    var play = function () { stop(); if (!calm) timer = setInterval(function () { show(idx + 1); }, DUR); };
 
     hero.style.setProperty('--slide-dur', DUR + 'ms');
     show(0);
     play();
 
-    var go = function (n) { show(n); play(); };
-    var prev = $('.hero__arrow--prev', hero), next = $('.hero__arrow--next', hero);
-    if (prev) prev.addEventListener('click', function () { go(idx - 1); });
-    if (next) next.addEventListener('click', function () { go(idx + 1); });
-    dots.forEach(function (d, i) { d.addEventListener('click', function () { go(i); }); });
-
-    hero.addEventListener('mouseenter', function () { stop(); hero.classList.add('is-paused'); });
-    hero.addEventListener('mouseleave', function () { play(); hero.classList.remove('is-paused'); });
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowLeft')  go(idx - 1);
-      if (e.key === 'ArrowRight') go(idx + 1);
-    });
-
-    // свайп на сенсорных экранах
-    var x0 = null;
-    hero.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; stop(); }, { passive: true });
-    hero.addEventListener('touchend', function (e) {
-      if (x0 === null) return;
-      var dx = e.changedTouches[0].clientX - x0;
-      if (Math.abs(dx) > 45) go(idx + (dx < 0 ? 1 : -1)); else play();
-      x0 = null;
+    // В фоновой вкладке таймер не тратим — и не «перематываем» слайды пачкой.
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) stop(); else play();
     });
   }
 

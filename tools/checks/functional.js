@@ -12,18 +12,22 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   const errs = [];
   p.on('pageerror', e => errs.push(e.message));
 
-  console.log('Слайдер:');
+  console.log('Слайдер (только автосмена, кнопок нет):');
   await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+  ok('кнопок перелистывания на странице нет', await p.locator('.hero__arrow').count() === 0);
+  ok('индикатор не кликабелен', await p.locator('.hero__dot').first()
+      .evaluate(e => e.tagName.toLowerCase() !== 'button' && getComputedStyle(e).pointerEvents === 'none'));
   ok('стартует с первого слайда', await p.locator('.slide').first().evaluate(e => e.classList.contains('is-active')));
-  await p.click('.hero__arrow--next');
-  ok('стрелка «вперёд» переключает на 2-й', await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')));
+  await p.waitForTimeout(7600);
+  ok('сам переключился на 2-й', await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')));
   ok('счётчик показывает 02', (await p.locator('.hero__count b').textContent()) === '02');
-  await p.click('.hero__arrow--prev');
-  await p.click('.hero__arrow--prev');
-  ok('перелистывание по кругу назад → 3-й слайд', await p.locator('.slide').nth(2).evaluate(e => e.classList.contains('is-active')));
-  await p.locator('.hero__dot').nth(0).click();
-  ok('точка возвращает на 1-й', await p.locator('.slide').nth(0).evaluate(e => e.classList.contains('is-active')));
-  ok('автопрокрутка идёт', await (async () => { await p.waitForTimeout(7600);
+  await p.waitForTimeout(7200);
+  ok('сам переключился на 3-й', await p.locator('.slide').nth(2).evaluate(e => e.classList.contains('is-active')));
+  await p.waitForTimeout(7200);
+  ok('после третьего вернулся на первый', await p.locator('.slide').nth(0).evaluate(e => e.classList.contains('is-active')));
+  ok('наведение мышью не останавливает показ', await (async () => {
+      await p.locator('.hero').hover();
+      await p.waitForTimeout(7400);
       return await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')); })());
 
   console.log('Счётчики и анимации:');
@@ -33,6 +37,12 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       await p.evaluate(() => { document.documentElement.style.scrollBehavior='auto'; window.scrollTo(0, 1200); });
       await p.waitForTimeout(700);
       return await p.locator('.card').first().evaluate(e => e.classList.contains('is-in')); })());
+
+  console.log('Плашка оборудования на главной:');
+  ok('блок «Продажа нового и б/у оборудования» на месте',
+     (await p.locator('.band__t').textContent()).includes('б/у оборудования'));
+  ok('ведёт в раздел «Оборудование»',
+     (await p.locator('.band a').getAttribute('href')) === 'oborudovanie.html');
 
   console.log('Фильтр каталога:');
   await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
