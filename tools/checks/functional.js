@@ -50,6 +50,33 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       await p.waitForTimeout(700);
       return await p.locator('.card').first().evaluate(e => e.classList.contains('is-in')); })());
 
+  console.log('Крафт-карточки «Почему заказывают у нас»:');
+  ok('на 4 карточках подключена нумерация «Арт. №» через CSS-счётчик', await (async () => {
+      // getComputedStyle(::before).content не считает counter() — он возвращает
+      // CSS-выражение как есть, поэтому проверяем сам счётчик, а не готовую строку.
+      const grid = await p.locator('.grid--4').evaluate(e => getComputedStyle(e).counterReset);
+      const items = await p.locator('.card__num').evaluateAll(els => els.map(e => {
+        const c = getComputedStyle(e, '::before');
+        return { increment: getComputedStyle(e.parentElement).counterIncrement, content: c.content };
+      }));
+      const gridOk = grid.includes('artbox');
+      const cardsOk = items.length === 4 && items.every(it =>
+        it.increment.includes('artbox') && it.content.includes('counter(artbox'));
+      return gridOk && cardsOk; })());
+  ok('текст на бирке читаем (тёмный на светлом фоне)', await p.locator('.card__label').first()
+      .evaluate(e => getComputedStyle(e).backgroundColor !== 'rgba(0, 0, 0, 0)'));
+  ok('при наведении короб приподнимается и лента съезжает', await (async () => {
+      const card = p.locator('.card--kraft').first();
+      const tape = p.locator('.card__tape').first();
+      const before = await card.evaluate(e => getComputedStyle(e).transform);
+      const tapeBefore = await tape.evaluate(e => getComputedStyle(e).transform);
+      await card.hover();
+      await p.waitForTimeout(500);
+      const after = await card.evaluate(e => getComputedStyle(e).transform);
+      const tapeAfter = await tape.evaluate(e => getComputedStyle(e).transform);
+      await p.mouse.move(10, 10);
+      return after !== before && tapeAfter !== tapeBefore; })());
+
   console.log('Плашка оборудования на главной:');
   ok('блок «Продажа нового и б/у оборудования» на месте',
      (await p.locator('.band__t').textContent()).includes('б/у оборудования'));
