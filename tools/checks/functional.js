@@ -12,26 +12,35 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   const errs = [];
   p.on('pageerror', e => errs.push(e.message));
 
-  console.log('Слайдер (только автосмена, кнопок нет):');
+  console.log('Слайдер (фон меняется сам, текст статичен):');
   await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
-  ok('кнопок перелистывания на странице нет', await p.locator('.hero__arrow').count() === 0);
-  ok('индикатор не кликабелен', await p.locator('.hero__dot').first()
-      .evaluate(e => e.tagName.toLowerCase() !== 'button' && getComputedStyle(e).pointerEvents === 'none'));
+  ok('кнопок перелистывания на странице нет', await p.locator('.hero__arrow, .hero__dot').count() === 0);
+  ok('текст лежит вне .slide — не завязан на конкретный фон',
+     await p.locator('.hero__copy').evaluate(e => !e.closest('.slide')));
+  ok('на странице ровно один текстовый блок героя', await p.locator('.hero__copy').count() === 1);
+  ok('заголовок и кнопки статичны', await (async () => {
+      const title = (await p.locator('.hero__title').innerText()).toUpperCase();
+      const ok1 = title.includes('УПАКОВКА ИЗ ГОФРОКАРТОНА');
+      const ok2 = (await p.locator('.hero__acts .btn').count()) === 2;
+      return ok1 && ok2; })());
   ok('стартует с первого слайда', await p.locator('.slide').first().evaluate(e => e.classList.contains('is-active')));
-  await p.waitForTimeout(7600);
+  await p.waitForTimeout(4700);
   ok('сам переключился на 2-й', await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')));
-  ok('активна вторая полоска-индикатор',
-     await p.locator('.hero__dot').nth(1).evaluate(e => e.classList.contains('is-active')));
-  ok('косой черты «/» в разметке слайдера нет',
-     !(await p.locator('.hero__ui').innerText()).includes('/'));
-  await p.waitForTimeout(7200);
+  ok('текст не изменился при смене фона',
+     (await p.locator('.hero__title').innerText()).toUpperCase().includes('УПАКОВКА ИЗ ГОФРОКАРТОНА'));
+  await p.waitForTimeout(4400);
   ok('сам переключился на 3-й', await p.locator('.slide').nth(2).evaluate(e => e.classList.contains('is-active')));
-  await p.waitForTimeout(7200);
+  await p.waitForTimeout(4400);
   ok('после третьего вернулся на первый', await p.locator('.slide').nth(0).evaluate(e => e.classList.contains('is-active')));
   ok('наведение мышью не останавливает показ', await (async () => {
       await p.locator('.hero').hover();
-      await p.waitForTimeout(7400);
+      await p.waitForTimeout(4600);
       return await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')); })());
+  ok('кнопка «Рассчитать заказ» на hover получает белую обводку', await (async () => {
+      const btn = p.locator('.hero__acts .btn--primary');
+      await btn.hover();
+      const c = await btn.evaluate(e => getComputedStyle(e).borderColor);
+      return c === 'rgb(255, 255, 255)'; })());
 
   console.log('Счётчики и анимации:');
   ok('год выводится без разделителя разрядов',
