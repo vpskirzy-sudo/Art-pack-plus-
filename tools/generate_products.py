@@ -189,23 +189,42 @@ def p_sheets():
 
 
 def p_market():
-    """Упаковка для маркетплейсов."""
-    cx, cy, w, d, h = 238, 148, 120, 88, 96
-    P = lambda X, Y, Z: pt(cx, cy, X, Y, Z)
-    b, _ = iso_box(cx, cy, w, d, h, light=True)
-    s = [shadow(cx, cy, w, d), b]
-    # этикетка со штрихкодом на боковой грани
-    lab = [P(14, d, h * .30), P(w - 14, d, h * .30), P(w - 14, d, h * .72), P(14, d, h * .72)]
-    s.append(face(lab, "#F7F2E8", ".96"))
-    for i in range(11):
-        x = 20 + i * 8.4
-        a, b2 = P(x, d, h * .36), P(x, d, h * .60)
-        wdt = 2.2 if i % 3 else 4.2
-        s.append(f'<line x1="{a[0]:.1f}" y1="{a[1]:.1f}" x2="{b2[0]:.1f}" y2="{b2[1]:.1f}" '
-                 f'stroke="{INK}" stroke-width="{wdt}" opacity=".8"/>')
-    tape = [P(0, d * .44, h), P(w, d * .44, h), P(w, d * .56, h), P(0, d * .56, h)]
-    s.append(face(tape, ACCENT, ".55"))
-    return doc("Упаковка для маркетплейсов", "".join(s), bg="b")
+    """Упаковка для маркетплейсов: два формата с наклейками WB и Ozon."""
+    def sticker(cx, cy, w, h, rot, bg, text, fs):
+        """Наклейка службы доставки: цветной ярлык под углом, как на реальной посылке."""
+        rx = h * .24
+        return (f'<g transform="rotate({rot:.1f} {cx:.1f} {cy:.1f})">'
+                f'<ellipse cx="{cx:.1f}" cy="{cy + h * .64:.1f}" rx="{w * .44:.1f}" ry="{h * .22:.1f}" '
+                f'fill="#2A1A08" opacity=".16"/>'
+                f'<rect x="{cx - w / 2:.1f}" y="{cy - h / 2:.1f}" width="{w:.1f}" height="{h:.1f}" '
+                f'rx="{rx:.1f}" fill="{bg}"/>'
+                f'<rect x="{cx - w / 2:.1f}" y="{cy - h / 2:.1f}" width="{w:.1f}" height="{h * .34:.1f}" '
+                f'rx="{rx:.1f}" fill="#fff" opacity=".18"/>'
+                f'<text x="{cx:.1f}" y="{cy + fs * .34:.1f}" text-anchor="middle" '
+                f'font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="{fs}" '
+                f'letter-spacing=".5" fill="#fff">{text}</text></g>')
+
+    s = []
+
+    # короб побольше — с наклейкой Wildberries
+    bx, by, bw, bd, bh = 168, 150, 128, 92, 118
+    Pb = lambda X, Y, Z: pt(bx, by, X, Y, Z)
+    s.append(shadow(bx, by, bw, bd))
+    box_b, _ = iso_box(bx, by, bw, bd, bh, light=False)
+    s.append(box_b)
+    bsx, bsy = Pb(bw * .60, bd * .12, bh)
+    s.append(sticker(bsx, bsy - 6, 66, 30, -16, "#7C1FD6", "WB", 18))
+
+    # короб поменьше — с наклейкой Ozon
+    sx, sy, sw, sd, sh = 358, 224, 82, 60, 72
+    Ps = lambda X, Y, Z: pt(sx, sy, X, Y, Z)
+    s.append(shadow(sx, sy, sw, sd))
+    box_s, _ = iso_box(sx, sy, sw, sd, sh, light=True)
+    s.append(box_s)
+    ssx, ssy = Ps(sw * .58, sd * .14, sh)
+    s.append(sticker(ssx, ssy - 6, 62, 24, -14, "#0468FF", "OZON", 12))
+
+    return doc("Упаковка для маркетплейсов: короба под отправку Wildberries и Ozon", "".join(s), bg="b")
 
 
 def p_floor():

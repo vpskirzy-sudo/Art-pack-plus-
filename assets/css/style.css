@@ -306,13 +306,14 @@ ul{ margin:0; padding:0; list-style:none; }
   transition:transform .45s var(--ease), box-shadow .45s var(--ease), border-color .45s var(--ease);
 }
 .card--kraft::after{ content:none; }             /* верхнюю полосу тут заменяет лента */
-.card--kraft::before{                             /* рёбра гофры по краям короба */
+.card--kraft::before{                             /* гофра по всей лицевой стороне короба */
   content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background:
-    repeating-linear-gradient(90deg, rgba(0,0,0,.20) 0 3px, rgba(255,255,255,.13) 3px 5px, transparent 5px 9px) left/9px 100% no-repeat,
-    repeating-linear-gradient(90deg, rgba(0,0,0,.20) 0 3px, rgba(255,255,255,.13) 3px 5px, transparent 5px 9px) right/9px 100% no-repeat,
+    repeating-linear-gradient(90deg, rgba(0,0,0,.32) 0 2.6px, rgba(255,255,255,.17) 2.6px 4.2px, transparent 4.2px 7px) 0 0/100% 100% no-repeat,
+    repeating-linear-gradient(90deg, rgba(0,0,0,.34) 0 3px, rgba(255,255,255,.18) 3px 5px, transparent 5px 9px) left/12px 100% no-repeat,
+    repeating-linear-gradient(90deg, rgba(0,0,0,.34) 0 3px, rgba(255,255,255,.18) 3px 5px, transparent 5px 9px) right/12px 100% no-repeat,
     linear-gradient(180deg, rgba(255,255,255,.22), transparent 38%);
-  opacity:.8;
+  opacity:.85;
 }
 .card.card--kraft:hover{
   transform:translateY(-9px) rotate(-.6deg) scale(1.015);
