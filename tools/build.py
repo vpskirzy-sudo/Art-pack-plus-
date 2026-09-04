@@ -19,7 +19,8 @@ SRC = os.path.join(ROOT, "src")
 
 # --- Контактные данные: единственный источник правды ----------------------
 COMPANY   = "Арт-Пак Плюс"
-LEGAL     = "ООО «Арт-Пак Плюс»"
+LEGAL     = "ООО «Арт-Пак Плюс»"                      # для <title> и <meta> — только текст
+LEGAL_HTML = 'ООО «Арт-Пак <span class="brand-plus">Плюс</span>»'  # для видимого текста на странице
 TAGLINE   = "Производство упаковки из гофрокартона"
 PHONES    = [("8 (017) 547 44 44", "+375175474444"),
              ("8 (044) 517 44 45", "+375445174445"),
@@ -152,7 +153,7 @@ def footer():
             {LOGO_MARK}
             <span class="logo__txt"><span class="logo__name">Арт-Пак <b>Плюс</b></span></span>
           </a>
-          <p class="footer__about">{LEGAL} — производство гофротары и гофроупаковки
+          <p class="footer__about">{LEGAL_HTML} — производство гофротары и гофроупаковки
             полного цикла: от конструкции и печати до доставки на ваш склад.</p>
         </div>
         <div>
@@ -174,7 +175,7 @@ def footer():
         </div>
       </div>
       <div class="footer__bottom">
-        <span>© <span data-year>2026</span> {LEGAL}. УНП {UNP}</span>
+        <span>© <span data-year>2026</span> {LEGAL_HTML}. УНП {UNP}</span>
         <span>Все права защищены</span>
       </div>
     </div>
@@ -220,7 +221,7 @@ def render(name):
                   lambda m: icon(m.group(1), m.group(2) or ""), body)
     body = (body.replace("{{email}}", EMAIL).replace("{{fax}}", FAX)
                 .replace("{{address}}", ADDRESS).replace("{{hours}}", HOURS)
-                .replace("{{unp}}", UNP).replace("{{legal}}", LEGAL)
+                .replace("{{unp}}", UNP).replace("{{legal}}", LEGAL_HTML)
                 .replace("{{phones}}", phones_html())
                 .replace("{{phone1}}", PHONES[0][0]).replace("{{tel1}}", PHONES[0][1]))
     html = LAYOUT.format(title=title, desc=desc, header=header(name), body=body, footer=footer())

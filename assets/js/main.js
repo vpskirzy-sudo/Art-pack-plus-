@@ -123,8 +123,9 @@
     });
   }
 
-  /* --- Аккордеон ---------------------------------------------------------- */
+  /* --- Аккордеон: обычный, по клику («Услуги», «Оборудование») ----------- */
   $$('.acc__btn').forEach(function (btn) {
+    if (btn.closest('.acc--frame')) return;   // у рамки на «О компании» своя механика ниже
     btn.addEventListener('click', function () {
       var item = btn.closest('.acc__item');
       var open = item.classList.contains('is-open');
@@ -133,6 +134,28 @@
         $('.acc__btn', i).setAttribute('aria-expanded', 'false');
       });
       if (!open) { item.classList.add('is-open'); btn.setAttribute('aria-expanded', 'true'); }
+    });
+  });
+
+  /* --- Аккордеон-рамка на «О компании»: раскрывается наведением ----------
+     Курсор навёлся на вкладку — она открывается, предыдущая сама
+     складывается. Клик и фокус с клавиатуры работают так же — без мыши
+     навести панель нельзя, поэтому это не единственный способ её открыть.
+     ---------------------------------------------------------------------- */
+  $$('.acc--frame').forEach(function (acc) {
+    var items = $$('.acc__item', acc);
+    var openItem = function (item) {
+      items.forEach(function (i) {
+        var open = i === item;
+        i.classList.toggle('is-open', open);
+        $('.acc__btn', i).setAttribute('aria-expanded', String(open));
+      });
+    };
+    items.forEach(function (item) {
+      var btn = $('.acc__btn', item);
+      item.addEventListener('mouseenter', function () { openItem(item); });
+      btn.addEventListener('focus', function () { openItem(item); });
+      btn.addEventListener('click', function (e) { e.preventDefault(); openItem(item); });
     });
   });
 

@@ -144,6 +144,46 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('пустой необязательный e-mail не блокирует отправку',
      await p.locator('#f-email').evaluate(e => !e.closest('.field').classList.contains('has-error')));
 
+  console.log('Страница «О компании»:');
+  await p.setViewportSize({ width: 1440, height: 1100 });
+  await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
+  ok('заголовок в шапке страницы начинается там же, где заголовок героя на главной', await (async () => {
+      const pheadX = await p.locator('.phead h1').evaluate(e => e.getBoundingClientRect().left);
+      await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+      const heroX = await p.locator('.hero__title').evaluate(e => e.getBoundingClientRect().left);
+      await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
+      return Math.abs(pheadX - heroX) < 1; })());
+  ok('«Плюс» в заголовке — фирменный оранжевый', await p.locator('.phead h1 .brand-plus')
+      .evaluate(e => getComputedStyle(e).color === 'rgb(224, 123, 38)'));
+  ok('«Плюс» в подвале — тот же оранжевый', await p.locator('.footer .brand-plus').first()
+      .evaluate(e => getComputedStyle(e).color === 'rgb(224, 123, 38)'));
+  ok('заголовок «Полный цикл на своей площадке» мельче обычного h2',
+     await p.locator('.h2--tight').evaluate(e => {
+       const probe = document.createElement('h2');
+       probe.className = 'h2'; probe.style.visibility = 'hidden'; probe.textContent = 'x';
+       document.body.appendChild(probe);
+       const base = parseFloat(getComputedStyle(probe).fontSize);
+       probe.remove();
+       return parseFloat(getComputedStyle(e).fontSize) < base;
+     }));
+  ok('плюсиков-разворотов на вкладках «О компании» больше нет',
+     await p.locator('.acc--frame .acc__ico').count() === 0);
+  ok('рамка вкладок угольного цвета, фон — охра/золото', await p.locator('.acc--frame').evaluate(e => {
+      const cs = getComputedStyle(e);
+      return cs.borderTopColor === 'rgb(44, 34, 24)' && cs.backgroundColor === 'rgb(212, 168, 67)';
+  }));
+  ok('по умолчанию открыта первая вкладка', await p.locator('.acc--frame .acc__item').first()
+      .evaluate(e => e.classList.contains('is-open')));
+  ok('наведение на третью вкладку открывает её и закрывает первую', await (async () => {
+      await p.locator('.acc--frame .acc__item').nth(2).hover();
+      await p.waitForTimeout(200);
+      const thirdOpen = await p.locator('.acc--frame .acc__item').nth(2).evaluate(e => e.classList.contains('is-open'));
+      const firstClosed = await p.locator('.acc--frame .acc__item').first().evaluate(e => !e.classList.contains('is-open'));
+      return thirdOpen && firstClosed; })());
+  ok('панель раскрывается поворотом, а не просто списком (эффект «листа»)',
+     await p.locator('.acc--frame .acc__panel > div').nth(2)
+       .evaluate(e => getComputedStyle(e).transform !== 'none'));
+
   console.log('Мобильное меню:');
   await p.setViewportSize({ width: 390, height: 844 });
   await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });

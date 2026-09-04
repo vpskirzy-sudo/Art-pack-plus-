@@ -51,14 +51,16 @@
   </header>
 <main>
 <section class="phead">
-  <div class="wrap phead__in">
-    <nav class="crumbs" aria-label="Хлебные крошки">
-      <a href="index.html">Главная</a><span class="crumbs__sep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 15 12l-5.5 6.5" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>О компании</span>
-    </nav>
-    <span class="eyebrow">О компании</span>
-    <h1 class="h1">ООО «Арт-Пак Плюс»</h1>
-    <p class="lead">Динамично развивающееся предприятие по производству упаковки из гофрокартона
-      различной конфигурации с многокрасочной флексографической печатью.</p>
+  <div class="wrap">
+    <div class="phead__in">
+      <nav class="crumbs" aria-label="Хлебные крошки">
+        <a href="index.html">Главная</a><span class="crumbs__sep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 15 12l-5.5 6.5" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>О компании</span>
+      </nav>
+      <span class="eyebrow">О компании</span>
+      <h1 class="h1">ООО «Арт-Пак <span class="brand-plus">Плюс</span>»</h1>
+      <p class="lead">Динамично развивающееся предприятие по производству упаковки из гофрокартона
+        различной конфигурации с многокрасочной флексографической печатью.</p>
+    </div>
   </div>
 </section>
 
@@ -67,7 +69,7 @@
     <div class="grid grid--2">
       <div class="reveal">
         <span class="eyebrow">Производство</span>
-        <h2 class="h2">Полный цикл на своей площадке</h2>
+        <h2 class="h2 h2--tight">Полный цикл на своей площадке</h2>
         <p class="lead" style="margin-top:18px">Производственные цеха оснащены современным
           оборудованием — благодаря этому заказы на изготовление гофротары выполняются
           в максимально короткие сроки.</p>
@@ -78,33 +80,36 @@
           партиями — в том числе с нестандартными размерами под конкретный товар.</p>
       </div>
       <div class="reveal">
-        <div class="acc">
+        <!-- Вкладка раскрывается по наведению курсора (плюсики убраны — какая
+             активна, видно по развёрнутой панели), предыдущая при этом сама
+             складывается. Рамка и золотой фон — .acc--frame ниже. -->
+        <div class="acc acc--frame">
           <div class="acc__item is-open">
-            <button class="acc__btn" type="button" aria-expanded="true">Собственные мощности<span class="acc__ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span></button>
+            <button class="acc__btn" type="button" aria-expanded="true">Собственные мощности</button>
             <div class="acc__panel"><div><p>Производственная площадка находится в Заславле, в 20 км
               от Минска. Все ключевые операции — рилёвка, высечка, печать, склейка и сборка —
               выполняются у нас, без передачи заказа подрядчикам.</p></div></div>
           </div>
           <div class="acc__item">
-            <button class="acc__btn" type="button" aria-expanded="false">Многолетний опыт<span class="acc__ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span></button>
+            <button class="acc__btn" type="button" aria-expanded="false">Многолетний опыт</button>
             <div class="acc__panel"><div><p>Предприятие работает с 2016 года. За это время мы
               выпустили упаковку для пищевых производств, торговых сетей, мебельных и
               промышленных предприятий, интернет-магазинов и продавцов маркетплейсов.</p></div></div>
           </div>
           <div class="acc__item">
-            <button class="acc__btn" type="button" aria-expanded="false">Свои конструкторы<span class="acc__ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span></button>
+            <button class="acc__btn" type="button" aria-expanded="false">Свои конструкторы</button>
             <div class="acc__panel"><div><p>Конструкторский отдел рассчитывает короб под вес,
               габарит и способ транспортировки товара, подбирает марку гофрокартона и при
               необходимости изготавливает образец до запуска тиража.</p></div></div>
           </div>
           <div class="acc__item">
-            <button class="acc__btn" type="button" aria-expanded="false">Контроль качества<span class="acc__ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span></button>
+            <button class="acc__btn" type="button" aria-expanded="false">Контроль качества</button>
             <div class="acc__panel"><div><p>Каждая партия проверяется по геометрии, качеству реза
               и совмещению красок. Отгружаем упаковку, готовую к работе на автоматической линии
               заказчика.</p></div></div>
           </div>
           <div class="acc__item">
-            <button class="acc__btn" type="button" aria-expanded="false">Экологичный материал<span class="acc__ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span></button>
+            <button class="acc__btn" type="button" aria-expanded="false">Экологичный материал</button>
             <div class="acc__panel"><div><p>Гофрокартон полностью перерабатывается и не требует
               специальной утилизации — это одна из самых экологичных упаковок для транспортировки
               и хранения товара.</p></div></div>
@@ -209,7 +214,7 @@
     </svg>
             <span class="logo__txt"><span class="logo__name">Арт-Пак <b>Плюс</b></span></span>
           </a>
-          <p class="footer__about">ООО «Арт-Пак Плюс» — производство гофротары и гофроупаковки
+          <p class="footer__about">ООО «Арт-Пак <span class="brand-plus">Плюс</span>» — производство гофротары и гофроупаковки
             полного цикла: от конструкции и печати до доставки на ваш склад.</p>
         </div>
         <div>
@@ -231,7 +236,7 @@
         </div>
       </div>
       <div class="footer__bottom">
-        <span>© <span data-year>2026</span> ООО «Арт-Пак Плюс». УНП 691817655</span>
+        <span>© <span data-year>2026</span> ООО «Арт-Пак <span class="brand-plus">Плюс</span>». УНП 691817655</span>
         <span>Все права защищены</span>
       </div>
     </div>
