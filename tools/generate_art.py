@@ -120,6 +120,10 @@ def defs():
     <rect width="7" height="7" fill="none"/>
     <rect x="0" width="3" height="7" fill="#000" opacity=".18"/>
   </pattern>
+  <linearGradient id="gate" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFBF2"/><stop offset=".55" stop-color="#FFEFD2"/>
+    <stop offset="1" stop-color="#FFD9A2"/>
+  </linearGradient>
   <radialGradient id="glow" cx=".5" cy=".5" r=".5">
     <stop offset="0" stop-color="#FFF6E8" stop-opacity=".95"/>
     <stop offset=".55" stop-color="#FFE3BC" stop-opacity=".35"/>
@@ -281,6 +285,100 @@ def stack(cx, ground_y, w, h, n=2, k=.12):
     return "".join(s)
 
 
+# ------------------------------------------------------- фигуры людей
+def _seg(pts, w, color):
+    """Ломаная с круглыми стыками — из таких собраны руки и ноги."""
+    d = " ".join(("M" if i == 0 else "L") + f" {x:.1f} {y:.1f}" for i, (x, y) in enumerate(pts))
+    return (f'<path d="{d}" fill="none" stroke="{color}" stroke-width="{w:.1f}" '
+            f'stroke-linecap="round" stroke-linejoin="round"/>')
+
+
+def _elbow(sx_, sy_, hx, hy, out):
+    """Точка локтя: середина плечо→кисть, сдвинутая по нормали — рука сгибается."""
+    mx, my = (sx_ + hx) / 2, (sy_ + hy) / 2
+    dx, dy = hx - sx_, hy - sy_
+    L = max(1.0, (dx * dx + dy * dy) ** .5)
+    return mx - dy / L * out, my + dx / L * out
+
+
+def person(cx, ground, h, face=1, hand=None, hat=False, folder=False,
+           dark="#0B141D", rim="#F0B072"):
+    """Силуэт человека в контражуре: тонкая тёплая подсветка контура + тёмная заливка.
+
+    Пропорции ~7,5 голов. face: 1 — вправо, -1 — влево.
+    hand: (x, y) — куда тянется ближняя рука (рукопожатие); None — рука опущена.
+    """
+    r_h   = h * .071
+    y_head = ground - h + r_h
+    y_sh   = ground - h * .82
+    y_hip  = ground - h * .47
+    y_knee = ground - h * .25
+    hx_sh  = h * .122
+
+    def build(color, grow):
+        g = []
+        w_leg, w_arm = h * .072 + grow, h * .050 + grow
+        # ноги
+        g.append(_seg([(cx - h * .045, y_hip), (cx - h * .062, y_knee), (cx - h * .075, ground)], w_leg, color))
+        g.append(_seg([(cx + h * .045, y_hip), (cx + h * .062, y_knee), (cx + h * .080, ground)], w_leg, color))
+        # корпус — сужается от плеч к бёдрам
+        t = grow / 2
+        g.append(f'<polygon points="'
+                 f'{cx - hx_sh - t:.1f},{y_sh - t:.1f} {cx + hx_sh + t:.1f},{y_sh - t:.1f} '
+                 f'{cx + h * .092 + t:.1f},{y_hip + t:.1f} {cx - h * .092 - t:.1f},{y_hip + t:.1f}" '
+                 f'fill="{color}"/>')
+        g.append(_seg([(cx, y_sh), (cx, y_hip)], h * .175 + grow, color))
+        # шея
+        g.append(_seg([(cx + face * h * .006, y_head + r_h * .6), (cx, y_sh)], h * .052 + grow, color))
+        # дальняя рука вдоль тела
+        g.append(_seg([(cx - face * hx_sh, y_sh + h * .02),
+                       (cx - face * (hx_sh + h * .012), y_hip),
+                       (cx - face * (hx_sh + h * .028), y_hip + h * .11)], w_arm, color))
+        # ближняя рука
+        sxp, syp = cx + face * hx_sh, y_sh + h * .02
+        if hand:
+            ex, ey = _elbow(sxp, syp, hand[0], hand[1], face * h * .105)
+            g.append(_seg([(sxp, syp), (ex, ey), (hand[0], hand[1])], w_arm, color))
+        else:
+            g.append(_seg([(sxp, syp), (sxp + face * h * .018, y_hip),
+                           (sxp + face * h * .034, y_hip + h * .11)], w_arm, color))
+        # голова
+        hcx = cx + face * h * .014
+        g.append(f'<circle cx="{hcx:.1f}" cy="{y_head:.1f}" r="{r_h + grow / 2:.1f}" fill="{color}"/>')
+        if hat:
+            rr = r_h + grow / 2
+            g.append(f'<path d="M {hcx - rr * 1.12:.1f} {y_head - rr * .30:.1f} '
+                     f'a {rr * 1.12:.1f} {rr * 1.20:.1f} 0 0 1 {rr * 2.24:.1f} 0 Z" fill="{color}"/>')
+            g.append(f'<rect x="{hcx - rr * 1.42 + (face < 0) * 0:.1f}" y="{y_head - rr * .44:.1f}" '
+                     f'width="{rr * 2.84:.1f}" height="{rr * .34:.1f}" rx="{rr * .17:.1f}" fill="{color}"/>')
+        return "".join(g)
+
+    out = [f'<ellipse cx="{cx:.0f}" cy="{ground:.0f}" rx="{h * .155:.0f}" ry="{h * .026:.0f}" '
+           f'fill="#050A0F" opacity=".40"/>']
+    out.append(f'<g opacity=".85">{build(rim, h * .020)}</g>')   # тонкий контровой контур
+    out.append(build(dark, 0))
+    if folder:
+        fx = cx - face * h * .155
+        out.append(f'<rect x="{fx - h * .045:.1f}" y="{y_hip - h * .01:.1f}" width="{h * .09:.1f}" '
+                   f'height="{h * .12:.1f}" rx="3" fill="{dark}"/>')
+        out.append(f'<rect x="{fx - h * .045:.1f}" y="{y_hip - h * .01:.1f}" width="{h * .09:.1f}" '
+                   f'height="{h * .02:.1f}" fill="{rim}" opacity=".75"/>')
+    return "".join(out)
+
+
+def operator(cx, seat_y, h, dark="#0F1A24", rim="#F0B072"):
+    """Сидящий за рулём погрузчика: голова, торс с наклоном вперёд, рука на руле."""
+    r_h = h * .115
+    y_head = seat_y - h + r_h
+    y_sh = seat_y - h * .70
+    def build(color, grow):
+        g = [_seg([(cx - h * .05, seat_y - h * .10), (cx, y_sh)], h * .30 + grow, color),
+             f'<circle cx="{cx + h * .05:.1f}" cy="{y_head:.1f}" r="{r_h + grow / 2:.1f}" fill="{color}"/>',
+             _seg([(cx + h * .08, y_sh + h * .06), (cx + h * .30, y_sh + h * .16)], h * .085 + grow, color)]
+        return "".join(g)
+    return f'<g opacity=".55">{build(rim, h * .022)}</g>' + build(dark, 0)
+
+
 # ------------------------------------------------------------------ слайд 1
 def slide_production():
     """Гофрокороба едут по рольгангу из открытых ворот контейнера — «от нас к клиенту»."""
@@ -297,56 +395,146 @@ def slide_production():
 
 
 # ------------------------------------------------------------------ слайд 2
-def slide_print():
-    """Флексопечать: печатные секции линии и отпечатанные короба на выходе."""
-    C, HW = 60, 45
-    s = [hall(racks=False)]
-    # печатные секции стоят там же, где стеллажи в 1-м слайде — проверенная сетка
-    for i in range(6):
-        f = 0.10 + (1.55 - 0.10) * (i / 5) ** 1.85
-        for sgn in (-1, 1):
-            s.append(machine(sgn * 560, f, half=145, height=400))
-            # шкала красок 1–4 на боковине секции
-            if f > .45:
-                x0 = sx(sgn * 560 - 110, f)
-                for j, c in enumerate((ACCENT, BLUE_LT, "#EFE7D8", "#1E2A34")):
-                    s.append(rect(x0 + j * 58 * f, sy(120, f), 44 * f, 40 * f, c,
-                                  min(.9, .3 + .55 * f), 4))
-    s.append(conveyor(center=C, halfw=HW))
-    plan = [(0.25, -.30), (0.38, .34), (0.60, -.28), (0.95, .30), (1.55, -.24), (2.70, .22), (5.20, -.16)]
-    for i, (f, jit) in enumerate(plan):
-        w = 62 * f
-        s.append(box(sx(C + jit * HW, f), sy(H_BELT, f), w, w * 0.68,
-                     k=.04 + .09 * min(f / 2.6, 1.0), light=i % 2 == 0, printed=True))
-    return svg("Многокрасочная флексографическая печать на гофроупаковке", "\n".join(s))
+def slide_truck():
+    """Погрузка фуры: погрузчик заводит паллету с гофротарой в открытый прицеп."""
+    VX, VY = 2500, 430                       # своя точка схода: прицеп уходит вправо
+    GY = 748                                 # уровень пола (низ колёс)
 
+    def to_side(x, y, xr):
+        t = (xr - x) / (VX - x)
+        return xr, y + (VY - y) * t
 
-def slide_equipment():
-    """Цех оборудования: ряд станков и свободный проезд — новое и б/у оборудование."""
-    s = [hall(racks=False)]
+    BODY, BODY_D, BODY_L = "#A9B8C6", "#78899A", "#D3DDE5"
+    RX0, RX1, RY0, RY1 = 900, 1300, 176, 606      # задняя плоскость кузова
+
+    s = [rect(0, 0, W, H, "url(#air)")]
+    s.append(poly([(0, 430), (W, 430), (W, H), (0, H)], "url(#conc)"))
+    s.append(f'<ellipse cx="760" cy="404" rx="640" ry="200" fill="url(#glow)" opacity=".7"/>')
+    s.append(rect(0, 0, W, 150, STEEL_XD, .72))            # козырёк дока
+    s.append(rect(0, 142, W, 12, ACCENT, .40))
+    for x, w_, hgt in ((70, 132, 104), (216, 104, 80), (334, 116, 96)):   # штабели вдали
+        s.append(rect(x, 430 - hgt, w_, hgt, K_FRONT, .26))
+        s.append(rect(x, 430 - hgt, w_, hgt * .14, K_TOP, .26))
+
+    # --- прицеп ------------------------------------------------------------
+    tr, br = to_side(RX1, RY0, W), to_side(RX1, RY1, W)
+    s.append(poly([(RX1, RY0), tr, br, (RX1, RY1)], BODY))                 # боковина
+    s.append(poly([(RX1, RY0), tr, (tr[0], tr[1] + 26), (RX1, RY0 + 30)], BODY_L))
+    s.append(poly([(RX1, RY1 - 74), br, (br[0], br[1] - 60), (RX1, RY1)], BODY_D, .8))
+    s.append(poly([(RX1, RY1 - 92), (br[0], br[1] - 78), (br[0], br[1] - 62), (RX1, RY1 - 76)], ACCENT, .75))
+    s.append(poly([(RX1, RY0), tr, br, (RX1, RY1)], "#0A1420", .12))
+    s.append(rect(RX0, RY0, RX1 - RX0, RY1 - RY0, BODY))                   # задняя стенка
+    s.append(rect(RX0, RY0, RX1 - RX0, 30, BODY_L))
+    s.append(rect(RX0, RY1 - 74, RX1 - RX0, 74, BODY_D, .85))
+    s.append(rect(RX0, RY1 - 92, RX1 - RX0, 18, ACCENT, .8))
+    # проём и груз внутри
+    OX0, OX1, OY0, OY1 = 934, 1266, 210, RY1 - 96
+    s.append(rect(OX0, OY0, OX1 - OX0, OY1 - OY0, "#0D1721"))
+    for x, w_, hgt in ((944, 100, 250), (1052, 96, 214), (1156, 102, 236)):
+        s.append(rect(x, OY1 - hgt, w_, hgt, K_FRONT, .52))
+        s.append(rect(x, OY1 - hgt, w_, hgt * .10, K_TOP, .52))
+        s.append(rect(x, OY1 - 20, w_, 20, "#6E4E23", .55))
+    s.append(rect(OX0, OY0, OX1 - OX0, OY1 - OY0, "#050C14", .40))
+    s.append(rect(OX0, OY0, OX1 - OX0, 66, "#050C14", .5))
+    # створки распахнуты почти вплотную к бортам — проём остаётся открытым
+    s.append(poly([(RX0, RY0), (836, 158), (836, 664), (RX0, RY1)], BODY_D))
+    s.append(poly([(RX0, RY0), (836, 158), (836, 176), (RX0, RY0 + 16)], BODY_L, .8))
+    s.append(rect(846, 214, 9, 402, BODY_L, .5, 5))
+    s.append(poly([(RX1, RY0), (1340, 186), (1340, 636), (RX1, RY1)], BODY_D, .9))
+    # рама, отбойник, колёса
+    s.append(rect(RX0, RY1, W - RX0, 26, STEEL_XD))
+    s.append(rect(RX0 + 24, RY1 + 62, 330, 26, STEEL_DK, 1, 6))
+    for x in (RX0 + 52, RX0 + 300):
+        s.append(rect(x, RY1 + 26, 18, 40, STEEL_DK))
     for i in range(7):
-        f = 0.085 + (1.9 - 0.085) * (i / 6) ** 1.85
-        for sgn in (-1, 1):
-            # правый ряд чуть глубже левого — кадр перестаёт быть зеркальным
-            ff = f if sgn < 0 else f * 0.82
-            s.append(machine(sgn * 560, ff, half=150, height=390 if i % 2 else 340,
-                             panel=ff > .35))
-    # разметка проезда — строго внутри проезда
-    for i in range(11):
-        f = 0.14 + (4.2 - 0.14) * (i / 10) ** 2.0
-        s.append(rect(sx(-60, f), sy(0, f), 120 * f, max(2, 4.5 * f), "#EFE6D6",
-                      min(.42, .12 + .26 * f), 3))
-    # штабели готовой продукции стоят на полу проезда
-    s.append(stack(sx(-150, 1.30), sy(0, 1.30), 190, 128, n=2))
-    s.append(stack(sx(210, 2.30), sy(0, 2.30), 285, 190, n=2))
-    return svg("Производственная линия — продажа нового и б/у оборудования", "\n".join(s))
+        s.append(rect(RX0 + 30 + i * 48, RY1 + 62, 24, 26, ACCENT, .9))
+    for wx, wr in ((1386, 60), (1516, 60)):
+        s.append(f'<circle cx="{wx}" cy="{GY - wr}" r="{wr}" fill="#0E1821"/>')
+        s.append(f'<circle cx="{wx}" cy="{GY - wr}" r="{wr * .40:.0f}" fill="{STEEL_LT}" opacity=".8"/>')
+    s.append(f'<ellipse cx="1230" cy="{GY - 2}" rx="330" ry="26" fill="#050A0F" opacity=".34"/>')
+
+    # --- погрузчик ---------------------------------------------------------
+    s.append(f'<ellipse cx="540" cy="{GY - 4}" rx="200" ry="26" fill="#050A0F" opacity=".34"/>')
+    s.append(rect(398, 566, 262, 142, STEEL_DK, 1, 10))                    # корпус
+    s.append(rect(398, 566, 262, 20, STEEL_LT, .40, 8))
+    s.append(rect(410, 500, 150, 70, STEEL_XD, 1, 8))                      # спинка сиденья
+    s.append(operator(506, 566, 148))
+    for x in (416, 632):                                                   # стойки защитной крыши
+        s.append(rect(x, 404, 22, 166, STEEL_DK))
+    s.append(rect(404, 386, 262, 22, STEEL_DK, 1, 6))
+    s.append(f'<circle cx="535" cy="374" r="10" fill="{ACCENT}"/>')
+    s.append(f'<circle cx="535" cy="374" r="24" fill="{ACCENT}" opacity=".30"/>')
+    s.append(rect(660, 352, 22, 372, STEEL_DK))                            # мачта
+    s.append(rect(686, 366, 16, 358, STEEL_DK, .75))
+    for wx, wr in ((452, 46), (630, 38)):
+        s.append(f'<circle cx="{wx}" cy="{GY - wr}" r="{wr}" fill="#0E1821"/>')
+        s.append(f'<circle cx="{wx}" cy="{GY - wr}" r="{wr * .38:.0f}" fill="{STEEL}"/>')
+    # вилы с паллетой, поднятой на уровень пола прицепа
+    s.append(rect(700, 596, 210, 13, STEEL_LT, .9, 3))
+    s.append(rect(700, 640, 13, 84, STEEL_DK, .9))
+    s.append(rect(714, 566, 228, 30, "#6E4E23"))
+    s.append(box(828, 566, 224, 132, k=.09, light=False))
+    s.append(box(820, 434, 202, 122, k=.09, light=True))
+    s.append(rect(0, 0, W, H, "url(#warm)", .7))
+    s.append(rect(0, 0, W, H, "url(#vigx)"))
+    s.append(rect(0, 0, W, H, "url(#vig)"))
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
+            f'preserveAspectRatio="xMidYMid slice" role="img" '
+            f'aria-label="Погрузчик загружает паллету с гофроупаковкой в фуру">\n'
+            f'  <title>Отгрузка: погрузчик заводит паллету с гофротарой в прицеп</title>\n'
+            f'  <defs>{defs()}</defs>\n' + "\n".join(s) + '\n</svg>\n')
+
+
+def slide_people():
+    """Сотрудники и заказчик на складе против света — приёмка партии."""
+    GY = 744
+    s = [rect(0, 0, W, H, "url(#air)")]
+    s.append(poly([(0, 430), (W, 430), (W, H), (0, H)], "url(#conc)"))
+    # ворота как единственный источник света: мягкая, а не «вырезанная» форма
+    s.append(f'<ellipse cx="874" cy="330" rx="430" ry="330" fill="url(#glow)" opacity=".75"/>')
+    s.append(rect(646, 136, 456, 302, "#2B3946", .92, 8))         # рама ворот
+    s.append(rect(658, 148, 432, 288, "url(#gate)"))              # дневной свет в проёме
+    s.append(rect(658, 148, 432, 22, "#FFFDF7", .75))
+    s.append(f'<ellipse cx="874" cy="452" rx="330" ry="46" fill="#FFF3DE" opacity=".38"/>')
+    s.append(f'<ellipse cx="874" cy="700" rx="430" ry="96" fill="#FFE9C8" opacity=".18"/>')
+    # стеллажи по бокам — тёмная рама кадра
+    for x0, w_, top in ((0, 262, 158), (272, 170, 220), (1180, 172, 212), (1372, 228, 150)):
+        s.append(rect(x0, top, w_, 430 - top, STEEL_XD, .84))
+        for lvl in range(3):
+            yy = top + 44 + lvl * ((430 - top) / 3.1)
+            s.append(rect(x0, yy, w_, 15, ACCENT, .38))
+            s.append(rect(x0 + w_ * .08, yy - 44, w_ * .84, 44, K_FRONT, .40))
+    s.append(rect(0, 0, W, 126, STEEL_XD, .80))
+    for i in range(4):
+        s.append(rect(298 + i * 262, 92, 186, 15, "#FFF6E4", .45, 4))
+
+    # штабели на полу — масштаб и глубина
+    s.append(rect(196, GY - 34, 286, 34, "#6E4E23", .95, 4))
+    s.append(box(339, GY - 34, 268, 166, k=.11, light=False))
+    s.append(rect(1330, GY - 28, 236, 28, "#6E4E23", .95, 4))
+    s.append(box(1448, GY - 28, 224, 144, k=.11, light=True))
+    s.append(box(1440, GY - 172, 198, 126, k=.11, light=False))
+
+    # бригадир жмёт руку заказчику, второй сотрудник — чуть в стороне и дальше
+    shake = (886, 572)
+    s.append(person(1238, GY - 16, 278, face=-1, hat=True))       # второй сотрудник — дальше
+    s.append(person(762, GY, 332, face=1, hand=shake, hat=True))  # бригадир
+    s.append(person(1012, GY, 324, face=-1, hand=shake, folder=True))  # заказчик
+    s.append(rect(0, 0, W, H, "url(#warm)", .7))
+    s.append(rect(0, 0, W, H, "url(#vigx)"))
+    s.append(rect(0, 0, W, H, "url(#vig)"))
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
+            f'preserveAspectRatio="xMidYMid slice" role="img" '
+            f'aria-label="Сотрудники «Арт-Пак Плюс» и заказчик у отгруженной партии">\n'
+            f'  <title>Сотрудники и заказчик у партии готовой гофроупаковки</title>\n'
+            f'  <defs>{defs()}</defs>\n' + "\n".join(s) + '\n</svg>\n')
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
     for name, doc in (("hero-1.svg", slide_production()),
-                      ("hero-2.svg", slide_print()),
-                      ("hero-3.svg", slide_equipment())):
+                      ("hero-2.svg", slide_truck()),
+                      ("hero-3.svg", slide_people())):
         with open(os.path.join(OUT, name), "w", encoding="utf-8") as fh:
             fh.write(doc)
         print(f"{name}: {len(doc)} байт")

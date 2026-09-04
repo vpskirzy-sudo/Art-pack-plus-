@@ -249,30 +249,22 @@ ul{ margin:0; padding:0; list-style:none; }
 .slide.is-active .slide__acts { animation:slideUp .8s var(--ease) .48s forwards; }
 @keyframes slideUp{ to{ opacity:1; transform:translateY(0); } }
 
-/* Управление слайдером */
+/* Индикатор слайдера (кнопок перелистывания нет — слайды меняются сами) */
 .hero__ui{
   position:absolute; left:0; right:0; bottom:0; z-index:5;
   border-top:1px solid rgba(255,255,255,.12);
   background:linear-gradient(to top, rgba(6,11,16,.62), rgba(6,11,16,0));
 }
-.hero__ui-in{ display:flex; align-items:center; gap:20px; padding-block:16px; flex-wrap:wrap; }
-.hero__arrows{ display:flex; gap:10px; }
-.hero__arrow{
-  width:46px; height:46px; border-radius:50%;
-  border:1px solid rgba(255,255,255,.26); color:#fff;
-  display:flex; align-items:center; justify-content:center;
-  transition:.25s var(--ease);
-}
-.hero__arrow svg{ width:18px; height:18px; }
-.hero__arrow:hover{ background:var(--accent); border-color:var(--accent); transform:scale(1.06); }
+.hero__ui-in{ display:flex; align-items:center; gap:20px; padding-block:18px; flex-wrap:wrap; }
 .hero__dots{ display:flex; gap:10px; flex:1; min-width:120px; max-width:340px; }
-.hero__dot{ flex:1; height:3px; border-radius:3px; background:rgba(255,255,255,.24); overflow:hidden; }
+.hero__dot{
+  flex:1; height:3px; border-radius:3px; display:block;
+  background:rgba(255,255,255,.24); overflow:hidden; pointer-events:none;
+}
 .hero__dot i{ display:block; height:100%; width:0; background:var(--accent-2); border-radius:3px; }
 .hero__dot.is-active i{ animation:dotFill var(--slide-dur,7s) linear forwards; }
-.hero.is-paused .hero__dot.is-active i{ animation-play-state:paused; }
 @keyframes dotFill{ to{ width:100%; } }
-.hero__count{ font-family:var(--ff-head); font-weight:700; font-size:14px; color:rgba(255,255,255,.7); letter-spacing:.08em; }
-.hero__count b{ color:#fff; font-size:19px; }
+/* Счётчик слайдов убран: положение показывают сами полоски-индикаторы. */
 
 /* --- 7. Полоса преимуществ (под героем) -------------------------------- */
 .marquee{ background:var(--ink-2); color:var(--on-dark); overflow:hidden; border-top:1px solid rgba(255,255,255,.07); }
@@ -476,6 +468,26 @@ ul{ margin:0; padding:0; list-style:none; }
 .cta__in{ position:relative; z-index:2; display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(24px,4vw,56px); align-items:center; }
 .cta__acts{ display:flex; flex-wrap:wrap; gap:14px; margin-top:28px; }
 
+/* --- 15b. Широкая плашка-акцент ---------------------------------------- */
+.band{
+  display:flex; align-items:center; gap:clamp(18px,2.4vw,32px);
+  padding:clamp(22px,2.6vw,34px) clamp(22px,3vw,40px);
+  border-radius:var(--r-lg); background:var(--white);
+  border:1px solid rgba(22,32,43,.08); box-shadow:var(--shadow-s);
+  border-left:4px solid var(--accent);
+}
+.band__ico{
+  width:58px; height:58px; flex:none; border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(140deg, rgba(224,123,38,.15), rgba(201,138,75,.10));
+  color:var(--accent);
+}
+.band__ico svg{ width:28px; height:28px; }
+.band__txt{ flex:1; min-width:0; }
+.band__t{ font-family:var(--ff-head); font-weight:800; font-size:clamp(18px,2vw,23px); letter-spacing:-.01em; }
+.band__d{ margin-top:8px; color:var(--text-soft); font-size:15px; line-height:1.6; max-width:62ch; }
+.band .btn{ flex:none; }
+
 /* --- 16. Хлебные крошки + шапка страницы ------------------------------- */
 .phead{ position:relative; background:var(--ink); color:var(--on-dark); overflow:hidden; padding:clamp(44px,6vw,78px) 0 clamp(40px,5vw,66px); }
 .phead::before{
@@ -495,7 +507,9 @@ ul{ margin:0; padding:0; list-style:none; }
 .phead__in{ position:relative; z-index:2; max-width:820px; }
 .crumbs{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; font-size:13.5px; color:var(--on-dark-dim); margin-bottom:20px; }
 .crumbs a:hover{ color:var(--accent-2); }
-.crumbs span{ opacity:.45; }
+.crumbs__sep{ display:inline-flex; opacity:.42; }
+.crumbs__sep svg{ width:13px; height:13px; }
+.crumbs > span:not(.crumbs__sep){ opacity:.72; }
 .phead .lead{ margin-top:18px; max-width:640px; }
 
 /* --- 17. Подвал -------------------------------------------------------- */
@@ -561,11 +575,14 @@ ul{ margin:0; padding:0; list-style:none; }
 @media (max-width:720px){
   .grid--3,.grid--4{ grid-template-columns:1fr; }
 }
+@media (max-width:860px){
+  .band{ flex-direction:column; align-items:flex-start; }
+  .band .btn{ width:100%; }
+}
 @media (max-width:640px){
   .form__row{ grid-template-columns:1fr; }
   .footer__grid{ grid-template-columns:1fr; }
   .step{ grid-template-columns:56px 1fr; }
-  .hero__count{ display:none; }
   .slide__acts .btn{ flex:1; }
   .logo__sub{ display:none; }
 }

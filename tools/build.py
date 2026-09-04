@@ -79,6 +79,7 @@ ICONS = {
     "spark":    '<path d="M12 2.5 14.2 9l6.5 2.2-6.5 2.2L12 20l-2.2-6.6L3.3 11.2 9.8 9Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/>',
     "layers":   '<path d="m12 3 9 4.5-9 4.5-9-4.5Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="m3 12 9 4.5 9-4.5M3 16.5 12 21l9-4.5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
     "chart":    '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+    "crumb":    '<path d="M9.5 5.5 15 12l-5.5 6.5" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "check":    '<path d="m5 12.5 4.5 4.5L19 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "leaf":     '<path d="M20 4C10 4 4 9 4 16c0 2.2.8 3.6.8 3.6S8 12 19 8c0 0-7 3.6-9.6 11.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
 }

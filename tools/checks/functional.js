@@ -12,18 +12,25 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   const errs = [];
   p.on('pageerror', e => errs.push(e.message));
 
-  console.log('Слайдер:');
+  console.log('Слайдер (только автосмена, кнопок нет):');
   await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+  ok('кнопок перелистывания на странице нет', await p.locator('.hero__arrow').count() === 0);
+  ok('индикатор не кликабелен', await p.locator('.hero__dot').first()
+      .evaluate(e => e.tagName.toLowerCase() !== 'button' && getComputedStyle(e).pointerEvents === 'none'));
   ok('стартует с первого слайда', await p.locator('.slide').first().evaluate(e => e.classList.contains('is-active')));
-  await p.click('.hero__arrow--next');
-  ok('стрелка «вперёд» переключает на 2-й', await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')));
-  ok('счётчик показывает 02', (await p.locator('.hero__count b').textContent()) === '02');
-  await p.click('.hero__arrow--prev');
-  await p.click('.hero__arrow--prev');
-  ok('перелистывание по кругу назад → 3-й слайд', await p.locator('.slide').nth(2).evaluate(e => e.classList.contains('is-active')));
-  await p.locator('.hero__dot').nth(0).click();
-  ok('точка возвращает на 1-й', await p.locator('.slide').nth(0).evaluate(e => e.classList.contains('is-active')));
-  ok('автопрокрутка идёт', await (async () => { await p.waitForTimeout(7600);
+  await p.waitForTimeout(7600);
+  ok('сам переключился на 2-й', await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')));
+  ok('активна вторая полоска-индикатор',
+     await p.locator('.hero__dot').nth(1).evaluate(e => e.classList.contains('is-active')));
+  ok('косой черты «/» в разметке слайдера нет',
+     !(await p.locator('.hero__ui').innerText()).includes('/'));
+  await p.waitForTimeout(7200);
+  ok('сам переключился на 3-й', await p.locator('.slide').nth(2).evaluate(e => e.classList.contains('is-active')));
+  await p.waitForTimeout(7200);
+  ok('после третьего вернулся на первый', await p.locator('.slide').nth(0).evaluate(e => e.classList.contains('is-active')));
+  ok('наведение мышью не останавливает показ', await (async () => {
+      await p.locator('.hero').hover();
+      await p.waitForTimeout(7400);
       return await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')); })());
 
   console.log('Счётчики и анимации:');
@@ -34,6 +41,12 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       await p.waitForTimeout(700);
       return await p.locator('.card').first().evaluate(e => e.classList.contains('is-in')); })());
 
+  console.log('Плашка оборудования на главной:');
+  ok('блок «Продажа нового и б/у оборудования» на месте',
+     (await p.locator('.band__t').textContent()).includes('б/у оборудования'));
+  ok('ведёт в раздел «Оборудование»',
+     (await p.locator('.band a').getAttribute('href')) === 'oborudovanie.html');
+
   console.log('Фильтр каталога:');
   await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
   ok('видны все 9 позиций', await p.locator('.prod:visible').count() === 9);
@@ -43,6 +56,14 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('фильтр «короба и ящики» оставляет 3', await p.locator('.prod:visible').count() === 3);
   await p.click('[data-filter="all"]');
   ok('«Всё» возвращает 9', await p.locator('.prod:visible').count() === 9);
+
+  console.log('Разделители «/»:');
+  await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
+  ok('в хлебных крошках нет косой черты',
+     !(await p.locator('.crumbs').innerText()).includes('/'));
+  ok('сокращение «б/у» сохранено на странице оборудования', await (async () => {
+      await p.goto('file://' + B + 'oborudovanie.html', { waitUntil:'domcontentloaded' });
+      return (await p.locator('h1').innerText()).includes('б/у'); })());
 
   console.log('Аккордеон:');
   await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
