@@ -291,6 +291,95 @@ ul{ margin:0; padding:0; list-style:none; }
 .card__t{ font-family:var(--ff-head); font-weight:800; font-size:18.5px; margin-bottom:10px; letter-spacing:-.01em; }
 .card__d{ color:var(--text-soft); font-size:15px; line-height:1.62; }
 
+/* --- 8b. Крафт-карточки: «Почему заказывают у нас» как картонные короба --
+   Задача — не просто фон сменить, а прочитать «Арт-Пак» буквально: короб,
+   на нём — заводская лента и штамп вместо аккуратной пиктограммы, а текст
+   держится на бирке, как на реальной упаковке. Номер в углу отсылает к
+   «Арт» в названии — короба пронумерованы, как экспонаты. ------------- */
+.grid--4{ counter-reset:artbox; }
+
+.card--kraft{
+  background:linear-gradient(165deg,#DCAE71 0%,#C98A4B 45%,#9C6A32 100%);
+  border-color:rgba(74,48,18,.30);
+  padding:34px 22px 26px;
+  box-shadow:0 10px 24px rgba(70,45,16,.18), inset 0 1px 0 rgba(255,255,255,.16);
+  transition:transform .45s var(--ease), box-shadow .45s var(--ease), border-color .45s var(--ease);
+}
+.card--kraft::after{ content:none; }             /* верхнюю полосу тут заменяет лента */
+.card--kraft::before{                             /* рёбра гофры по краям короба */
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.20) 0 3px, rgba(255,255,255,.13) 3px 5px, transparent 5px 9px) left/9px 100% no-repeat,
+    repeating-linear-gradient(90deg, rgba(0,0,0,.20) 0 3px, rgba(255,255,255,.13) 3px 5px, transparent 5px 9px) right/9px 100% no-repeat,
+    linear-gradient(180deg, rgba(255,255,255,.22), transparent 38%);
+  opacity:.8;
+}
+.card.card--kraft:hover{
+  transform:translateY(-9px) rotate(-.6deg) scale(1.015);
+  box-shadow:0 28px 52px rgba(60,38,12,.32), inset 0 1px 0 rgba(255,255,255,.22);
+  border-color:rgba(224,123,38,.5);
+}
+
+/* лента поперёк угла — держит штамп-иконку */
+.card__tape{
+  position:absolute; top:-7px; left:20px; width:96px; height:34px; z-index:2;
+  background:linear-gradient(102deg, rgba(255,251,243,.94) 0%, rgba(238,226,201,.78) 55%, rgba(255,251,243,.94) 100%);
+  box-shadow:0 3px 8px rgba(58,36,14,.24);
+  transform:rotate(-8deg);
+  transition:transform .45s var(--ease), box-shadow .45s var(--ease);
+}
+.card__tape::before{
+  content:""; position:absolute; inset:0;
+  background:repeating-linear-gradient(102deg, transparent 0 6px, rgba(120,90,50,.14) 6px 7px);
+}
+.card.card--kraft:hover .card__tape{ transform:rotate(-4deg) translate(2px,-3px); box-shadow:0 6px 14px rgba(58,36,14,.30); }
+
+/* штамп вместо пиктограммы */
+.card--kraft .card__ico{
+  position:relative; z-index:3; margin:6px 0 18px;
+  border-radius:50%;
+  background:rgba(255,251,244,.92);
+  border:2px dashed rgba(224,123,38,.6);
+  color:var(--accent);
+  transform:rotate(-8deg);
+  transition:transform .45s var(--ease), background .3s var(--ease);
+}
+.card.card--kraft:hover .card__ico{ transform:rotate(-2deg) scale(1.08); background:#fff; }
+
+/* номер-бирка «Арт. №01» — короба как пронумерованная коллекция */
+.card__num{
+  position:absolute; top:14px; right:14px; z-index:3;
+  font-family:var(--ff-head); font-weight:800; font-size:10.5px;
+  letter-spacing:.08em; color:rgba(58,36,14,.8);
+  padding:4px 9px; border-radius:6px;
+  border:1.3px dashed rgba(58,36,14,.42);
+  background:rgba(255,251,244,.55);
+  transform:rotate(3deg);
+  transition:transform .4s var(--ease), background .3s var(--ease);
+}
+.card--kraft{ counter-increment:artbox; }
+.card__num::before{ content:"Арт. №0" counter(artbox); }
+.card.card--kraft:hover .card__num{ transform:rotate(0deg); background:rgba(255,251,244,.92); }
+
+/* бирка с текстом — светлая, ради читаемости поверх крафта */
+.card__label{
+  position:relative; z-index:3;
+  background:var(--paper);
+  border:1.5px dashed rgba(74,48,18,.34);
+  border-radius:10px;
+  padding:16px 16px 15px;
+  box-shadow:0 8px 18px rgba(58,36,14,.16);
+  transition:transform .4s var(--ease), box-shadow .4s var(--ease);
+}
+.card__label::before{                              /* петля-люверс сверху бирки */
+  content:""; position:absolute; top:-7px; left:20px;
+  width:11px; height:11px; border-radius:50%;
+  background:var(--paper); border:1.5px solid rgba(74,48,18,.34);
+}
+.card.card--kraft:hover .card__label{ transform:translateY(-2px); box-shadow:0 14px 26px rgba(58,36,14,.22); }
+.card--kraft .card__t{ color:var(--text); }
+.card--kraft .card__d{ color:var(--text-soft); }
+
 /* --- 9. Цифры ---------------------------------------------------------- */
 .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(16px,2vw,28px); }
 /* min-width:0 обязателен: длинные слова вроде «флексографической» иначе
