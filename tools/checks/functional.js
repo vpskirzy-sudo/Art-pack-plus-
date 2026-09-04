@@ -1,5 +1,6 @@
 const { chromium } = require('playwright-core');
 const path = require('path');
+const fs = require('fs');
 const B = path.resolve(__dirname, '../..') + '/';
 let pass = 0, fail = 0;
 const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, console.log('  ✗ ' + n)); };
@@ -43,8 +44,14 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       return c === 'rgb(255, 255, 255)'; })());
 
   console.log('Счётчики и анимации:');
+  // Блок цифр на главной убран (осталась только «Продукция» сразу после
+  // крафт-карточек) — счётчик с годом теперь только на странице о компании.
+  await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
   ok('год выводится без разделителя разрядов',
      (await p.locator('[data-count="2016"]').textContent()).trim() === '2016');
+  await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+  ok('блока цифр («2016 / 1–4 / 20 км») на главной больше нет',
+     await p.locator('.stats').count() === 0);
   ok('блоки проявляются при прокрутке', await (async () => {
       await p.evaluate(() => { document.documentElement.style.scrollBehavior='auto'; window.scrollTo(0, 1200); });
       await p.waitForTimeout(700);
@@ -63,8 +70,14 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       const cardsOk = items.length === 4 && items.every(it =>
         it.increment.includes('artbox') && it.content.includes('counter(artbox'));
       return gridOk && cardsOk; })());
-  ok('текст на бирке читаем (тёмный на светлом фоне)', await p.locator('.card__label').first()
+  ok('текст на бирке читаем (тёмный на светлом фоне)', await p.locator('.card--kraft .card__label').first()
       .evaluate(e => getComputedStyle(e).backgroundColor !== 'rgba(0, 0, 0, 0)'));
+  ok('гофра нанесена на всю лицевую сторону короба, а не только на края', await p.locator('.card--kraft')
+      .first().evaluate(e => {
+        const bg = getComputedStyle(e, '::before').backgroundImage;
+        // первый слой без left/right-привязки — значит, полосы идут по всей ширине карточки
+        return bg.split('repeating-linear-gradient').length - 1 >= 3;   // полный фон + 2 усиленные кромки
+      }));
   ok('при наведении короб приподнимается и лента съезжает', await (async () => {
       const card = p.locator('.card--kraft').first();
       const tape = p.locator('.card__tape').first();
@@ -82,6 +95,13 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
      (await p.locator('.band__t').textContent()).includes('б/у оборудования'));
   ok('ведёт в раздел «Оборудование»',
      (await p.locator('.band a').getAttribute('href')) === 'oborudovanie.html');
+
+  console.log('Иллюстрация «Упаковка для маркетплейсов»:');
+  const marketSvg = fs.readFileSync(B + 'assets/img/pr-market.svg', 'utf8');
+  ok('нарисовано два короба (не один) — 5 полигонов на короб, значит минимум 10',
+     (marketSvg.match(/<polygon/g) || []).length >= 10);
+  ok('наклейка WB на большем коробе', marketSvg.includes('>WB<'));
+  ok('наклейка OZON на меньшем коробе', marketSvg.includes('>OZON<'));
 
   console.log('Фильтр каталога:');
   await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
