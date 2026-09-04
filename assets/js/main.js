@@ -42,7 +42,6 @@
   if (hero) {
     var slides = $$('.slide', hero);
     var dots   = $$('.hero__dot', hero);
-    var cur    = $('.hero__count b', hero);
     var idx    = 0, timer = null;
     var DUR    = 7000;
 
@@ -56,7 +55,6 @@
           d.classList.add('is-active');
         }
       });
-      if (cur) cur.textContent = String(idx + 1).padStart(2, '0');
     };
 
     // Тем, кто отключил анимации в системе, слайды не крутим — показываем первый.

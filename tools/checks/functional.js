@@ -20,7 +20,10 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('стартует с первого слайда', await p.locator('.slide').first().evaluate(e => e.classList.contains('is-active')));
   await p.waitForTimeout(7600);
   ok('сам переключился на 2-й', await p.locator('.slide').nth(1).evaluate(e => e.classList.contains('is-active')));
-  ok('счётчик показывает 02', (await p.locator('.hero__count b').textContent()) === '02');
+  ok('активна вторая полоска-индикатор',
+     await p.locator('.hero__dot').nth(1).evaluate(e => e.classList.contains('is-active')));
+  ok('косой черты «/» в разметке слайдера нет',
+     !(await p.locator('.hero__ui').innerText()).includes('/'));
   await p.waitForTimeout(7200);
   ok('сам переключился на 3-й', await p.locator('.slide').nth(2).evaluate(e => e.classList.contains('is-active')));
   await p.waitForTimeout(7200);
@@ -53,6 +56,14 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('фильтр «короба и ящики» оставляет 3', await p.locator('.prod:visible').count() === 3);
   await p.click('[data-filter="all"]');
   ok('«Всё» возвращает 9', await p.locator('.prod:visible').count() === 9);
+
+  console.log('Разделители «/»:');
+  await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
+  ok('в хлебных крошках нет косой черты',
+     !(await p.locator('.crumbs').innerText()).includes('/'));
+  ok('сокращение «б/у» сохранено на странице оборудования', await (async () => {
+      await p.goto('file://' + B + 'oborudovanie.html', { waitUntil:'domcontentloaded' });
+      return (await p.locator('h1').innerText()).includes('б/у'); })());
 
   console.log('Аккордеон:');
   await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
