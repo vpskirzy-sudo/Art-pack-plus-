@@ -451,7 +451,8 @@ ul{ margin:0; padding:0; list-style:none; }
 
 /* --- 10b. Страница подгруппы: иллюстрация и таблица прайса -------------- */
 .pdetail__pic{
-  width:100%; border-radius:var(--r-lg);
+  display:block; width:100%; aspect-ratio:16/10; object-fit:cover;
+  border-radius:var(--r-lg);
   background:linear-gradient(160deg,#EFE6D9,#DFCFB8);
   box-shadow:var(--shadow-m);
 }

@@ -105,7 +105,7 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
 
   console.log('Фильтр каталога:');
   await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
-  ok('видны все 9 позиций', await p.locator('.prod:visible').count() === 9);
+  ok('видны все 10 позиций', await p.locator('.prod:visible').count() === 10);
   await p.click('[data-filter="market"]');
   ok('фильтр «для маркетплейсов» оставляет 1', await p.locator('.prod:visible').count() === 1);
   await p.click('[data-filter="korob"]');
@@ -113,7 +113,7 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   await p.click('[data-filter="material"]');
   ok('фильтр «гофрокартон» оставляет 1', await p.locator('.prod:visible').count() === 1);
   await p.click('[data-filter="all"]');
-  ok('«Всё» возвращает 9', await p.locator('.prod:visible').count() === 9);
+  ok('«Всё» возвращает 10', await p.locator('.prod:visible').count() === 10);
 
   console.log('Каталог: карточки → страницы подгрупп:');
   ok('у каждой карточки есть кнопка «Подробнее»',
@@ -162,7 +162,7 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       const t = await p.locator('.ptext__grid').innerText();
       return t.includes('Wildberries') && t.includes('OZON'); })());
 
-  await p.goto('file://' + B + 'produkciya-obechayki.html', { waitUntil:'domcontentloaded' });
+  await p.goto('file://' + B + 'produkciya-gofrokonteynery.html', { waitUntil:'domcontentloaded' });
   ok('пока прайса нет — показан честный блок «Цена по запросу», а не пустая таблица',
      await p.locator('.ptable__empty').count() === 1 && await p.locator('.ptable').count() === 0);
   ok('на странице подгруппы есть кнопка запроса цены',
