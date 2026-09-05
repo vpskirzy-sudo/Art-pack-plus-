@@ -17,29 +17,31 @@
 # --- Наборы колонок -------------------------------------------------------
 # `group` объединяет соседние колонки под общим заголовком (Цена без НДС),
 # `no` нумеруется автоматически, `photo` подставляет картинку из assets/img.
+# `min` — с какого тиража действует цена в этой колонке. По нему корзина
+# сама выбирает цену для введённого тиража; колонки без `min` ценой не считаются.
 COLS_TIER = [
     {"key": "no",    "title": "№",                "align": "center"},
     {"key": "photo", "title": "Фото",             "align": "center"},
     {"key": "name",  "title": "Номенклатура",     "align": "left"},
-    {"key": "p1",    "title": "от 20 до 300",     "align": "right", "group": "Цена без НДС"},
-    {"key": "p2",    "title": "от 300 до 1000",   "align": "right", "group": "Цена без НДС"},
-    {"key": "p3",    "title": "от 1000 и больше", "align": "right", "group": "Цена без НДС"},
+    {"key": "p1",    "title": "от 20 до 300",     "align": "right", "group": "Цена без НДС", "min": 20},
+    {"key": "p2",    "title": "от 300 до 1000",   "align": "right", "group": "Цена без НДС", "min": 300},
+    {"key": "p3",    "title": "от 1000 и больше", "align": "right", "group": "Цена без НДС", "min": 1000},
 ]
 
 COLS_PIZZA = [
     {"key": "no",    "title": "№",              "align": "center"},
     {"key": "photo", "title": "Фото",           "align": "center"},
     {"key": "name",  "title": "Номенклатура",   "align": "left"},
-    {"key": "p1",    "title": "от 3000 шт.",    "align": "right", "group": "Цена без НДС"},
-    {"key": "p2",    "title": "от 5000 шт.",    "align": "right", "group": "Цена без НДС"},
-    {"key": "p3",    "title": "от 10 000 шт.",  "align": "right", "group": "Цена без НДС"},
+    {"key": "p1",    "title": "от 3000 шт.",    "align": "right", "group": "Цена без НДС", "min": 3000},
+    {"key": "p2",    "title": "от 5000 шт.",    "align": "right", "group": "Цена без НДС", "min": 5000},
+    {"key": "p3",    "title": "от 10 000 шт.",  "align": "right", "group": "Цена без НДС", "min": 10000},
 ]
 
 COLS_FLAT = [
     {"key": "no",    "title": "№",              "align": "center"},
     {"key": "photo", "title": "Фото",           "align": "center"},
     {"key": "name",  "title": "Номенклатура",   "align": "left"},
-    {"key": "price", "title": "Цена без НДС",   "align": "right"},
+    {"key": "price", "title": "Цена без НДС",   "align": "right", "min": 1},
 ]
 
 # Виды гофрокартона — это материал, а не позиция прайса: без цен.

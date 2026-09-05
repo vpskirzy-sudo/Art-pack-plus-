@@ -12,7 +12,7 @@ const fs = require('fs');
   const detail = fs.readdirSync(root)
     .filter(f => /^produkciya-.+\.html$/.test(f))
     .map(f => f.replace(/\.html$/, ''));
-  const pages = ['index','o-kompanii','produkciya','uslugi','oborudovanie','kontakty', ...detail];
+  const pages = ['index','o-kompanii','produkciya','uslugi','oborudovanie','korzina', ...detail];
   const widths = [1600,1440,1366,1280,1200,1100,1024,900,768,600,480,390,360];
   let bad = 0;
   for (const name of pages) {

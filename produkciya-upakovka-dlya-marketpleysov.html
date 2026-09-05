@@ -44,9 +44,12 @@
           <span class="logo__sub">Производство упаковки из гофрокартона</span>
         </span>
       </a>
+      <a class="header__cart" href="korzina.html" aria-label="Корзина" data-cart-target>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h2.3l2.2 9.6a2 2 0 0 0 1.95 1.55h7.05a2 2 0 0 0 1.95-1.5L20.5 8.2H6.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="17.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg><span class="cart-badge" data-cart-badge hidden>0</span>
+      </a>
       <button class="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
-      <nav class="nav" aria-label="Основное меню"><ul class="nav__list"><li><a class="nav__link" href="index.html">Главная</a></li><li><a class="nav__link" href="o-kompanii.html">О компании</a></li><li><a class="nav__link is-active" href="produkciya.html">Продукция</a></li><li><a class="nav__link" href="uslugi.html">Услуги</a></li><li><a class="nav__link" href="oborudovanie.html">Оборудование</a></li><li><a class="nav__link" href="kontakty.html">Контакты и карта</a></li></ul></nav>
-      <a class="btn btn--primary btn--sm header__cta" href="kontakty.html#zayavka">Рассчитать заказ</a>
+      <nav class="nav" aria-label="Основное меню"><ul class="nav__list"><li><a class="nav__link" href="index.html">Главная</a></li><li><a class="nav__link" href="o-kompanii.html">О компании</a></li><li><a class="nav__link is-active" href="produkciya.html">Продукция</a></li><li><a class="nav__link" href="uslugi.html">Услуги</a></li><li><a class="nav__link" href="oborudovanie.html">Оборудование</a></li><li><a class="nav__link nav__link--cart" href="korzina.html">Корзина<svg class="nav__cart-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h2.3l2.2 9.6a2 2 0 0 0 1.95 1.55h7.05a2 2 0 0 0 1.95-1.5L20.5 8.2H6.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="17.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg><span class="cart-badge" data-cart-badge hidden>0</span></a></li></ul></nav>
+      <a class="btn btn--primary btn--sm header__cta" href="korzina.html#zayavka">Рассчитать заказ</a>
     </div>
   </header>
 <main>
@@ -73,7 +76,7 @@
         <h2 class="h2 h2--tight">Что это за упаковка</h2>
         <p class="lead" style="margin-top:18px">Каждая площадка (OZON, Wildberries, Яндекс.Маркет и др.) имеет свои строгие правила упаковки, которые необходимо соблюдать, чтобы избежать штрафов и проблем с логистикой. Предлагаем самосборные короба, гофрокороба и гофроящики для товаров разных категорий, а короба для одежды и фирменные пакеты изготавливаем по индивидуальному заказу.</p>
         <div class="cta__acts" style="margin-top:22px">
-          <a class="btn btn--primary" href="kontakty.html#zayavka">Рассчитать заказ <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          <a class="btn btn--primary" href="#price">Перейти к деталям <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
           <a class="btn btn--outline" href="produkciya.html">Вся продукция</a>
         </div>
       </div>
@@ -81,16 +84,25 @@
   </div>
 </section>
 
-<section class="section section--paper">
+<section class="section section--paper" id="price">
   <div class="wrap">
     <div class="head reveal">
       <span class="eyebrow">Прайс</span>
       <h2 class="h2">Номенклатура и цены</h2>
+      <p class="lead">Выберите позицию, нажмите «плюс» рядом с номером, укажите тираж — и добавьте в корзину.</p>
     </div>
     <div class="ptable__wrap reveal">
         <table class="ptable">
           <thead><tr><th style="text-align:center">№</th><th style="text-align:center">Фото</th><th style="text-align:left">Номенклатура</th><th style="text-align:right">Цена без НДС</th></tr></thead>
-          <tbody><tr><td class="ptable__c ptable__c--no" style="text-align:center" data-label="№">1</td><td class="ptable__c ptable__c--photo" style="text-align:center" data-label="Фото"><img class="ptable__photo" src="assets/img/pr-photo-market.jpg" alt="Коробка для маркетплейсов 700×400×435" loading="lazy"></td><td class="ptable__c ptable__c--name" style="text-align:left" data-label="Номенклатура">Коробка для маркетплейсов 700×400×435</td><td class="ptable__c ptable__c--price" style="text-align:right" data-label="Цена без НДС">1,80 руб.</td></tr></tbody>
+          <tbody><tr class="ptable__row" data-id="upakovka-dlya-marketpleysov-1" data-name="Коробка для маркетплейсов 700×400×435" data-photo="assets/img/pr-photo-market.jpg" data-size="700×400×435" data-cat="Упаковка для маркетплейсов" data-url="produkciya-upakovka-dlya-marketpleysov.html" data-tiers='[[1, "1,80 руб."]]'><td class="ptable__c ptable__c--no" style="text-align:center" data-label="№"><span class="ptable__n">1</span><button class="padd" type="button" aria-expanded="false" aria-controls="add-upakovka-dlya-marketpleysov-1" aria-label="Добавить позицию 1 в корзину"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg><span class="padd__t">В корзину</span></button></td><td class="ptable__c ptable__c--photo" style="text-align:center" data-label="Фото"><img class="ptable__photo" src="assets/img/pr-photo-market.jpg" alt="Коробка для маркетплейсов 700×400×435" loading="lazy"></td><td class="ptable__c ptable__c--name" style="text-align:left" data-label="Номенклатура">Коробка для маркетплейсов 700×400×435</td><td class="ptable__c ptable__c--price" style="text-align:right" data-label="Цена без НДС">1,80 руб.</td></tr><tr class="pform" id="add-upakovka-dlya-marketpleysov-1"><td colspan="4">
+          <div class="pform__wrap"><div class="pform__in">
+            <label class="pform__field"><span class="pform__lbl">Тираж, шт.</span>
+              <input class="pform__qty" type="number" inputmode="numeric" step="1"
+                     min="1" value="1" aria-label="Тираж, шт."></label>
+            <p class="pform__calc" data-calc></p>
+            <button class="btn btn--primary btn--sm pform__go" type="button">
+              В корзину <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h2.3l2.2 9.6a2 2 0 0 0 1.95 1.55h7.05a2 2 0 0 0 1.95-1.5L20.5 8.2H6.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="17.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg></button>
+          </div></div></td></tr></tbody>
         </table>
       </div>
       <p class="ptable__note">Цена указана за штуку, без НДС. Отгрузка со склада в Заславле.</p>
@@ -128,7 +140,7 @@
           <p class="lead" style="margin-top:16px">Изготовим по вашим габаритам и чертежу.
             Пришлите размеры товара — предложим конструкцию и посчитаем тираж.</p>
           <div class="cta__acts">
-            <a class="btn btn--primary" href="kontakty.html#zayavka">Оставить заявку <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            <a class="btn btn--primary" href="korzina.html#zayavka">Оставить заявку <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
             <a class="btn btn--ghost" href="uslugi.html">Наши услуги</a>
           </div>
         </div>
@@ -170,7 +182,7 @@
         </div>
         <div>
           <div class="footer__t">Компания</div>
-          <ul class="footer__list"><li><a href="o-kompanii.html">О компании</a></li><li><a href="produkciya.html">Продукция</a></li><li><a href="uslugi.html">Услуги</a></li><li><a href="oborudovanie.html">Оборудование</a></li><li><a href="kontakty.html">Контакты и карта</a></li></ul>
+          <ul class="footer__list"><li><a href="o-kompanii.html">О компании</a></li><li><a href="produkciya.html">Продукция</a></li><li><a href="uslugi.html">Услуги</a></li><li><a href="oborudovanie.html">Оборудование</a></li><li><a href="korzina.html">Корзина</a></li></ul>
         </div>
         <div>
           <div class="footer__t">Контакты</div>
