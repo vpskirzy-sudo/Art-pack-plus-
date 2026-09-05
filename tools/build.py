@@ -11,6 +11,7 @@
 Пересборка:       python3 tools/build.py   (готовые .html кладутся в корень)
 """
 
+import json
 import os
 import re
 
@@ -38,7 +39,7 @@ NAV = [("index.html",       "Главная"),
        ("produkciya.html",  "Продукция"),
        ("uslugi.html",      "Услуги"),
        ("oborudovanie.html", "Оборудование"),
-       ("kontakty.html",    "Контакты и карта")]
+       ("korzina.html",     "Корзина")]
 
 PAGES = {
     "index.html":       ("Производство упаковки из гофрокартона в Минске — " + LEGAL,
@@ -56,9 +57,9 @@ PAGES = {
     "oborudovanie.html": ("Оборудование — продажа нового и б/у оборудования",
                           "Наш производственный парк и продажа нового и б/у оборудования "
                           "для производства гофротары."),
-    "kontakty.html":    ("Контакты и карта — " + LEGAL,
-                         "Телефоны, e-mail, факс и адрес производства ООО «Арт-Пак Плюс»: "
-                         "Минский р-н, г. Заславль, ул. Вокзальная, 8Б."),
+    "korzina.html":     ("Корзина и заявка на расчёт — " + LEGAL,
+                         "Соберите заказ из каталога и отправьте заявку на расчёт: "
+                         "имя, телефон и e-mail — остальное подставится из корзины."),
 }
 
 # --- Иконки (подставляются как {{icon:имя}}) ------------------------------
@@ -66,6 +67,7 @@ ICONS = {
     "arrow":    '<path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "left":     '<path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "right":    '<path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    "down":     '<path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "up":       '<path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "plus":     '<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
     "phone":    '<path d="M6.6 3h3l1.5 4-2 1.4a12 12 0 0 0 5.5 5.5l1.4-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.6 5.2 2 2 0 0 1 6.6 3Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
@@ -84,6 +86,8 @@ ICONS = {
     "chart":    '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
     "crumb":    '<path d="M9.5 5.5 15 12l-5.5 6.5" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "check":    '<path d="m5 12.5 4.5 4.5L19 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    "cart":     '<path d="M3.5 5h2.3l2.2 9.6a2 2 0 0 0 1.95 1.55h7.05a2 2 0 0 0 1.95-1.5L20.5 8.2H6.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="17.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/>',
+    "trash":    '<path d="M4.5 6.8h15M9.6 6.8V4.6h4.8v2.2M7 6.8l.9 13a1.6 1.6 0 0 0 1.6 1.5h5a1.6 1.6 0 0 0 1.6-1.5l.9-13" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "leaf":     '<path d="M20 4C10 4 4 9 4 16c0 2.2.8 3.6.8 3.6S8 12 19 8c0 0-7 3.6-9.6 11.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
 }
 
@@ -120,10 +124,17 @@ def topbar():
   </div>'''
 
 
+def nav_item(f, t, active):
+    """Пункт меню. У «Корзины» дополнительно счётчик позиций — его ведёт JS."""
+    cls = "nav__link" + (" is-active" if f == active else "")
+    if f == "korzina.html":
+        cls += " nav__link--cart"
+        t += f'{icon("cart", "nav__cart-ico")}<span class="cart-badge" data-cart-badge hidden>0</span>'
+    return f'<li><a class="{cls}" href="{f}">{t}</a></li>'
+
+
 def header(active):
-    links = "".join(
-        f'<li><a class="nav__link{" is-active" if f == active else ""}" href="{f}">{t}</a></li>'
-        for f, t in NAV)
+    links = "".join(nav_item(f, t, active) for f, t in NAV)
     return f'''{topbar()}
   <header class="header">
     <div class="wrap header__in">
@@ -134,9 +145,12 @@ def header(active):
           <span class="logo__sub">{TAGLINE}</span>
         </span>
       </a>
+      <a class="header__cart" href="korzina.html" aria-label="Корзина" data-cart-target>
+        {icon('cart')}<span class="cart-badge" data-cart-badge hidden>0</span>
+      </a>
       <button class="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
       <nav class="nav" aria-label="Основное меню"><ul class="nav__list">{links}</ul></nav>
-      <a class="btn btn--primary btn--sm header__cta" href="kontakty.html#zayavka">Рассчитать заказ</a>
+      <a class="btn btn--primary btn--sm header__cta" href="korzina.html#zayavka">Рассчитать заказ</a>
     </div>
   </header>'''
 
@@ -262,6 +276,46 @@ def catalog_grid():
     return "\n\n".join(cards)
 
 
+SIZE_RE = re.compile(r"\d{2,4}\s*[×xXхХ*]\s*\d{2,4}\s*[×xXхХ*]\s*\d{2,4}")
+
+
+def esc(s):
+    return (s or "").replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;")
+
+
+def row_size(name):
+    """Габарит из названия позиции — для отдельной колонки в корзине."""
+    m = SIZE_RE.search(name or "")
+    return m.group(0).replace(" ", "") if m else ""
+
+
+def row_tiers(cols, row):
+    """[[тираж, «цена»], …] по колонкам с `min` — из них корзина берёт цену."""
+    return [[col["min"], row[col["key"]]]
+            for col in cols if "min" in col and row.get(col["key"])]
+
+
+def add_button(cat, num):
+    """Плюсик рядом с номером позиции: раскрывает окошко с тиражом."""
+    return (f'<button class="padd" type="button" aria-expanded="false" '
+            f'aria-controls="add-{cat["slug"]}-{num}" '
+            f'aria-label="Добавить позицию {num} в корзину">'
+            f'{icon("plus")}<span class="padd__t">В корзину</span></button>')
+
+
+def add_panel(cat, num, min_qty, span):
+    """Окошко под строкой: тираж, пересчёт цены и кнопка «в корзину»."""
+    return f'''<tr class="pform" id="add-{cat['slug']}-{num}"><td colspan="{span}">
+          <div class="pform__wrap"><div class="pform__in">
+            <label class="pform__field"><span class="pform__lbl">Тираж, шт.</span>
+              <input class="pform__qty" type="number" inputmode="numeric" step="1"
+                     min="{min_qty}" value="{min_qty}" aria-label="Тираж, шт."></label>
+            <p class="pform__calc" data-calc></p>
+            <button class="btn btn--primary btn--sm pform__go" type="button">
+              В корзину {icon('cart')}</button>
+          </div></div></td></tr>'''
+
+
 def price_table(cat):
     """Таблица прайса подгруппы. Пока строк нет — честное «Цена по запросу»."""
     if not cat["rows"]:
@@ -270,7 +324,7 @@ def price_table(cat):
         <p class="ptable__empty-d">Пришлите размеры и тираж — рассчитаем стоимость
           «{cat['name'].lower()}» под вашу задачу и вышлем прайс в тот же день.</p>
         <div class="cta__acts">
-          <a class="btn btn--primary" href="kontakty.html#zayavka">Запросить цену {icon('arrow')}</a>
+          <a class="btn btn--primary" href="korzina.html#zayavka">Запросить цену {icon('arrow')}</a>
           <a class="btn btn--outline" href="tel:{PHONES[0][1]}">{icon('phone')}{PHONES[0][0]}</a>
         </div>
       </div>'''
@@ -281,11 +335,12 @@ def price_table(cat):
     num = 0
     for row in cat["rows"]:
         num += 1
+        tiers = row_tiers(cols, row)
         cells = []
         for col in cols:
             key = col["key"]
             if key == "no":
-                val = str(num)
+                val = f'<span class="ptable__n">{num}</span>' + (add_button(cat, num) if tiers else "")
             elif key == "photo":
                 img = row.get("photo")
                 val = (f'<img class="ptable__photo" src="assets/img/{img}" '
@@ -296,7 +351,20 @@ def price_table(cat):
             cells.append(f'<td class="ptable__c ptable__c--{key}{nw}" '
                          f'style="text-align:{col.get("align", "left")}" '
                          f'data-label="{col["title"]}">{val}</td>')
-        body.append("<tr>" + "".join(cells) + "</tr>")
+
+        if tiers:
+            data = (f' class="ptable__row" data-id="{cat["slug"]}-{num}"'
+                    f' data-name="{esc(row.get("name", ""))}"'
+                    f' data-photo="assets/img/{row.get("photo", "")}"'
+                    f' data-size="{row_size(row.get("name", ""))}"'
+                    f' data-cat="{esc(cat["name"])}"'
+                    f' data-url="produkciya-{cat["slug"]}.html"'
+                    f" data-tiers='{json.dumps(tiers, ensure_ascii=False)}'")
+        else:
+            data = ""
+        body.append(f"<tr{data}>" + "".join(cells) + "</tr>")
+        if tiers:
+            body.append(add_panel(cat, num, tiers[0][0], len(cols)))
 
     note = cat.get("note") or ("Цены указаны без НДС. Итоговая стоимость зависит от тиража, "
                                "марки картона и печати — уточняйте у отдела продаж.")
@@ -387,7 +455,7 @@ def product_page(cat):
         <h2 class="h2 h2--tight">Что это за упаковка</h2>
         <p class="lead" style="margin-top:18px">{cat['long']}</p>
         <div class="cta__acts" style="margin-top:22px">
-          <a class="btn btn--primary" href="kontakty.html#zayavka">Рассчитать заказ {icon('arrow')}</a>
+          <a class="btn btn--primary" href="#price">Перейти к деталям {icon('down')}</a>
           <a class="btn btn--outline" href="produkciya.html">Вся продукция</a>
         </div>
       </div>
@@ -395,11 +463,12 @@ def product_page(cat):
   </div>
 </section>
 
-<section class="section section--paper">
+<section class="section section--paper" id="price">
   <div class="wrap">
     <div class="head reveal">
       <span class="eyebrow">{cat.get("table_eyebrow", "Прайс")}</span>
       <h2 class="h2">{cat.get("table_t", "Номенклатура и цены")}</h2>
+      {'<p class="lead">Выберите позицию, нажмите «плюс» рядом с номером, укажите тираж — и добавьте в корзину.</p>' if cat["rows"] and row_tiers(cat["columns"], cat["rows"][0]) else ''}
     </div>
     {price_table(cat)}
   </div>
@@ -414,7 +483,7 @@ def product_page(cat):
           <p class="lead" style="margin-top:16px">Изготовим по вашим габаритам и чертежу.
             Пришлите размеры товара — предложим конструкцию и посчитаем тираж.</p>
           <div class="cta__acts">
-            <a class="btn btn--primary" href="kontakty.html#zayavka">Оставить заявку {icon('arrow')}</a>
+            <a class="btn btn--primary" href="korzina.html#zayavka">Оставить заявку {icon('arrow')}</a>
             <a class="btn btn--ghost" href="uslugi.html">Наши услуги</a>
           </div>
         </div>

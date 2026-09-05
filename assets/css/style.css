@@ -68,6 +68,8 @@ p{ margin:0; }
 ul{ margin:0; padding:0; list-style:none; }
 
 ::selection{ background:var(--accent); color:#fff; }
+/* Свои display: у .cart-badge и таблиц перебивают браузерный [hidden] — возвращаем. */
+[hidden]{ display:none !important; }
 
 /* --- 3. Утилиты -------------------------------------------------------- */
 .wrap{ width:100%; max-width:var(--wrap); margin-inline:auto; padding-inline:var(--gut); }
@@ -305,50 +307,67 @@ ul{ margin:0; padding:0; list-style:none; }
 
 .card--kraft{
   display:flex; flex-direction:column;
-  background:linear-gradient(165deg,#DCAE71 0%,#C98A4B 45%,#9C6A32 100%);
-  border-color:rgba(74,48,18,.30);
-  padding:30px 26px 22px;
-  box-shadow:0 10px 24px rgba(70,45,16,.18), inset 0 1px 0 rgba(255,255,255,.16);
-  transition:transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease);
+  min-height:clamp(330px,26.5vw,430px);
+  background:#D9AF89;                             /* ровный светлый крафт, как на образце */
+  border:none; border-radius:7px;
+  padding:clamp(24px,2.1vw,30px) clamp(28px,2.5vw,34px) clamp(18px,1.5vw,22px) clamp(20px,1.8vw,26px);
+  box-shadow:0 16px 30px rgba(92,60,26,.20), 0 3px 8px rgba(92,60,26,.12);
+  transition:transform .4s var(--ease), box-shadow .4s var(--ease);
 }
-.card--kraft::after{ content:none; }
-.card--kraft::before{                             /* гофра по всей лицевой стороне панели */
+.card--kraft::before{                             /* лёгкая мятость крафт-бумаги */
   content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background:
-    repeating-linear-gradient(90deg, rgba(0,0,0,.32) 0 2.6px, rgba(255,255,255,.17) 2.6px 4.2px, transparent 4.2px 7px) 0 0/100% 100% no-repeat,
-    repeating-linear-gradient(90deg, rgba(0,0,0,.34) 0 3px, rgba(255,255,255,.18) 3px 5px, transparent 5px 9px) left/12px 100% no-repeat,
-    repeating-linear-gradient(90deg, rgba(0,0,0,.34) 0 3px, rgba(255,255,255,.18) 3px 5px, transparent 5px 9px) right/12px 100% no-repeat,
-    linear-gradient(180deg, rgba(255,255,255,.22), transparent 38%);
-  opacity:.85;
+    radial-gradient(140px 90px at 16% 10%, rgba(255,255,255,.17), transparent 70%),
+    radial-gradient(170px 120px at 84% 66%, rgba(116,72,28,.10), transparent 72%),
+    radial-gradient(110px 80px at 55% 34%, rgba(255,255,255,.10), transparent 70%),
+    linear-gradient(178deg, rgba(255,255,255,.13), rgba(116,72,28,.09));
+}
+.card--kraft::after{                              /* торец панели: видна гофра */
+  content:""; position:absolute; top:0; right:0; bottom:0; left:auto;
+  width:9px; height:auto; z-index:2; transform:none; border-radius:0;
+  border-left:1px solid rgba(108,68,26,.22);
+  background:repeating-linear-gradient(90deg, rgba(116,72,28,.26) 0 1.6px, rgba(255,255,255,.24) 1.6px 3.2px);
 }
 .card.card--kraft:hover{
   transform:translateY(-8px);
-  box-shadow:0 26px 48px rgba(60,38,12,.28), inset 0 1px 0 rgba(255,255,255,.22);
-  border-color:rgba(224,123,38,.5);
+  box-shadow:0 30px 50px rgba(92,60,26,.28), 0 6px 14px rgba(92,60,26,.14);
 }
+.card.card--kraft:hover::after{ transform:none; }  /* оранжевая полоса .card тут не нужна */
 
 .card--kraft .card__t{
-  position:relative; z-index:2; color:var(--text);
-  font-size:21px; line-height:1.22; margin-bottom:12px;
+  position:relative; z-index:3; color:var(--text);
+  font-size:clamp(19px,1.72vw,25px); line-height:1.12; letter-spacing:-.025em;
+  margin-bottom:clamp(14px,1.3vw,19px);
 }
-.card--kraft .card__d{ position:relative; z-index:2; color:#5B4226; }
+.card--kraft .card__d{
+  position:relative; z-index:3; color:#4A2A14;
+  font-size:clamp(14px,1vw,15.5px); line-height:1.5;
+}
 
-/* иконка и номер «Арт. №0X» — внизу панели, вровень, без рамок и бирок */
+/* иконка и номер «Art. №0X» — внизу панели, вровень, без рамок и бирок */
 .card__foot{
-  position:relative; z-index:2;
-  display:flex; align-items:center; justify-content:space-between;
-  margin-top:auto; padding-top:22px;
+  position:relative; z-index:3;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  margin-top:auto; padding-top:26px;
 }
 .card--kraft{ counter-increment:artbox; }
 .card--kraft .card__ico{
-  width:32px; height:32px; margin-bottom:0; border-radius:0; background:none; color:rgba(58,36,14,.55);
+  width:clamp(42px,4.2vw,56px); height:clamp(42px,4.2vw,56px);
+  margin-bottom:0; border-radius:0; background:none; color:rgba(74,42,10,.30);
 }
-.card--kraft .card__ico svg{ width:100%; height:100%; }
+.card--kraft .card__ico svg{ width:100%; height:100%; stroke-width:1.4; }
 .card__num{
-  font-family:var(--ff-head); font-weight:700; font-size:11px;
-  letter-spacing:.08em; color:rgba(58,36,14,.55);
+  font-family:var(--ff-head); font-weight:600; font-size:12px;
+  letter-spacing:.01em; color:rgba(74,42,10,.55);
 }
-.card__num::before{ content:"Арт. №0" counter(artbox); }
+.card__num::before{ content:"Art. №0" counter(artbox); }
+
+/* подпись под набором панелей — как на образце заказчика */
+.sign{
+  margin-top:clamp(18px,2vw,28px); text-align:right;
+  font-family:var(--ff-head); font-weight:700; font-size:clamp(17px,1.6vw,21px);
+  letter-spacing:-.01em; color:var(--text);
+}
 
 /* --- 8c. Тёмные карточки принципов работы («О компании»): спокойный
    тёмно-синий — та же гамма, что у CTA и подвала, без рифлёной текстуры
@@ -460,7 +479,19 @@ ul{ margin:0; padding:0; list-style:none; }
     font-family:var(--ff-head); font-weight:700; font-size:11.5px;
     letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim);
   }
-  .ptable .ptable__c--no{ display:none; }
+  .ptable tbody tr{ display:flex; flex-direction:column; }
+  .ptable .ptable__c--no{ order:9; display:block; border-top:1px solid rgba(22,32,43,.07); padding-top:14px; }
+  .ptable .ptable__c--no::before{ content:none; }
+  .ptable .ptable__n{ display:none; }
+  .ptable .padd{
+    width:100%; height:auto; margin:0; padding:12px 18px; border-radius:100px;
+    background:none; color:var(--text); border-color:rgba(22,32,43,.18);
+    font-family:var(--ff-head); font-weight:700; font-size:14px;
+  }
+  .ptable .padd__t{ display:inline; }
+  .pform__go{ margin-left:0; width:100%; }
+  .pform__qty{ width:100%; }
+  .pform__field{ width:100%; }
   .ptable .ptable__c--photo{ display:block; border-top:0; padding-top:0; }
   .ptable .ptable__c--photo::before{ content:none; }
   .ptable .ptable__c--name{
@@ -505,6 +536,118 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .ptext__after{ margin-top:16px; font-size:14.5px; line-height:1.65; color:var(--text-dim); }
 @media (max-width:860px){ .ptext__grid{ columns:1; } }
+
+/* --- 10d. Корзина: кнопка в прайсе, окошко тиража, счётчик и сама корзина --
+   Заказ собирается прямо в таблице цен: «плюс» у номера позиции раскрывает
+   окошко с тиражом, оттуда позиция улетает в корзину в шапке. Состав заказа
+   хранится в localStorage, поэтому переживает переход между страницами. -- */
+.ptable__c--no{ white-space:nowrap; }
+.ptable__n{ display:inline-block; min-width:14px; }
+.padd{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  width:30px; height:30px; margin-left:10px; padding:0; vertical-align:middle;
+  border-radius:50%; border:1.5px solid rgba(224,123,38,.45);
+  color:var(--accent); background:rgba(224,123,38,.08);
+  transition:transform .25s var(--ease), background .25s var(--ease), color .25s var(--ease);
+}
+.padd svg{ width:15px; height:15px; transition:transform .3s var(--ease); }
+.padd__t{ display:none; }
+.padd:hover{ background:var(--accent); color:#fff; border-color:var(--accent); }
+.padd[aria-expanded="true"]{ background:var(--ink); border-color:var(--ink); color:#fff; }
+.padd[aria-expanded="true"] svg{ transform:rotate(45deg); }   /* плюс превращается в крестик */
+
+/* строка-окошко под позицией: раскрывается перетеканием высоты */
+.ptable .pform > td{ padding:0; border-bottom:0; }
+.ptable tbody tr.pform:hover{ background:none; }
+.pform__wrap{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s var(--ease); }
+.pform.is-open .pform__wrap{ grid-template-rows:1fr; }
+.pform__in{
+  overflow:hidden; display:flex; flex-wrap:wrap; align-items:end; gap:16px 22px;
+}
+.pform.is-open .pform__in{ padding:18px 16px 20px; background:rgba(224,123,38,.055); }
+.pform__field{ display:grid; gap:6px; }
+.pform__lbl{
+  font-family:var(--ff-head); font-weight:700; font-size:11.5px;
+  letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim);
+}
+.pform__qty{
+  width:150px; padding:11px 14px; border-radius:var(--r-sm);
+  border:1.5px solid rgba(22,32,43,.14); background:var(--white);
+  font-family:var(--ff-head); font-weight:700; font-size:15px;
+}
+.pform__qty:focus{ outline:none; border-color:var(--accent); }
+.pform__calc{ font-size:14.5px; color:var(--text-soft); line-height:1.5; }
+.pform__calc b{ color:var(--text); }
+.pform__go{ margin-left:auto; }
+
+/* счётчик позиций на пункте меню и на кнопке-корзине для узких экранов */
+.nav__link--cart{ display:inline-flex; align-items:center; gap:7px; }
+.nav__cart-ico{ width:17px; height:17px; }
+.cart-badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:19px; height:19px; padding:0 5px; border-radius:100px;
+  background:var(--accent); color:#fff;
+  font-family:var(--ff-head); font-weight:800; font-size:11px; line-height:1;
+}
+.header__cart{
+  display:none; position:relative; flex:none;
+  width:42px; height:42px; margin-left:auto; border-radius:50%;
+  align-items:center; justify-content:center;
+  border:1.5px solid rgba(22,32,43,.14); color:var(--text);
+  transition:border-color .2s, color .2s;
+}
+.header__cart:hover{ border-color:var(--accent); color:var(--accent); }
+.header__cart svg{ width:20px; height:20px; }
+.header__cart .cart-badge{ position:absolute; top:-4px; right:-4px; }
+
+/* коробка, улетающая в корзину */
+.flyer{
+  position:fixed; z-index:1200; pointer-events:none;
+  width:44px; height:44px; color:var(--accent);
+  filter:drop-shadow(0 8px 16px rgba(224,123,38,.4));
+}
+
+/* страница корзины */
+.cart__empty{
+  background:var(--white); border:1px solid rgba(22,32,43,.10);
+  border-left:4px solid var(--accent);
+  border-radius:var(--r); padding:clamp(24px,3vw,36px); box-shadow:var(--shadow-s);
+}
+.cart__empty-t{ font-family:var(--ff-head); font-weight:800; font-size:clamp(20px,2.2vw,26px); }
+.cart__empty-d{ margin-top:10px; color:var(--text-soft); font-size:15.5px; line-height:1.65; max-width:62ch; }
+.cart__foot{
+  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between;
+  gap:14px 30px; margin-top:16px;
+}
+.cart__foot .ptable__note{ margin-top:0; flex:1 1 380px; }
+.cart__total{ font-family:var(--ff-head); font-weight:700; font-size:16px; color:var(--text-soft); }
+.cart__total b{ font-size:clamp(20px,2.2vw,26px); font-weight:800; color:var(--text); margin-left:8px; }
+.cart__table td[data-label="Сумма"],.cart__table td[data-label="Цена без НДС"]{ white-space:nowrap; }
+.cart__qty{
+  width:96px; padding:9px 11px; border-radius:var(--r-sm); text-align:right;
+  border:1.5px solid rgba(22,32,43,.14); background:var(--white);
+  font-family:var(--ff-head); font-weight:700; font-size:14.5px;
+}
+.cart__qty:focus{ outline:none; border-color:var(--accent); }
+.cart__del{
+  width:34px; height:34px; border-radius:50%; color:var(--text-dim);
+  display:inline-flex; align-items:center; justify-content:center;
+  transition:background .2s, color .2s;
+}
+.cart__del:hover{ background:rgba(214,60,40,.10); color:#C2401F; }
+.cart__del svg{ width:17px; height:17px; }
+.ptable__cat{ display:block; margin-top:3px; font-size:12.5px; color:var(--text-dim); }
+.is-bumped{ animation:cartBump .4s var(--ease); }
+@keyframes cartBump{ 40%{ transform:scale(1.22); } 100%{ transform:scale(1); } }
+.form__cart{
+  margin:4px 0 18px; padding:14px 16px; border-radius:var(--r-sm);
+  background:var(--paper); font-size:14.5px; line-height:1.6; color:var(--text-soft);
+}
+.form__cart b{ color:var(--text); }
+.visually-hidden{
+  position:absolute; width:1px; height:1px; overflow:hidden;
+  clip:rect(0 0 0 0); white-space:nowrap;
+}
 
 /* --- 11. Список-«шаги» ------------------------------------------------- */
 .steps{ counter-reset:s; display:grid; gap:2px; }
@@ -753,6 +896,9 @@ ul{ margin:0; padding:0; list-style:none; }
   .nav__list{ flex-direction:column; align-items:stretch; gap:2px; }
   .nav__link{ padding:14px 16px; border-radius:12px; font-size:16.5px; }
   .burger{ display:flex; }
+  .header__cart{ display:inline-flex; }        /* меню под бургером — корзина остаётся на виду */
+  .header__in > .burger{ margin-left:12px; }
+  .nav__link--cart .cart-badge{ margin-left:auto; }
   .grid--3{ grid-template-columns:repeat(2,1fr); }
   .grid--2{ grid-template-columns:1fr; }
   .cta__in{ grid-template-columns:1fr; }

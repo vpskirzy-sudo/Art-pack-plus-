@@ -77,12 +77,14 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
         const foot = e.querySelector('.card__foot');
         return !!foot && foot.contains(e.querySelector('.card__ico')) && foot.contains(e.querySelector('.card__num'));
       }));
-  ok('гофра нанесена на всю лицевую сторону короба, а не только на края', await p.locator('.card--kraft')
-      .first().evaluate(e => {
-        const bg = getComputedStyle(e, '::before').backgroundImage;
-        // первый слой без left/right-привязки — значит, полосы идут по всей ширине карточки
-        return bg.split('repeating-linear-gradient').length - 1 >= 3;   // полный фон + 2 усиленные кромки
-      }));
+  ok('лицо панели — ровный крафт, гофра видна только на торце справа',
+     await p.locator('.card--kraft').first().evaluate(e => {
+       const face = getComputedStyle(e, '::before').backgroundImage;
+       const edge = getComputedStyle(e, '::after').backgroundImage;
+       return !face.includes('repeating-linear-gradient')      // на лицевой стороне полос нет
+              && face.includes('radial-gradient')              // только мятость бумаги
+              && edge.includes('repeating-linear-gradient');   // гофра — на торце
+     }));
   ok('при наведении панель приподнимается', await (async () => {
       const card = p.locator('.card--kraft').first();
       const before = await card.evaluate(e => getComputedStyle(e).transform);
@@ -136,14 +138,14 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
      await p.locator('.nav__link.is-active').evaluate(e => e.textContent.trim() === 'Продукция'));
   console.log('Прайс подгрупп:');
   await p.goto('file://' + B + 'produkciya-gofroyashchiki.html', { waitUntil:'domcontentloaded' });
-  ok('у гофроящиков 7 позиций прайса', await p.locator('.ptable tbody tr').count() === 7);
+  ok('у гофроящиков 7 позиций прайса', await p.locator('.ptable__row').count() === 7);
   ok('колонки тиражей собраны под общей шапкой «Цена без НДС»',
      (await p.locator('.ptable__group').innerText()).toLowerCase().includes('цена без ндс') &&
      await p.locator('.ptable__group').getAttribute('colspan') === '3');
   ok('строки пронумерованы автоматически',
-     await p.locator('.ptable tbody tr').last().locator('td').first().innerText() === '7');
+     (await p.locator('.ptable__row').last().locator('.ptable__n').innerText()) === '7');
   ok('цены перенесены как в прайсе (577×392×323 П-32 → 3,6 / 3,2 / 3,0)',
-     await p.locator('.ptable tbody tr').first().evaluate(
+     await p.locator('.ptable__row').first().evaluate(
        tr => [...tr.querySelectorAll('td')].slice(3).map(td => td.textContent.trim()).join('|')
      ) === '3,6|3,2|3,0');
   ok('под таблицей — условия доставки со старого сайта',
@@ -185,8 +187,74 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('клик открывает третий', await p.locator('.acc__item').nth(2).evaluate(e => e.classList.contains('is-open')));
   ok('первый при этом закрылся', await p.locator('.acc__item').first().evaluate(e => !e.classList.contains('is-open')));
 
+  console.log('Корзина:');
+  await p.goto('file://' + B + 'produkciya-gofroyashchiki.html', { waitUntil:'domcontentloaded' });
+  await p.evaluate(() => localStorage.clear());
+  await p.reload({ waitUntil:'domcontentloaded' });
+  ok('«Рассчитать заказ» на странице подгруппы заменена на «Перейти к деталям»',
+     (await p.locator('.cta__acts .btn--primary').first().innerText()).includes('Перейти к деталям'));
+  ok('кнопка ведёт к блоку с прайсом',
+     await p.locator('.cta__acts .btn--primary').first().getAttribute('href') === '#price'
+     && await p.locator('#price .ptable').count() === 1);
+  ok('пустая корзина — счётчик в шапке скрыт',
+     await p.locator('.header__cart .cart-badge').isHidden());
+  ok('у каждой строки прайса есть «плюс» и своё окошко', await (async () => {
+      const rows = await p.locator('.ptable__row').count();
+      return rows === 7 && await p.locator('.padd').count() === rows
+                        && await p.locator('.pform').count() === rows; })());
+  ok('окошко раскрывается по «плюсу» и сворачивается повторным нажатием', await (async () => {
+      const btn = p.locator('.padd').first(), form = p.locator('.pform').first();
+      await btn.click(); await p.waitForTimeout(420);
+      const opened = await form.evaluate(e => e.classList.contains('is-open'))
+                  && await btn.getAttribute('aria-expanded') === 'true';
+      await btn.click(); await p.waitForTimeout(420);
+      return opened && !(await form.evaluate(e => e.classList.contains('is-open'))); })());
+  ok('цена пересчитывается по тиражу: 20 шт → 3,6, а 500 шт → 3,2', await (async () => {
+      await p.locator('.padd').first().click(); await p.waitForTimeout(420);
+      const small = await p.locator('[data-calc]').first().innerText();
+      await p.locator('.pform__qty').first().fill('500');
+      await p.waitForTimeout(120);
+      const big = await p.locator('[data-calc]').first().innerText();
+      return small.includes('3,6') && big.includes('3,2') && big.includes('1600,00'); })());
+  ok('позиция уходит в корзину, счётчик в шапке растёт', await (async () => {
+      await p.locator('.pform__go').first().click();
+      await p.waitForTimeout(900);
+      return (await p.locator('.header__cart .cart-badge').innerText()) === '1'; })());
+  ok('в гофрокартоне цен нет — кнопок «в корзину» там тоже нет', await (async () => {
+      await p.goto('file://' + B + 'produkciya-gofrokarton.html', { waitUntil:'domcontentloaded' });
+      return await p.locator('.padd').count() === 0 && await p.locator('.ptable tbody tr').count() === 5; })());
+  await p.goto('file://' + B + 'korzina.html', { waitUntil:'domcontentloaded' });
+  await p.waitForTimeout(200);
+  ok('корзина переживает переход между страницами',
+     await p.locator('[data-cart-rows] tr').count() === 1);
+  ok('в строке корзины есть фото, размер, тираж и сумма', await (async () => {
+      const t = await p.locator('[data-cart-rows] tr').first().innerText();
+      return await p.locator('[data-cart-rows] .ptable__photo').count() === 1
+             && t.includes('577×392×323') && t.includes('1600,00'); })());
+  ok('итог считается по тиражной цене',
+     (await p.locator('[data-cart-total]').innerText()) === '1600,00 руб.');
+  ok('тираж правится прямо в корзине и цена уходит на нижнюю ступень', await (async () => {
+      await p.locator('.cart__qty').first().fill('100');
+      await p.waitForTimeout(200);
+      return (await p.locator('[data-cart-total]').innerText()) === '360,00 руб.'; })());
+  ok('позицию можно убрать — остаётся пустая корзина', await (async () => {
+      await p.locator('.cart__del').first().click();
+      await p.waitForTimeout(200);
+      return await p.locator('[data-cart-rows] tr').count() === 0
+             && await p.locator('[data-cart-empty]').isVisible()
+             && await p.locator('.header__cart .cart-badge').isHidden(); })());
+
+  console.log('Меню:');
+  ok('в меню шесть пунктов, последний — «Корзина»', await (async () => {
+      const items = await p.locator('.nav__list .nav__link').allInnerTexts();
+      return items.length === 6 && items[5].trim() === 'Корзина'; })());
+  ok('страницы «Контакты и карта» больше нет ни в меню, ни на диске',
+     !(await p.locator('.nav__list').innerText()).includes('Контакты')
+     && !fs.existsSync(B + 'kontakty.html'));
+  ok('карта переехала на страницу корзины', await p.locator('.map iframe').count() === 1);
+
   console.log('Форма заявки:');
-  await p.goto('file://' + B + 'kontakty.html', { waitUntil:'domcontentloaded' });
+  await p.goto('file://' + B + 'korzina.html', { waitUntil:'domcontentloaded' });
   await p.click('.form button[type=submit]');
   ok('пустая форма не отправляется, поля подсвечены',
      await p.locator('.field.has-error').count() === 2);
@@ -200,6 +268,9 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   await p.click('.form button[type=submit]');
   ok('пустой необязательный e-mail не блокирует отправку',
      await p.locator('#f-email').evaluate(e => !e.closest('.field').classList.contains('has-error')));
+  ok('в заявке остались только имя, телефон, e-mail и комментарий',
+     await p.locator('.form input, .form textarea, .form select').count() === 4
+     && await p.locator('#f-msg').count() === 1);
 
   console.log('Страница «О компании»:');
   await p.setViewportSize({ width: 1440, height: 1100 });
@@ -231,6 +302,10 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   }));
   ok('закруглённые углы таблицы не тронуты', await p.locator('.acc--frame')
       .evaluate(e => parseFloat(getComputedStyle(e).borderRadius) > 0));
+  // Рамка открывается наведением, а уход курсора её сворачивает: чтобы проверить
+  // именно состояние «по умолчанию», уводим курсор и перезагружаем страницу.
+  await p.mouse.move(2, 2);
+  await p.reload({ waitUntil:'domcontentloaded' });
   ok('по умолчанию открыта первая вкладка', await p.locator('.acc--frame .acc__item').first()
       .evaluate(e => e.classList.contains('is-open')));
   ok('наведение на третью вкладку открывает её и закрывает первую', await (async () => {

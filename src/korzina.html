@@ -1,0 +1,133 @@
+<section class="phead">
+  <div class="wrap">
+    <div class="phead__in">
+      <nav class="crumbs" aria-label="Хлебные крошки">
+        <a href="index.html">Главная</a><span class="crumbs__sep">{{icon:crumb}}</span><span>Корзина</span>
+      </nav>
+      <span class="eyebrow">Заявка на расчёт</span>
+      <h1 class="h1">Корзина</h1>
+      <p class="lead">Здесь собирается то, что вы отметили в прайсе. Проверьте тираж, оставьте
+        контакты — и мы посчитаем заказ и вернёмся с подтверждением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Состав заказа ================= -->
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">Состав заказа</span>
+      <h2 class="h2 h2--tight">Что вы выбрали</h2>
+    </div>
+
+    <!-- Обе ветки лежат в разметке, показывает нужную скрипт корзины -->
+    <div class="cart__empty reveal" data-cart-empty>
+      <p class="cart__empty-t">Корзина пуста</p>
+      <p class="cart__empty-d">Откройте нужную подгруппу в каталоге, нажмите «плюс» рядом с номером
+        позиции в прайсе и укажите тираж — позиция появится здесь.</p>
+      <div class="cta__acts">
+        <a class="btn btn--primary" href="produkciya.html">В каталог продукции {{icon:arrow}}</a>
+        <a class="btn btn--outline" href="tel:{{tel1}}">{{icon:phone}}{{phone1}}</a>
+      </div>
+    </div>
+
+    <div data-cart-box hidden>
+      <div class="ptable__wrap reveal">
+        <table class="ptable cart__table">
+          <thead><tr>
+            <th>Фото</th>
+            <th>Наименование</th>
+            <th>Размер, мм</th>
+            <th style="text-align:right">Тираж, шт.</th>
+            <th style="text-align:right">Цена без НДС</th>
+            <th style="text-align:right">Сумма</th>
+            <th><span class="visually-hidden">Удалить</span></th>
+          </tr></thead>
+          <tbody data-cart-rows></tbody>
+        </table>
+      </div>
+      <div class="cart__foot reveal">
+        <p class="ptable__note">Цены указаны без НДС и подставлены из прайса по введённому тиражу.
+          Итоговую стоимость с учётом доставки и печати подтверждает отдел продаж.</p>
+        <p class="cart__total">Итого без НДС: <b data-cart-total>0,00 руб.</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Заявка ================= -->
+<section class="section section--paper" id="zayavka">
+  <div class="wrap">
+    <div class="grid grid--2">
+      <div class="reveal">
+        <span class="eyebrow">Заявка на расчёт</span>
+        <h2 class="h2 h2--tight">Оставьте контакты</h2>
+        <p class="lead" style="margin-top:16px">Состав заказа подставится из корзины — заполнять
+          размеры и тираж второй раз не нужно. Форма соберёт письмо и откроет вашу почтовую
+          программу. Если удобнее, напишите на
+          <a href="mailto:{{email}}" style="color:var(--accent);font-weight:600">{{email}}</a>
+          или позвоните по телефону {{phone1}}.</p>
+
+        <div class="ct" style="border-top:1px solid rgba(22,32,43,.10);margin-top:26px">
+          <div class="ct__ico" style="background:rgba(224,123,38,.12);color:var(--accent)">{{icon:clock}}</div>
+          <div><div class="ct__l" style="color:var(--text-dim)">Когда ответим</div>
+            <div class="ct__v" style="color:var(--text)">В рабочее время — {{hours}}</div></div>
+        </div>
+        <div class="ct">
+          <div class="ct__ico" style="background:rgba(224,123,38,.12);color:var(--accent)">{{icon:pin}}</div>
+          <div><div class="ct__l" style="color:var(--text-dim)">Самовывоз</div>
+            <div class="ct__v" style="color:var(--text)">{{address}}</div></div>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <form class="form" data-cart-form data-subject="Заявка на расчёт из корзины gofrocarton.by" novalidate>
+          <div class="form__row">
+            <div class="field">
+              <label for="f-name">Имя *</label>
+              <input id="f-name" name="name" type="text" placeholder="Как к вам обращаться" required>
+              <span class="field__err">Укажите, пожалуйста, имя</span>
+            </div>
+            <div class="field">
+              <label for="f-phone">Телефон *</label>
+              <input id="f-phone" name="phone" type="tel" placeholder="+375 (__) ___-__-__" required>
+              <span class="field__err">Укажите телефон для связи</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-email">E-mail</label>
+            <input id="f-email" name="email" type="email" placeholder="you@company.by">
+            <span class="field__err">Проверьте адрес электронной почты</span>
+          </div>
+          <div class="field">
+            <label for="f-msg">Комментарий</label>
+            <textarea id="f-msg" name="message" placeholder="Нужна ли печать, сроки, особые пожелания"></textarea>
+          </div>
+          <p class="form__cart" data-cart-summary></p>
+          <button class="btn btn--primary btn--wide" type="submit">Отправить заявку {{icon:arrow}}</button>
+          <p class="form__ok">Спасибо! Мы подготовили письмо — отправьте его из своей почтовой программы,
+            и мы свяжемся с вами.</p>
+          <p class="form__note">Нажимая кнопку, вы соглашаетесь на обработку указанных данных
+            для ответа на обращение.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Как нас найти ================= -->
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">Как нас найти</span>
+      <h2 class="h2 h2--tight">Производство в Заславле, 20 км от Минска</h2>
+      <p class="lead">{{address}} · {{phones}} · факс {{fax}}</p>
+    </div>
+    <div class="map reveal">
+      <iframe
+        src="https://yandex.by/map-widget/v1/?text=%D0%97%D0%B0%D1%81%D0%BB%D0%B0%D0%B2%D0%BB%D1%8C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%92%D0%BE%D0%BA%D0%B7%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F%208%D0%91&z=16"
+        title="Карта проезда: Заславль, улица Вокзальная, 8Б"
+        loading="lazy" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
