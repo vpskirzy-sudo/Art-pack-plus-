@@ -249,15 +249,12 @@ def catalog_grid():
     """Сетка карточек подгрупп на странице «Продукция» — с кнопкой «Подробнее»."""
     cards = []
     for c in CATEGORIES:
-        badge = f'<span class="prod__badge">{c["badge"]}</span>' if c["badge"] else ""
-        specs = "".join(f'<span class="prod__spec">{s}</span>' for s in c["specs"])
         cards.append(f'''      <article class="prod reveal" data-cat="{c['cat']}">
-        <div class="prod__pic">{badge}
+        <div class="prod__pic">
           <img src="assets/img/{c['img']}" alt="{c['name']}"></div>
         <div class="prod__body">
           <h3 class="prod__t">{c['name']}</h3>
           <p class="prod__d">{c['desc']}</p>
-          <div class="prod__specs">{specs}</div>
           <a class="btn btn--outline btn--sm prod__more" href="produkciya-{c['slug']}.html">
             Подробнее {icon('arrow')}</a>
         </div>
@@ -367,7 +364,6 @@ def text_sections(cat):
 
 def product_page(cat):
     """Страница одной подгруппы: описание, таблица прайса, заявка."""
-    specs = "".join(f'<span class="prod__spec">{s}</span>' for s in cat["specs"])
     body = f'''<section class="phead">
   <div class="wrap">
     <div class="phead__in">
@@ -390,8 +386,7 @@ def product_page(cat):
       <div class="reveal">
         <h2 class="h2 h2--tight">Что это за упаковка</h2>
         <p class="lead" style="margin-top:18px">{cat['long']}</p>
-        <div class="prod__specs" style="margin-top:22px">{specs}</div>
-        <div class="cta__acts">
+        <div class="cta__acts" style="margin-top:22px">
           <a class="btn btn--primary" href="kontakty.html#zayavka">Рассчитать заказ {icon('arrow')}</a>
           <a class="btn btn--outline" href="produkciya.html">Вся продукция</a>
         </div>

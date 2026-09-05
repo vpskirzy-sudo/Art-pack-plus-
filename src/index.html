@@ -60,48 +60,44 @@
         Поэтому отвечаем и за срок, и за геометрию коробки, и за качество печати.</p>
     </div>
 
-    <!-- Каждая карточка — картонный короб: крафт-фасад, лента, штамп-иконка
-         и бирка с текстом. Номер в углу — по мотивам «Арт» в «Арт-Пак Плюс»,
-         как будто короба пронумерованы в собственной коллекции мастера. -->
+    <!-- Каждая карточка — цельная крафт-панель, как на референсе заказчика:
+         заголовок и текст прямо на картоне, внизу — линейная иконка и номер
+         «Арт. №0X» по мотивам «Арт» в «Арт-Пак Плюс». -->
     <div class="grid grid--4">
       <article class="card card--kraft reveal">
-        <span class="card__num" aria-hidden="true"></span>
-        <span class="card__tape" aria-hidden="true"></span>
-        <div class="card__ico">{{icon:box}}</div>
-        <div class="card__label">
-          <h3 class="card__t">Любая конфигурация</h3>
-          <p class="card__d">Трёх- и пятислойный гофрокартон, короба, лотки, уголки, прокладки.
-            Нестандартный размер — обычная для нас задача.</p>
+        <h3 class="card__t">Любая конфигурация</h3>
+        <p class="card__d">Трёх- и пятислойный гофрокартон, короба, лотки, уголки, прокладки.
+          Нестандартный размер — обычная для нас задача.</p>
+        <div class="card__foot">
+          <span class="card__ico">{{icon:box}}</span>
+          <span class="card__num" aria-hidden="true"></span>
         </div>
       </article>
       <article class="card card--kraft reveal">
-        <span class="card__num" aria-hidden="true"></span>
-        <span class="card__tape" aria-hidden="true"></span>
-        <div class="card__ico">{{icon:print}}</div>
-        <div class="card__label">
-          <h3 class="card__t">Печать 1–4 краски</h3>
-          <p class="card__d">Флексографическая печать на собственной линии: логотип, маркировка,
-            полноцветное оформление партии.</p>
+        <h3 class="card__t">Печать 1–4 краски</h3>
+        <p class="card__d">Флексографическая печать на собственной линии: логотип, маркировка,
+          полноцветное оформление партии.</p>
+        <div class="card__foot">
+          <span class="card__ico">{{icon:print}}</span>
+          <span class="card__num" aria-hidden="true"></span>
         </div>
       </article>
       <article class="card card--kraft reveal">
-        <span class="card__num" aria-hidden="true"></span>
-        <span class="card__tape" aria-hidden="true"></span>
-        <div class="card__ico">{{icon:ruler}}</div>
-        <div class="card__label">
-          <h3 class="card__t">Конструкция под товар</h3>
-          <p class="card__d">Конструкторы просчитают короб под вес, габарит и способ перевозки —
-            с образцом до запуска тиража.</p>
+        <h3 class="card__t">Конструкция под товар</h3>
+        <p class="card__d">Конструкторы просчитают короб под вес, габарит и способ перевозки —
+          с образцом до запуска тиража.</p>
+        <div class="card__foot">
+          <span class="card__ico">{{icon:ruler}}</span>
+          <span class="card__num" aria-hidden="true"></span>
         </div>
       </article>
       <article class="card card--kraft reveal">
-        <span class="card__num" aria-hidden="true"></span>
-        <span class="card__tape" aria-hidden="true"></span>
-        <div class="card__ico">{{icon:truck}}</div>
-        <div class="card__label">
-          <h3 class="card__t">Сроки и доставка</h3>
-          <p class="card__d">Оперативное производство и доставка по Минску и всей Беларуси
-            собственным и наёмным транспортом.</p>
+        <h3 class="card__t">Сроки и доставка</h3>
+        <p class="card__d">Оперативное производство и доставка по Минску и всей Беларуси
+          собственным и наёмным транспортом.</p>
+        <div class="card__foot">
+          <span class="card__ico">{{icon:truck}}</span>
+          <span class="card__num" aria-hidden="true"></span>
         </div>
       </article>
     </div>
@@ -119,13 +115,12 @@
 
     <div class="grid grid--3">
       <article class="prod reveal">
-        <div class="prod__pic"><span class="prod__badge">Хит</span>
+        <div class="prod__pic">
           <img src="assets/img/pr-photo-gofroyashchiki.jpg" alt="Четырёхклапанный гофрокороб"></div>
         <div class="prod__body">
           <h3 class="prod__t">Гофрокороба</h3>
           <p class="prod__d">Четырёхклапанные короба из трёх- и пятислойного гофрокартона —
             основная тара для хранения и перевозки.</p>
-          <div class="prod__specs"><span class="prod__spec">Т-22 · Т-23</span><span class="prod__spec">П-32</span><span class="prod__spec">под размер</span></div>
         </div>
       </article>
 
@@ -135,7 +130,6 @@
           <h3 class="prod__t">Гофролотки</h3>
           <p class="prod__d">Низкая открытая тара для выкладки и групповой упаковки —
             удобна на складе и в торговом зале.</p>
-          <div class="prod__specs"><span class="prod__spec">3 слоя</span><span class="prod__spec">с печатью</span></div>
         </div>
       </article>
 
@@ -145,7 +139,6 @@
           <h3 class="prod__t">Упаковка для маркетплейсов</h3>
           <p class="prod__d">Короба под требования Wildberries и OZON — для хранения
             и отправки товара из интернет-магазина.</p>
-          <div class="prod__specs"><span class="prod__spec">WB · OZON</span><span class="prod__spec">маркировка</span></div>
         </div>
       </article>
     </div>
