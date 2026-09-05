@@ -64,31 +64,33 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       const grid = await p.locator('.grid--4').evaluate(e => getComputedStyle(e).counterReset);
       const items = await p.locator('.card__num').evaluateAll(els => els.map(e => {
         const c = getComputedStyle(e, '::before');
-        return { increment: getComputedStyle(e.parentElement).counterIncrement, content: c.content };
+        return { increment: getComputedStyle(e.closest('.card--kraft')).counterIncrement, content: c.content };
       }));
       const gridOk = grid.includes('artbox');
       const cardsOk = items.length === 4 && items.every(it =>
         it.increment.includes('artbox') && it.content.includes('counter(artbox'));
       return gridOk && cardsOk; })());
-  ok('текст на бирке читаем (тёмный на светлом фоне)', await p.locator('.card--kraft .card__label').first()
-      .evaluate(e => getComputedStyle(e).backgroundColor !== 'rgba(0, 0, 0, 0)'));
+  ok('заголовок и текст лежат прямо на картоне, без бирки и ленты',
+     await p.locator('.card--kraft .card__label, .card__tape').count() === 0);
+  ok('иконка и номер вынесены в один нижний ряд карточки', await p.locator('.card--kraft').first()
+      .evaluate(e => {
+        const foot = e.querySelector('.card__foot');
+        return !!foot && foot.contains(e.querySelector('.card__ico')) && foot.contains(e.querySelector('.card__num'));
+      }));
   ok('гофра нанесена на всю лицевую сторону короба, а не только на края', await p.locator('.card--kraft')
       .first().evaluate(e => {
         const bg = getComputedStyle(e, '::before').backgroundImage;
         // первый слой без left/right-привязки — значит, полосы идут по всей ширине карточки
         return bg.split('repeating-linear-gradient').length - 1 >= 3;   // полный фон + 2 усиленные кромки
       }));
-  ok('при наведении короб приподнимается и лента съезжает', await (async () => {
+  ok('при наведении панель приподнимается', await (async () => {
       const card = p.locator('.card--kraft').first();
-      const tape = p.locator('.card__tape').first();
       const before = await card.evaluate(e => getComputedStyle(e).transform);
-      const tapeBefore = await tape.evaluate(e => getComputedStyle(e).transform);
       await card.hover();
       await p.waitForTimeout(500);
       const after = await card.evaluate(e => getComputedStyle(e).transform);
-      const tapeAfter = await tape.evaluate(e => getComputedStyle(e).transform);
       await p.mouse.move(10, 10);
-      return after !== before && tapeAfter !== tapeBefore; })());
+      return after !== before; })());
 
   console.log('Плашка оборудования на главной:');
   ok('блок «Продажа нового и б/у оборудования» на месте',
