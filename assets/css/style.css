@@ -942,6 +942,28 @@ ul{ margin:0; padding:0; list-style:none; }
 .reveal{ opacity:0; transform:translateY(26px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
 .reveal.is-in{ opacity:1; transform:none; }
 
+/* --- 19b. Первый экран на широких мониторах ----------------------------
+   На Full HD и шире общий --wrap (1280px) держит герой у́же, чем позволяет
+   монитор, а сам clamp() заголовка уже упирался в потолок — упирается
+   один раз, дальше сколько угодно vw не добавляют ни пикселя. Здесь —
+   точечная надбавка только для героя: контейнер шире, заголовок и кнопки
+   крупнее, левая колонка — заметная доля контейнера, а не потерянная
+   узкая лента на широком фоне склада. Остальные страницы и сетки эта
+   надбавка не задевает — .hero__in/.hero__title/.hero__text/.hero__acts
+   есть только в герое. --------------------------------------------------- */
+@media (min-width:1440px){
+  .hero__in{ max-width:1600px; }
+  .hero__copy{ max-width:52%; }
+  .hero__title{ font-size:clamp(60px, 4.4vw, 64px); }
+  .hero__text{ font-size:19px; }
+  .hero__acts .btn{ padding:18px 34px; font-size:17px; }
+}
+@media (min-width:1920px){
+  .hero__title{ font-size:clamp(64px, 3.6vw, 68px); }
+  .hero__text{ font-size:20px; }
+  .hero__acts .btn{ padding:19px 36px; font-size:18px; }
+}
+
 /* --- 20. Адаптив ------------------------------------------------------- */
 /* Шапка сжимается ступенями: сначала уходит кнопка, затем подпись логотипа,
    затем меню целиком прячется под бургер. */
