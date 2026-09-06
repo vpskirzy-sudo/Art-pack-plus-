@@ -43,7 +43,18 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       const c = await btn.evaluate(e => getComputedStyle(e).borderColor);
       return c === 'rgb(255, 255, 255)'; })());
 
-  console.log('Первый экран на широких мониторах:');
+  console.log('Широкий десктоп: контейнер, первый экран, сетки, типографика:');
+  // Общий контейнер (--wrap) и первый экран должны стоять на одной
+  // вертикальной направляющей: 1280px до 1440px, затем 1560px и 1760px.
+  const wrapAt = async (w, page) => {
+    await p.setViewportSize({ width: w, height: 1000 });
+    await p.goto('file://' + B + page, { waitUntil:'domcontentloaded' });
+    return p.evaluate(() => {
+      const el = document.querySelector('.section .wrap') || document.querySelector('.wrap');
+      const r = el.getBoundingClientRect();
+      return { w: Math.round(r.width), left: Math.round(r.left) };
+    });
+  };
   const heroAt = async (w) => {
     await p.setViewportSize({ width: w, height: 1000 });
     await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
@@ -67,13 +78,33 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   const hero1280 = await heroAt(1280);
   const hero1440 = await heroAt(1440);
   const hero1920 = await heroAt(1920);
-  ok('контейнер героя на 1920px шире общего --wrap (доходит до 1600px)',
-     hero1920.innW === 1600 && hero1280.innW < 1300);
-  ok('заголовок героя на 1440px и 1920px в пределах 60–68px',
-     hero1440.titleFS >= 60 && hero1440.titleFS <= 68 && hero1920.titleFS >= 60 && hero1920.titleFS <= 68
-     && hero1920.titleFS >= hero1440.titleFS);
-  ok('подзаголовок героя на 1440px и 1920px — 19–20px',
-     hero1440.textFS >= 19 && hero1440.textFS <= 20 && hero1920.textFS >= 19 && hero1920.textFS <= 20);
+  ok('контейнер разделов раскрывается ступенями: 1280px → 1560px → 1760px',
+     await (async () => {
+       const a = await wrapAt(1366, 'index.html');
+       const b1 = await wrapAt(1600, 'index.html');
+       const c = await wrapAt(1920, 'index.html');
+       const d = await wrapAt(2560, 'index.html');
+       return a.w === 1280 && b1.w === 1560 && c.w === 1760 && d.w === 1760; })());
+  ok('на 1920px по бокам остаётся ровное поле, а не по 300px пустоты',
+     await (async () => {
+       const c = await wrapAt(1920, 'index.html');
+       return c.left === 80 && c.left * 2 + c.w === 1920; })());
+  ok('внутренние страницы используют тот же раскрытый контейнер',
+     await (async () => {
+       for (const page of ['o-kompanii.html','produkciya.html','uslugi.html',
+                           'oborudovanie.html','korzina.html','produkciya-gofrolotki.html']) {
+         const r = await wrapAt(1920, page);
+         if (r.w !== 1760 || r.left !== 80) return false;
+       }
+       return true; })());
+  ok('первый экран стоит на той же направляющей, что и остальные секции',
+     hero1440.innW === 1440 && hero1920.innW === 1760 && hero1280.innW === 1280);
+  ok('заголовок героя на 1440px — 62–72px, на 1920px — 72–80px',
+     hero1440.titleFS >= 62 && hero1440.titleFS <= 72
+     && hero1920.titleFS >= 72 && hero1920.titleFS <= 80
+     && hero1920.titleFS > hero1440.titleFS);
+  ok('подзаголовок героя на 1440px и 1920px — 20–21px',
+     hero1440.textFS === 20 && hero1920.textFS === 21);
   ok('на экранах уже 1440px заголовок героя остаётся мельче потолка (нет надбавки)',
      hero1280.titleFS < 60);
   ok('левая колонка героя занимает 50–55% контейнера на 1440px и 1920px',
@@ -82,13 +113,103 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('кнопки героя крупнее на 1440px и ещё крупнее на 1920px',
      hero1440.btnFS >= 17 && hero1440.btnFS <= 18 && hero1440.btnPadY >= 18
      && hero1920.btnFS === 18 && hero1920.btnPadY > hero1440.btnPadY);
-  ok('на страницах, кроме главной, сетка каталога не задета надбавкой (по-прежнему 3 колонки на 1920px)',
+
+  // Каталог: колонку добавляет auto-fit, как только в ряд помещается ещё одна
+  // карточка не у́же 380px. Отсюда три широкие колонки на 1440–1900px и
+  // четыре — на Full HD, но ни на одной ширине карточка не мельче, чем на 1280px.
+  const catAt = async (w) => {
+    await p.setViewportSize({ width: w, height: 1000 });
+    await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
+    return p.evaluate(() => {
+      const g = document.querySelector('.grid--cat');
+      const pic = document.querySelector('.grid--cat .prod__pic').getBoundingClientRect();
+      return {
+        cols: getComputedStyle(g).gridTemplateColumns.split(' ').length,
+        picW: Math.round(pic.width), picH: Math.round(pic.height),
+      };
+    });
+  };
+  const cat1280 = await catAt(1280);
+  const cat1440 = await catAt(1440);
+  const cat1920 = await catAt(1920);
+  ok('каталог: 3 колонки на 1280px и 1440px, 4 полноценные — на Full HD',
+     cat1280.cols === 3 && cat1440.cols === 3 && cat1920.cols === 4);
+  ok('превью в карточках каталога на широком экране крупнее, а не мельче, чем на 1280px',
+     cat1440.picW > cat1280.picW && cat1440.picH > cat1280.picH
+     && cat1920.picW > cat1280.picW && cat1920.picH > cat1280.picH);
+  ok('сетки на 3 и 6 карточек лишнюю колонку не получают — дыр в ряду нет',
      await (async () => {
        await p.setViewportSize({ width: 1920, height: 1000 });
-       await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
-       const cols = await p.locator('.grid--3').first()
-         .evaluate(e => getComputedStyle(e).gridTemplateColumns.split(' ').length);
-       return cols === 3; })());
+       const n = async (page, sel) => {
+         await p.goto('file://' + B + page, { waitUntil:'domcontentloaded' });
+         return p.locator(sel).first()
+           .evaluate(e => [getComputedStyle(e).gridTemplateColumns.split(' ').length, e.children.length]);
+       };
+       const idx = await n('index.html', '.grid--3');        // 3 карточки продукции
+       const usl = await n('uslugi.html', '.grid--3');       // 6 карточек услуг
+       const kom = await n('o-kompanii.html', '.grid--3');   // 6 тёмных карточек
+       const kraft = await n('index.html', '.grid--4');      // 4 крафт-панели
+       return idx[0] === 3 && idx[1] === 3 && usl[0] === 3 && usl[1] === 6
+              && kom[0] === 3 && kom[1] === 6 && kraft[0] === 4 && kraft[1] === 4; })());
+
+  // Типографика внутренних страниц: на широком экране текст не должен
+  // мельчать вместе с ростом свободного места.
+  // Абзацы и описания — всё, что на странице читают строкой, а не таблицей.
+  // Возвращаем размер и межстрочный по каждому виду текста, который на
+  // странице реально есть: на «Корзине» нет карточек, на «Продукции» —
+  // аккордеонов, поэтому один общий селектор тут не годится.
+  const BODY_SEL = ['.card__d', '.acc__panel p', '.step__d', '.prod__d',
+                    '.cart__empty-d', '.ptable__empty-d', '.band__d', '.ptext__list li'];
+  const typoAt = async (w, page) => {
+    await p.setViewportSize({ width: w, height: 1000 });
+    await p.goto('file://' + B + page, { waitUntil:'domcontentloaded' });
+    return p.evaluate((sels) => {
+      const box = s => { const e = document.querySelector(s); if (!e) return null;
+        const c = getComputedStyle(e);
+        return { fs: parseFloat(c.fontSize), lh: parseFloat(c.lineHeight) / parseFloat(c.fontSize) }; };
+      const body = {};
+      for (const s of sels) { const b = box(s); if (b) body[s] = b; }
+      return { h2: box('.h2'), lead: box('.lead'), body };
+    }, BODY_SEL);
+  };
+  ok('заголовки h2 на внутренних страницах — 38–46px на 1440px и на 1920px',
+     await (async () => {
+       for (const w of [1440, 1920])
+         for (const page of ['o-kompanii.html','uslugi.html','korzina.html','produkciya.html']) {
+           const t = await typoAt(w, page);
+           if (!(t.h2.fs >= 38 && t.h2.fs <= 46)) return false;
+         }
+       return true; })());
+  ok('основной текст на внутренних страницах — 17–18px с межстрочным 1.6–1.7',
+     await (async () => {
+       for (const w of [1440, 1920])
+         for (const page of ['o-kompanii.html','uslugi.html','korzina.html','oborudovanie.html']) {
+           const t = await typoAt(w, page);
+           const kinds = Object.values(t.body);
+           if (kinds.length === 0) return false;
+           for (const k of kinds)
+             if (!(k.fs >= 17 && k.fs <= 18 && k.lh >= 1.6 && k.lh <= 1.7)) return false;
+           if (!(t.lead.fs >= 19 && t.lead.lh >= 1.6 && t.lead.lh <= 1.7)) return false;
+         }
+       return true; })());
+  ok('на 1920px текст крупнее, чем на 1440px, а не одного размера',
+     await (async () => {
+       const a = await typoAt(1440, 'o-kompanii.html');
+       const b1 = await typoAt(1920, 'o-kompanii.html');
+       return b1.h2.fs > a.h2.fs && b1.lead.fs > a.lead.fs
+              && b1.body['.card__d'].fs > a.body['.card__d'].fs; })());
+
+  // Ноутбуки, планшеты и телефоны раскрытие не задевает: до 1440px всё
+  // должно остаться ровно таким, каким было.
+  ok('до 1440px вёрстка не изменилась: контейнер 1280px и прежние размеры текста',
+     await (async () => {
+       const r = await wrapAt(1280, 'o-kompanii.html');
+       for (const [w, page] of [[1280,'o-kompanii.html'], [1024,'uslugi.html'], [768,'uslugi.html']]) {
+         const t = await typoAt(w, page);
+         for (const k of Object.values(t.body)) if (k.fs >= 16) return false;
+         if (t.lead.fs > 19) return false;
+       }
+       return r.w === 1280; })());
   await p.setViewportSize({ width: 1440, height: 900 });
 
   console.log('Счётчики и анимации:');
@@ -324,16 +445,20 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   await p.setViewportSize({ width: 1440, height: 1100 });
   await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
   ok('заголовок в шапке страницы начинается там же, где заголовок героя на главной', await (async () => {
-      // Ниже 1440px обе шапки делят один и тот же --wrap. От 1440px герой
-      // намеренно шире общего контейнера (см. «19b»), поэтому здесь берём
-      // ширину ДО этого порога — иначе сравнивали бы два разных контейнера.
-      await p.setViewportSize({ width: 1280, height: 1100 });
-      const pheadX = await p.locator('.phead h1').evaluate(e => e.getBoundingClientRect().left);
-      await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
-      const heroX = await p.locator('.hero__title').evaluate(e => e.getBoundingClientRect().left);
-      await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
+      // Первый экран больше не живёт по своей ширине: .hero__in берёт тот же
+      // --wrap, что и все секции (см. «19b»), поэтому левый край заголовка
+      // совпадает на любой ширине — и до 1440px, и на Full HD.
+      for (const w of [1280, 1440, 1920]) {
+        await p.setViewportSize({ width: w, height: 1100 });
+        await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
+        const pheadX = await p.locator('.phead h1').evaluate(e => e.getBoundingClientRect().left);
+        await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+        const heroX = await p.locator('.hero__title').evaluate(e => e.getBoundingClientRect().left);
+        if (Math.abs(pheadX - heroX) >= 1) return false;
+      }
       await p.setViewportSize({ width: 1440, height: 1100 });
-      return Math.abs(pheadX - heroX) < 1; })());
+      await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
+      return true; })());
   ok('«Плюс» в заголовке — фирменный оранжевый', await p.locator('.phead h1 .brand-plus')
       .evaluate(e => getComputedStyle(e).color === 'rgb(224, 123, 38)'));
   ok('«Плюс» в подвале — тот же оранжевый', await p.locator('.footer .brand-plus').first()

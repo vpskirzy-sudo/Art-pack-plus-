@@ -13,7 +13,11 @@ const fs = require('fs');
     .filter(f => /^produkciya-.+\.html$/.test(f))
     .map(f => f.replace(/\.html$/, ''));
   const pages = ['index','o-kompanii','produkciya','uslugi','oborudovanie','korzina', ...detail];
-  const widths = [2560,1920,1680,1600,1440,1366,1280,1200,1100,1024,900,768,600,480,390,360,320];
+  // Ступени раскрытия контейнера (1440px и 1920px) и их ближайшие окрестности
+  // проверяем отдельно: именно на границе медиазапроса легче всего получить
+  // лишний пиксель по горизонтали.
+  const widths = [2560,2048,1920,1919,1800,1728,1680,1600,1560,1520,1441,1440,1439,
+                  1366,1280,1200,1100,1024,900,768,600,480,390,360,320];
   let bad = 0;
   for (const name of pages) {
     await p.goto(`file://${path.resolve(__dirname, '../..')}/${name}.html`, { waitUntil:'domcontentloaded' });
