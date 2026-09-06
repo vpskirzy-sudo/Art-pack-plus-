@@ -29,11 +29,37 @@
       burger.classList.toggle('is-open', open);
       burger.setAttribute('aria-expanded', String(open));
     });
-    $$('.nav__link', nav).forEach(function (a) {
+    // Уход по любой ссылке меню — и по пункту, и по подпункту — закрывает
+    // бургер: иначе после перехода к якорю на этой же странице меню осталось
+    // бы висеть поверх того места, куда только что прокрутили.
+    $$('a', nav).forEach(function (a) {
       a.addEventListener('click', function () {
         nav.classList.remove('is-open');
         burger.classList.remove('is-open');
         burger.setAttribute('aria-expanded', 'false');
+      });
+    });
+    // Подменю на сенсорном экране: наводить нечем, поэтому список разделов
+    // разворачивается тапом по кнопке-шеврону. Сам пункт остаётся ссылкой
+    // на свою страницу, поэтому кнопка отдельная, а не переключатель на нём.
+    // На десктопе кнопка скрыта (display:none) и в клики не попадает —
+    // там работает наведение, чистым CSS.
+    $$('.nav__toggle', nav).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var item = btn.closest('.nav__item');
+        if (!item) return;
+        var open = !item.classList.contains('is-open');
+        // Открытым держим один раздел: два развёрнутых списка сразу
+        // не помещаются на экран телефона.
+        $$('.nav__item.is-open', nav).forEach(function (other) {
+          if (other !== item) {
+            other.classList.remove('is-open');
+            var b = other.querySelector('.nav__toggle');
+            if (b) b.setAttribute('aria-expanded', 'false');
+          }
+        });
+        item.classList.toggle('is-open', open);
+        btn.setAttribute('aria-expanded', String(open));
       });
     });
   }

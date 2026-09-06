@@ -21,17 +21,33 @@
   --blue:       #1466B3;
   --blue-lite:  #2E8AD6;
 
-  /* Приглушённый «плюс»-оранжевый: тот же оттенок, что у --accent, но
-     смешанный до плотного тона, а не полупрозрачный поверх фона —
-     полупрозрачная заливка на светлой странице неизбежно светлеет
-     до пастельно-розового, поэтому цвета здесь заданы непрозрачными.
-     Один и тот же тон у панелей на главной и у аккордеонов
-     на «О компании» и «Оборудовании» — сайт держится одной гаммой. */
-  --soft:       #ECDACA;
-  --soft-2:     #E7CAB1;
-  --soft-3:     #E1B48E;
-  --soft-line:  #D2A57F;
-  --soft-ink:   #74441B;
+  /* Тёплая крафтовая гамма информационных блоков — карточки-панели,
+     аккордеоны и плашки на светлых секциях. Прежние плотные песочные
+     заливки на светлой странице читались как выгоревший бежевый: в них
+     было слишком много «грязи» и слишком мало оранжевого. Здесь наоборот —
+     заливка светлая и чистая, а фирменный оранжевый живёт в рамках,
+     разделителях, иконках и акцентах. Чёрный текст на такой заливке
+     остаётся полностью контрастным: --text на --warm-3 даёт 12.8:1,
+     --text-soft на --warm — 5.7:1, обе выше порога AA.
+     Оттенок один и тот же у панелей на главной, у аккордеонов
+     на «О компании», «Оборудовании» и «Услугах» — сайт держится
+     одной гаммой. */
+  --warm:       #FBF6F0;                  /* лицо карточки */
+  --warm-2:     #F6EADC;                  /* наведение, верх градиента панели */
+  --warm-3:     #F1E0CD;                  /* раскрытый пункт аккордеона */
+  --warm-line:  rgba(235,120,35,.20);     /* тонкая рамка блока */
+  --warm-div:   rgba(235,120,35,.15);     /* разделители пунктов внутри блока */
+  --warm-hi:    rgba(235,120,35,.40);     /* рамка при наведении */
+  --warm-edge:  rgba(235,120,35,.30);     /* гофра на торце панели */
+  --warm-ink:   #9A5514;                  /* тёплый оранжевый для мелких подписей */
+
+  /* Акцент на светлой заливке: тот же оранжевый, доведённый до читаемого
+     на светлом фоне (6.3:1) — для заголовков раскрытых пунктов и подписей,
+     где чистый --accent дал бы всего 2.8:1. */
+  --accent-ink: #8C4A0E;
+
+  --warm-shadow: 0 8px 22px rgba(235,120,35,.09), 0 1px 3px rgba(22,32,43,.05);
+  --warm-glow:   0 16px 36px rgba(235,120,35,.16), 0 3px 8px rgba(22,32,43,.06);
 
   --text:       #16202B;
   --text-soft:  #55636F;
@@ -189,45 +205,85 @@ ul{ margin:0; padding:0; list-style:none; }
 .nav{ margin-left:auto; }
 .nav__list{ display:flex; align-items:center; gap:2px; }
 .nav__link{
-  display:block; position:relative; padding:10px 13px; border-radius:100px;
+  display:inline-flex; align-items:center; position:relative; padding:10px 13px; border-radius:100px;
   font-family:var(--ff-head); font-weight:600; font-size:14.5px; color:var(--text);
   white-space:nowrap; transition:color .2s, background .2s;
 }
 .nav__link:hover{ color:var(--accent); background:rgba(224,123,38,.08); }
 .nav__link.is-active{ color:#fff; background:var(--ink); }
 
-/* Подменю пунктов навигации: наведение показывает разделы страницы, чтобы
-   сразу было видно, что на ней есть, и не приходилось листать до нужного
-   места. Только для десктопа — на сенсорном экране навести нельзя, поэтому
-   на мобильном меню остаётся плоским списком. */
+/* Подменю пунктов навигации. Список ссылок на конкретные страницы и разделы:
+   из шапки видно, что есть внутри, и можно попасть сразу туда. На десктопе
+   раскрывается наведением, на сенсорном экране — тапом по кнопке-шеврону
+   (см. блок 20 и main.js): навести на телефоне нечем. */
 .nav__item{ position:relative; }
+.nav__toggle{ display:none; }                    /* нужна только на мобильном */
+
+/* Шеврон у пунктов с подменю — сразу видно, где есть что разворачивать.
+   Рисуется рамками, а не иконкой: не грузит разметку на шести страницах. */
+.nav__item > .nav__link::after{
+  content:""; width:5px; height:5px; margin-left:7px; flex:none;
+  border-right:1.6px solid currentColor; border-bottom:1.6px solid currentColor;
+  transform:translateY(-2px) rotate(45deg); opacity:.45;
+  transition:opacity .2s ease, transform .2s ease;
+}
+.nav__item:hover > .nav__link::after,
+.nav__item:focus-within > .nav__link::after{ opacity:1; transform:translateY(0) rotate(225deg); }
+
 .nav__drop{
-  position:absolute; top:100%; left:50%; z-index:950;
-  min-width:248px; margin-top:10px; padding:8px;
+  position:absolute; top:100%; left:50%; z-index:1000;
+  min-width:262px; margin-top:10px; padding:8px;
   background:var(--white); border-radius:var(--r); box-shadow:var(--shadow-l);
-  border:1px solid rgba(22,32,43,.08);
-  display:grid; gap:1px;
+  border:1px solid var(--warm-line);
   opacity:0; visibility:hidden; pointer-events:none;
   transform:translate(-50%, 6px);
-  transition:opacity .2s var(--ease), transform .2s var(--ease), visibility .2s;
+  /* Задержка на закрытии: случайный «срез» курсора мимо пункта не должен
+     мгновенно схлопывать меню. На открытии задержки нет — оно появляется
+     сразу, как только курсор дошёл до пункта. */
+  transition:opacity .2s var(--ease) .15s, transform .2s var(--ease) .15s, visibility .2s .15s;
 }
-.nav__item:hover .nav__drop,
-.nav__item:focus-within .nav__drop{
-  opacity:1; visibility:visible; pointer-events:auto; transform:translate(-50%, 0);
+/* Безопасная зона: невидимый мостик поверх зазора между пунктом и меню.
+   Без него диагональный проход курсора выходит из .nav__item раньше, чем
+   входит в .nav__drop, и меню закрывается прямо под рукой. */
+.nav__drop::before{
+  content:""; position:absolute; left:0; right:0; top:-14px; height:14px;
+}
+.nav__item:hover > .nav__drop,
+.nav__item:focus-within > .nav__drop{
+  opacity:1; visibility:visible; pointer-events:auto;
+  transform:translate(-50%, 0); transition-delay:0s;
 }
 /* последний пункт («Корзина») стоит у самого правого края шапки — центрируя
    подменю под ним, оно вылезало бы за экран; растим его влево от пункта. */
-.nav__item:last-child .nav__drop{ left:auto; right:0; transform:translateY(6px); }
-.nav__item:last-child:hover .nav__drop,
-.nav__item:last-child:focus-within .nav__drop{ transform:translateY(0); }
+.nav__item:last-child > .nav__drop{ left:auto; right:0; transform:translateY(6px); }
+.nav__item:last-child:hover > .nav__drop,
+.nav__item:last-child:focus-within > .nav__drop{ transform:translateY(0); }
+
+.nav__drop-list{ display:grid; gap:1px; }
+/* Каталог продукции (12 пунктов) и услуги (8) в одну колонку выросли бы
+   на пол-экрана — раскладываем их в два столбца. */
+.nav__drop--wide{ min-width:536px; }
+.nav__drop--wide .nav__drop-list{ grid-template-columns:1fr 1fr; column-gap:4px; }
+
 .nav__drop a{
-  display:block; padding:11px 14px; border-radius:9px;
+  display:flex; align-items:center; gap:10px; cursor:pointer;
+  padding:11px 14px; border-radius:9px;
   font-family:var(--ff-head); font-weight:600; font-size:14px; color:var(--text-soft);
   white-space:normal; line-height:1.4;
-  transition:background .2s, color .2s;
+  transition:background .2s ease, color .2s ease;
+}
+/* Маркер-стрелка появляется при наведении: подсказывает, что пункт ведёт
+   на страницу, и делает отклик заметным даже боковым зрением. */
+.nav__drop a::after{
+  content:""; width:6px; height:6px; flex:none; margin-left:auto;
+  border-top:2px solid currentColor; border-right:2px solid currentColor;
+  transform:rotate(45deg) translateX(-3px); opacity:0;
+  transition:opacity .2s ease, transform .2s ease;
 }
 .nav__drop a:hover,
-.nav__drop a:focus-visible{ background:rgba(224,123,38,.09); color:var(--accent); }
+.nav__drop a:focus-visible{ background:var(--warm-2); color:var(--accent-ink); }
+.nav__drop a:hover::after,
+.nav__drop a:focus-visible::after{ opacity:1; transform:rotate(45deg) translateX(0); }
 
 .header__cta{ flex:none; margin-left:6px; }
 
@@ -320,10 +376,10 @@ ul{ margin:0; padding:0; list-style:none; }
 .grid--4{ grid-template-columns:repeat(4,1fr); }
 
 .card{
-  position:relative; background:var(--white); border-radius:var(--r-lg);
+  position:relative; background:var(--warm); border-radius:var(--r-lg);
   padding:clamp(24px,2.6vw,32px);
-  border:1px solid rgba(22,32,43,.07);
-  box-shadow:var(--shadow-s);
+  border:1px solid var(--warm-line);
+  box-shadow:var(--warm-shadow);
   transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
   overflow:hidden;
 }
@@ -332,12 +388,13 @@ ul{ margin:0; padding:0; list-style:none; }
   background:linear-gradient(90deg,var(--accent),var(--kraft));
   transform:scaleX(0); transform-origin:left; transition:transform .4s var(--ease);
 }
-.card:hover{ transform:translateY(-5px); box-shadow:var(--shadow-m); border-color:rgba(224,123,38,.22); }
+.card:hover{ transform:translateY(-5px); box-shadow:var(--warm-glow); border-color:var(--warm-hi); }
 .card:hover::after{ transform:scaleX(1); }
 .card__ico{
   width:52px; height:52px; border-radius:15px; margin-bottom:20px;
   display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(140deg, rgba(224,123,38,.14), rgba(201,138,75,.10));
+  background:linear-gradient(140deg, rgba(235,120,35,.16), rgba(235,120,35,.07));
+  border:1px solid var(--warm-line); color:var(--accent-ink);
   color:var(--accent);
 }
 .card__ico svg{ width:25px; height:25px; }
@@ -353,29 +410,30 @@ ul{ margin:0; padding:0; list-style:none; }
 .card--kraft{
   display:flex; flex-direction:column;
   min-height:clamp(330px,26.5vw,430px);
-  background:linear-gradient(168deg, var(--soft-2), var(--soft));
-  border:none; border-radius:7px;
+  background:linear-gradient(168deg, var(--warm-2), var(--warm));
+  border:1px solid var(--warm-line); border-radius:7px;
   padding:clamp(24px,2.1vw,30px) clamp(28px,2.5vw,34px) clamp(18px,1.5vw,22px) clamp(20px,1.8vw,26px);
-  box-shadow:0 16px 30px rgba(116,68,27,.16), 0 3px 8px rgba(116,68,27,.10);
-  transition:transform .4s var(--ease), box-shadow .4s var(--ease);
+  box-shadow:var(--warm-shadow);
+  transition:transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease);
 }
 .card--kraft::before{                             /* мягкие переливы по лицевой стороне */
   content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background:
     radial-gradient(140px 90px at 16% 10%, rgba(255,255,255,.40), transparent 70%),
-    radial-gradient(170px 120px at 84% 66%, rgba(116,68,27,.10), transparent 72%),
+    radial-gradient(170px 120px at 84% 66%, rgba(235,120,35,.09), transparent 72%),
     radial-gradient(110px 80px at 55% 34%, rgba(255,255,255,.22), transparent 70%),
     linear-gradient(178deg, rgba(255,255,255,.20), transparent 58%);
 }
 .card--kraft::after{                              /* торец панели: видна гофра */
   content:""; position:absolute; top:0; right:0; bottom:0; left:auto;
   width:9px; height:auto; z-index:2; transform:none; border-radius:0;
-  border-left:1px solid var(--soft-line);
-  background:repeating-linear-gradient(90deg, var(--soft-line) 0 1.6px, rgba(255,255,255,.40) 1.6px 3.2px);
+  border-left:1px solid var(--warm-line);
+  background:repeating-linear-gradient(90deg, var(--warm-edge) 0 1.6px, rgba(255,255,255,.60) 1.6px 3.2px);
 }
 .card.card--kraft:hover{
   transform:translateY(-8px);
-  box-shadow:0 30px 50px rgba(116,68,27,.24), 0 6px 14px rgba(116,68,27,.12);
+  border-color:var(--warm-hi);
+  box-shadow:var(--warm-glow);
 }
 .card.card--kraft:hover::after{ transform:none; }  /* оранжевая полоса .card тут не нужна */
 
@@ -385,7 +443,7 @@ ul{ margin:0; padding:0; list-style:none; }
   margin-bottom:clamp(14px,1.3vw,19px);
 }
 .card--kraft .card__d{
-  position:relative; z-index:3; color:var(--soft-ink);
+  position:relative; z-index:3; color:var(--text-soft);
   font-size:clamp(14px,1vw,15.5px); line-height:1.5;
 }
 
@@ -398,12 +456,12 @@ ul{ margin:0; padding:0; list-style:none; }
 .card--kraft{ counter-increment:artbox; }
 .card--kraft .card__ico{
   width:clamp(42px,4.2vw,56px); height:clamp(42px,4.2vw,56px);
-  margin-bottom:0; border-radius:0; background:none; color:var(--soft-line);
+  margin-bottom:0; border:0; border-radius:0; background:none; color:var(--accent);
 }
 .card--kraft .card__ico svg{ width:100%; height:100%; stroke-width:1.4; }
 .card__num{
   font-family:var(--ff-head); font-weight:600; font-size:12px;
-  letter-spacing:.01em; color:var(--soft-ink); opacity:.8;
+  letter-spacing:.01em; color:var(--warm-ink);
 }
 .card__num::before{ content:"Art. №0" counter(artbox); }
 
@@ -715,22 +773,29 @@ ul{ margin:0; padding:0; list-style:none; }
 .section--dark .step__d{ color:var(--on-dark-dim); }
 
 /* --- 12. Аккордеон ----------------------------------------------------- */
-.acc{ border-radius:var(--r); overflow:hidden; background:var(--white); border:1px solid rgba(22,32,43,.08); box-shadow:var(--shadow-s); }
-.acc__item + .acc__item{ border-top:1px solid rgba(22,32,43,.08); }
+.acc{ border-radius:var(--r); overflow:hidden; background:var(--warm); border:1px solid var(--warm-line); box-shadow:var(--warm-shadow); }
+.acc__item + .acc__item{ border-top:1px solid var(--warm-div); }
 .acc__btn{
   width:100%; display:flex; align-items:center; justify-content:space-between; gap:18px;
   padding:20px clamp(18px,2vw,26px); text-align:left;
   font-family:var(--ff-head); font-weight:700; font-size:16.5px;
   transition:background .25s;
 }
-.acc__btn:hover{ background:var(--paper); }
+.acc__btn:hover{ background:var(--warm-2); }
+/* Раскрытый пункт держится фирменным акцентом: плотнее заливка и тёплый
+   тёмно-оранжевый заголовок — видно, какой вопрос открыт, без стрелок. */
+.acc__item.is-open .acc__btn{ background:var(--warm-3); color:var(--accent-ink); }
 .acc__ico{
   width:30px; height:30px; border-radius:50%; flex:none;
   display:flex; align-items:center; justify-content:center;
-  background:var(--paper-2); color:var(--accent); transition:.3s var(--ease);
+  background:rgba(235,120,35,.12); border:1px solid var(--warm-line);
+  color:var(--accent-ink); transition:.3s var(--ease);
 }
+.acc__btn:hover .acc__ico{ background:rgba(235,120,35,.20); border-color:var(--warm-hi); }
 .acc__ico svg{ width:14px; height:14px; }
-.acc__item.is-open .acc__ico{ background:var(--accent); color:#fff; transform:rotate(45deg); }
+.acc__item.is-open .acc__ico{
+  background:var(--accent); border-color:var(--accent); color:#fff; transform:rotate(45deg);
+}
 .acc__panel{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .38s var(--ease); }
 .acc__item.is-open .acc__panel{ grid-template-rows:1fr; }
 .acc__panel > div{ overflow:hidden; }
@@ -765,16 +830,16 @@ ul{ margin:0; padding:0; list-style:none; }
    по высоте — она откидывается от верхнего края, как листок
    в журнале. -------------------------------------------------------- */
 .acc--frame{
-  background:var(--soft);
-  border:none;
-  box-shadow:0 10px 26px rgba(160,88,26,.11);
+  background:var(--warm);
+  border:1px solid var(--warm-line);
+  box-shadow:var(--warm-shadow);
   perspective:1100px;                                /* для «откидывания» панелей ниже */
 }
-.acc--frame .acc__item + .acc__item{ border-top-color:var(--soft-line); }
+.acc--frame .acc__item + .acc__item{ border-top-color:var(--warm-div); }
 .acc--frame .acc__btn{ color:var(--text); }
-.acc--frame .acc__btn:hover{ background:var(--soft-2); }
-.acc--frame .acc__item.is-open .acc__btn{ background:var(--soft-3); }
-.acc--frame .acc__panel p{ color:var(--soft-ink); }
+.acc--frame .acc__btn:hover{ background:var(--warm-2); }
+.acc--frame .acc__item.is-open .acc__btn{ background:var(--warm-3); color:var(--accent-ink); }
+.acc--frame .acc__panel p{ color:var(--text-soft); }
 /* внешний блок по-прежнему складывает пространство по высоте (grid-rows),
    а вложенный — «падает» как страница: поворот от верхнего края + прозрачность */
 .acc--frame .acc__panel > div{
@@ -959,6 +1024,13 @@ ul{ margin:0; padding:0; list-style:none; }
        по краям заведомо больше требуемых 30px, менять его не нужно. */
   }
 
+  /* Шапка и верхняя полоса — на общей направляющей. Их собственный предел
+     в 1440px писался, когда контейнер был 1280px: он делал шапку ШИРЕ
+     содержимого. С раскрытым контейнером соотношение перевернулось — на
+     1920px логотип оказывался на 160px внутрь от края текста под ним.
+     Ниже 1440px предел по-прежнему свой и ничего не двигает. */
+  .topbar .wrap, .header .wrap{ max-width:var(--wrap); }
+
   /* Первый экран: та же ширина, что у всех секций, но крупнее шрифт —
      clamp() заголовка упирался в потолок задолго до Full HD. */
   .hero__copy{ max-width:52%; }
@@ -1092,6 +1164,10 @@ ul{ margin:0; padding:0; list-style:none; }
 /* Шапка сжимается ступенями: сначала уходит кнопка, затем подпись логотипа,
    затем меню целиком прячется под бургер. */
 @media (max-width:1439px){ .header__cta{ display:none; } }
+/* Ниже 1280px шапка идёт впритык: шесть пунктов со стрелками уже не
+   помещаются между логотипом и краем экрана (замер: +29px за поле на
+   1024px). Шеврон-подсказку убираем — само подменю по наведению остаётся. */
+@media (max-width:1279px){ .nav__item > .nav__link::after{ display:none; } }
 @media (max-width:1199px){ .logo__sub{ display:none; } .nav__link{ padding:10px 10px; font-size:14px; } }
 @media (max-width:1080px){
   .grid--4{ grid-template-columns:repeat(2,1fr); }
@@ -1109,7 +1185,40 @@ ul{ margin:0; padding:0; list-style:none; }
   .nav.is-open{ transform:none; opacity:1; visibility:visible; }
   .nav__list{ flex-direction:column; align-items:stretch; gap:2px; }
   .nav__link{ padding:14px 16px; border-radius:12px; font-size:16.5px; }
-  .nav__drop{ display:none; }                    /* навести некуда — экран сенсорный */
+  /* Подменю на сенсорном экране: наводить нечем, поэтому разворачивается
+     тапом по шеврону справа от пункта. Сам пункт остаётся ссылкой на свою
+     страницу — тап по названию уводит на неё, тап по кнопке раскрывает
+     список. Высота течёт через grid-template-rows, как у аккордеонов. */
+  .nav__item{ display:grid; grid-template-columns:1fr auto; align-items:center; }
+  .nav__item > .nav__link::after{ display:none; }   /* вместо шеврона — кнопка */
+  .nav__toggle{
+    display:flex; align-items:center; justify-content:center;
+    width:44px; height:44px; flex:none; border-radius:12px;
+    color:var(--text-soft); transition:color .2s, background .2s, transform .3s var(--ease);
+  }
+  .nav__toggle svg{ width:18px; height:18px; }
+  .nav__toggle:hover{ background:var(--warm-2); color:var(--accent-ink); }
+  .nav__item.is-open > .nav__toggle{ color:var(--accent); transform:rotate(180deg); }
+
+  .nav__drop{
+    grid-column:1 / -1;
+    position:static; z-index:auto; min-width:0;
+    margin:0; padding:0; border:0; border-radius:0;
+    background:none; box-shadow:none;
+    opacity:1; visibility:visible; pointer-events:auto; transform:none;
+    display:grid; grid-template-rows:0fr;
+    transition:grid-template-rows .3s var(--ease);
+  }
+  .nav__drop::before{ content:none; }            /* мостик нужен только курсору */
+  .nav__item.is-open > .nav__drop{ grid-template-rows:1fr; }
+  /* Наведение на десктопе не должно раскрывать список на планшете с мышью —
+     здесь раскрытие только по тапу, поэтому :hover ничего не переопределяет. */
+  .nav__item:hover > .nav__drop,
+  .nav__item:focus-within > .nav__drop{ transform:none; transition-delay:0s; }
+  .nav__drop--wide{ min-width:0; }
+  .nav__drop-list{ overflow:hidden; grid-template-columns:1fr !important; }
+  .nav__drop a{ padding:12px 16px 12px 30px; font-size:15px; border-radius:10px; }
+  .nav__drop a::after{ opacity:.35; transform:rotate(45deg); }
   .burger{ display:flex; }
   .header__cart{ display:inline-flex; }        /* меню под бургером — корзина остаётся на виду */
   .header__in > .burger{ margin-left:12px; }

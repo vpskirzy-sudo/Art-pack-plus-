@@ -49,23 +49,41 @@
       </a>
       <button class="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
       <nav class="nav" aria-label="Основное меню"><ul class="nav__list"><li class="nav__item">
-        <a class="nav__link" href="index.html">Главная</a>
-        <div class="nav__drop"><a href="index.html#dalee">Почему заказывают у нас</a><a href="index.html#produkciya">Продукция</a><a href="index.html#oborudovanie-band">Оборудование</a><a href="index.html#etapy">От заявки до отгрузки</a></div>
+        <a class="nav__link" href="index.html" aria-haspopup="true">Главная</a>
+        <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Разделы: Главная"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5 12 15l6-5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="nav__drop">
+          <ul class="nav__drop-list"><li><a href="index.html#dalee">Почему заказывают у нас</a></li><li><a href="index.html#produkciya">Продукция</a></li><li><a href="index.html#oborudovanie-band">Оборудование</a></li><li><a href="index.html#etapy">От заявки до отгрузки</a></li></ul>
+        </div>
       </li><li class="nav__item">
-        <a class="nav__link" href="o-kompanii.html">О компании</a>
-        <div class="nav__drop"><a href="o-kompanii.html#dalee">Производство</a><a href="o-kompanii.html#principy">Принципы работы</a><a href="o-kompanii.html#vizit">Приезжайте на производство</a></div>
+        <a class="nav__link" href="o-kompanii.html" aria-haspopup="true">О компании</a>
+        <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Разделы: О компании"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5 12 15l6-5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="nav__drop">
+          <ul class="nav__drop-list"><li><a href="o-kompanii.html#dalee">Производство</a></li><li><a href="o-kompanii.html#principy">Принципы работы</a></li><li><a href="o-kompanii.html#vizit">Приезжайте на производство</a></li></ul>
+        </div>
       </li><li class="nav__item">
-        <a class="nav__link" href="produkciya.html">Продукция</a>
-        <div class="nav__drop"><a href="produkciya.html#dalee">Каталог продукции</a><a href="produkciya.html#material">Из чего делаем упаковку</a></div>
+        <a class="nav__link" href="produkciya.html" aria-haspopup="true">Продукция</a>
+        <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Разделы: Продукция"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5 12 15l6-5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="nav__drop nav__drop--wide">
+          <ul class="nav__drop-list"><li><a href="produkciya-gofroyashchiki.html">Гофроящики</a></li><li><a href="produkciya-gofrolotki.html">Гофролотки</a></li><li><a href="produkciya-korobki-dlya-piccy.html">Коробки для пиццы</a></li><li><a href="produkciya-upakovka-dlya-marketpleysov.html">Упаковка для маркетплейсов</a></li><li><a href="produkciya-gofrokarton.html">Гофрокартон</a></li><li><a href="produkciya-zashchitnye-ugolki.html">Защитные уголки</a></li><li><a href="produkciya-gofrokonteynery.html">Гофроконтейнеры</a></li><li><a href="produkciya-prokladki-i-reshyotki.html">Прокладки и решётки</a></li><li><a href="produkciya-karton-dlya-zashchity-pola.html">Картон для защиты пола</a></li><li><a href="produkciya-bumazhnyy-organayzer.html">Бумажный органайзер</a></li><li><a href="produkciya.html#dalee">Весь каталог продукции</a></li><li><a href="produkciya.html#material">Из чего делаем упаковку</a></li></ul>
+        </div>
       </li><li class="nav__item">
-        <a class="nav__link is-active" href="uslugi.html">Услуги</a>
-        <div class="nav__drop"><a href="uslugi.html#dalee">Наши услуги</a><a href="uslugi.html#flexopechat">Как мы печатаем</a><a href="uslugi.html#faq">Частые вопросы</a></div>
+        <a class="nav__link is-active" href="uslugi.html" aria-haspopup="true">Услуги</a>
+        <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Разделы: Услуги"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5 12 15l6-5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="nav__drop nav__drop--wide">
+          <ul class="nav__drop-list"><li><a href="uslugi.html#usluga-flexopechat">Флексографическая печать</a></li><li><a href="uslugi.html#usluga-pokraska">Покраска продукции</a></li><li><a href="uslugi.html#usluga-konstrukciya">Разработка конструкции</a></li><li><a href="uslugi.html#usluga-vysechka">Высечка и рилёвка</a></li><li><a href="uslugi.html#usluga-razmery">Изготовление по размерам</a></li><li><a href="uslugi.html#usluga-dostavka">Доставка</a></li><li><a href="uslugi.html#flexopechat">Как мы печатаем</a></li><li><a href="uslugi.html#faq">Частые вопросы</a></li></ul>
+        </div>
       </li><li class="nav__item">
-        <a class="nav__link" href="oborudovanie.html">Оборудование</a>
-        <div class="nav__drop"><a href="oborudovanie.html#dalee">Что мы предлагаем</a><a href="oborudovanie.html#sdelka">Как проходит сделка</a></div>
+        <a class="nav__link" href="oborudovanie.html" aria-haspopup="true">Оборудование</a>
+        <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Разделы: Оборудование"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5 12 15l6-5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="nav__drop">
+          <ul class="nav__drop-list"><li><a href="oborudovanie.html#dalee">Что мы предлагаем</a></li><li><a href="oborudovanie.html#sdelka">Как проходит сделка</a></li></ul>
+        </div>
       </li><li class="nav__item">
-        <a class="nav__link nav__link--cart" href="korzina.html">Корзина<svg class="nav__cart-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h2.3l2.2 9.6a2 2 0 0 0 1.95 1.55h7.05a2 2 0 0 0 1.95-1.5L20.5 8.2H6.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="17.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg><span class="cart-badge" data-cart-badge hidden>0</span></a>
-        <div class="nav__drop"><a href="korzina.html#sostav">Состав заказа</a><a href="korzina.html#zayavka">Заявка на расчёт</a><a href="korzina.html#karta">Как нас найти</a></div>
+        <a class="nav__link nav__link--cart" href="korzina.html" aria-haspopup="true">Корзина<svg class="nav__cart-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h2.3l2.2 9.6a2 2 0 0 0 1.95 1.55h7.05a2 2 0 0 0 1.95-1.5L20.5 8.2H6.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="17.2" cy="19.4" r="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg><span class="cart-badge" data-cart-badge hidden>0</span></a>
+        <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Разделы: Корзина"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5 12 15l6-5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="nav__drop">
+          <ul class="nav__drop-list"><li><a href="korzina.html#sostav">Состав заказа</a></li><li><a href="korzina.html#zayavka">Заявка на расчёт</a></li><li><a href="korzina.html#karta">Как нас найти</a></li></ul>
+        </div>
       </li></ul></nav>
       <a class="btn btn--primary btn--sm header__cta" href="korzina.html#zayavka">Рассчитать заказ</a>
     </div>
@@ -91,22 +109,22 @@
     <!-- Тот же дизайн, что у карточек принципов работы на «О компании»:
          тёмно-синий фон, заголовок первым и акцентным, без иконок. -->
     <div class="grid grid--3">
-      <article class="card card--dark reveal"><h3 class="card__t">Флексографическая печать</h3>
+      <article class="card card--dark reveal" id="usluga-flexopechat"><h3 class="card__t">Флексографическая печать</h3>
         <p class="card__d">Многокрасочная печать в 1–4 краски на любой упаковке из гофрокартона:
           логотип, состав, маркировка, полноцветное оформление.</p></article>
-      <article class="card card--dark reveal"><h3 class="card__t">Покраска продукции</h3>
+      <article class="card card--dark reveal" id="usluga-pokraska"><h3 class="card__t">Покраска продукции</h3>
         <p class="card__d">Сплошная запечатка и нанесение фонового цвета на гофротару —
           когда упаковка должна выглядеть как часть бренда.</p></article>
-      <article class="card card--dark reveal"><h3 class="card__t">Разработка конструкции</h3>
+      <article class="card card--dark reveal" id="usluga-konstrukciya"><h3 class="card__t">Разработка конструкции</h3>
         <p class="card__d">Конструкторы рассчитают короб под вес, габарит и способ перевозки,
           подберут марку картона и подготовят чертёж.</p></article>
-      <article class="card card--dark reveal"><h3 class="card__t">Высечка и рилёвка</h3>
+      <article class="card card--dark reveal" id="usluga-vysechka"><h3 class="card__t">Высечка и рилёвка</h3>
         <p class="card__d">Изготовление изделий сложной формы, вкладышей, решёток и прокладок
           по индивидуальной оснастке.</p></article>
-      <article class="card card--dark reveal"><h3 class="card__t">Изготовление по размерам</h3>
+      <article class="card card--dark reveal" id="usluga-razmery"><h3 class="card__t">Изготовление по размерам</h3>
         <p class="card__d">Нестандартная упаковка под конкретный товар — от единичного образца
           до серийного тиража.</p></article>
-      <article class="card card--dark reveal"><h3 class="card__t">Доставка</h3>
+      <article class="card card--dark reveal" id="usluga-dostavka"><h3 class="card__t">Доставка</h3>
         <p class="card__d">Доставляем готовый тираж по Минску и всей Беларуси. Возможен
           самовывоз с производства в Заславле.</p></article>
     </div>
