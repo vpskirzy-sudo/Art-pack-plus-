@@ -296,11 +296,11 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
      }));
   ok('плюсиков-разворотов на вкладках «О компании» больше нет',
      await p.locator('.acc--frame .acc__ico').count() === 0);
-  ok('рамки вокруг таблицы нет, фон — приглушённый полупрозрачный оранжевый', await p.locator('.acc--frame').evaluate(e => {
-      const cs = getComputedStyle(e);
-      // тот же оттенок, что у «Плюс» (224,123,38), но полупрозрачный
-      return cs.borderStyle === 'none' && /^rgba\(224, 123, 38, 0\.\d+\)$/.test(cs.backgroundColor);
-  }));
+  ok('рамки вокруг таблицы нет, фон — приглушённый непрозрачный оранжевый (--soft)',
+     await p.locator('.acc--frame').evaluate(e => {
+       const cs = getComputedStyle(e);
+       return cs.borderStyle === 'none' && cs.backgroundColor === 'rgb(236, 218, 202)';
+     }));
   ok('закруглённые углы таблицы не тронуты', await p.locator('.acc--frame')
       .evaluate(e => parseFloat(getComputedStyle(e).borderRadius) > 0));
   // Рамка открывается наведением, а уход курсора её сворачивает: чтобы проверить
@@ -331,14 +331,69 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
         return await arrow.count() === 1
                && await arrow.getAttribute('href') === '#dalee'
                && await p.locator('#dalee').count() === 1; })());
+    ok('на «' + page + '» стрелка лежит прямо в шапке страницы, а не в текстовом блоке',
+       await p.locator('.scroll-down').evaluate(e =>
+         e.parentElement.classList.contains('hero') || e.parentElement.classList.contains('phead')));
+    ok('на «' + page + '» стрелка отцентрована по всей ширине шапки', await (async () => {
+        const arrowBox = await p.locator('.scroll-down').boundingBox();
+        const bannerBox = await p.locator('.hero, .phead').first().boundingBox();
+        const arrowCenter = arrowBox.x + arrowBox.width / 2;
+        const bannerCenter = bannerBox.x + bannerBox.width / 2;
+        return Math.abs(arrowCenter - bannerCenter) < 2; })());
   }
+  ok('стрелка и её иконка мягко покачиваются, привлекая внимание', await (async () => {
+      await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+      const ys = [];
+      for (let i = 0; i < 6; i++) {
+        ys.push(await p.locator('.scroll-down').evaluate(e => e.getBoundingClientRect().top));
+        await p.waitForTimeout(200);
+      }
+      return new Set(ys).size > 1; })());
   ok('клик по стрелке прокручивает к содержимому под липкой шапкой', await (async () => {
       await p.goto('file://' + B + 'oborudovanie.html', { waitUntil:'domcontentloaded' });
       await p.waitForTimeout(200);
-      await p.locator('.scroll-down').click();
+      await p.locator('.scroll-down').click({ force: true });   // элемент постоянно покачивается
       await p.waitForTimeout(1200);
       const top = await p.locator('#dalee').evaluate(e => e.getBoundingClientRect().top);
       return await p.evaluate(() => window.scrollY) > 200 && top > 0 && top < 140; })());
+
+  console.log('Подменю пунктов навигации:');
+  await p.mouse.move(2, 2);
+  await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+  ok('у каждого пункта меню есть подменю с разделами страницы', await (async () => {
+      const counts = await p.locator('.nav__item .nav__drop').evaluateAll(els => els.length);
+      return counts === (await p.locator('.nav__item').count()); })());
+  ok('подменю «Главной» перечисляет её разделы', await (async () => {
+      // .innerText не читает скрытый (visibility:hidden) элемент — берём textContent
+      const text = await p.locator('.nav__item').first().locator('.nav__drop').evaluate(e => e.textContent);
+      return text.includes('Почему заказывают у нас') && text.includes('Продукция')
+             && text.includes('Оборудование') && text.includes('От заявки до отгрузки'); })());
+  ok('подменю скрыто, пока курсор не наведён', await (async () => {
+      const drop = p.locator('.nav__item').first().locator('.nav__drop');
+      return !(await drop.isVisible()); })());
+  ok('наведение на пункт раскрывает его подменю', await (async () => {
+      const item = p.locator('.nav__item').first();
+      await item.hover();
+      await p.waitForTimeout(250);
+      return await item.locator('.nav__drop').isVisible(); })());
+  ok('пункт подменю ведёт на якорь внутри той же страницы', await (async () => {
+      const item = p.locator('.nav__item').first();
+      await item.hover();
+      await p.waitForTimeout(250);
+      await item.locator('.nav__drop a', { hasText: 'Оборудование' }).click();
+      await p.waitForLoadState('domcontentloaded');
+      await p.waitForTimeout(1200);
+      const okUrl = p.url().endsWith('index.html#oborudovanie-band');
+      const top = await p.locator('#oborudovanie-band').evaluate(e => e.getBoundingClientRect().top);
+      return okUrl && top > 0 && top < 140; })());
+  ok('на мобильном подменю не показывается — навести некуда', await (async () => {
+      await p.setViewportSize({ width: 390, height: 800 });
+      await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+      await p.locator('.burger').click();
+      await p.waitForTimeout(300);
+      const visible = await p.locator('.nav__drop').first().isVisible();
+      await p.setViewportSize({ width: 1440, height: 900 });
+      return !visible; })());
 
   console.log('Таблица на «Оборудовании»:');
   await p.mouse.move(2, 2);
@@ -346,8 +401,8 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('таблица переведена на тот же аккордеон-рамку, что и на «О компании»',
      await p.locator('.acc--frame').count() === 1);
   ok('плюсиков в таблице больше нет', await p.locator('.acc--frame .acc__ico').count() === 0);
-  ok('фон таблицы — тот же приглушённый оранжевый', await p.locator('.acc--frame')
-      .evaluate(e => /^rgba\(224, 123, 38, 0\.\d+\)$/.test(getComputedStyle(e).backgroundColor)));
+  ok('фон таблицы — тот же приглушённый оранжевый (--soft), что на «О компании»',
+     await p.locator('.acc--frame').evaluate(e => getComputedStyle(e).backgroundColor === 'rgb(236, 218, 202)'));
   ok('наведение на подраздел раскрывает его и сворачивает предыдущий', await (async () => {
       const items = p.locator('.acc--frame .acc__item');
       await items.nth(2).hover();
@@ -357,15 +412,28 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
 
   console.log('Крафт-панели на главной — цвет:');
   await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
-  ok('панели залиты полупрозрачным «плюс»-оранжевым, а не крафтом',
+  ok('панели залиты непрозрачным приглушённым оранжевым (--soft/--soft-2), не крафтом и не полупрозрачным',
      await p.locator('.card--kraft').first().evaluate(e => {
        const bg = getComputedStyle(e).backgroundImage;
-       return bg.includes('rgba(224, 123, 38') && !bg.includes('rgb(217, 175, 137)'); }));
-  ok('оттенок панелей совпадает с «Плюс» в названии', await p.evaluate(() => {
-      const plus = getComputedStyle(document.querySelector('.brand-plus')).color;
-      const bg = getComputedStyle(document.querySelector('.card--kraft')).backgroundImage;
-      const m = plus.match(/\d+/g);                       // rgb(224, 123, 38)
-      return bg.includes('rgba(' + m[0] + ', ' + m[1] + ', ' + m[2]); }));
+       return bg.includes('rgb(231, 202, 177)') && bg.includes('rgb(236, 218, 202)')
+              && !bg.includes('rgb(217, 175, 137)') && !bg.includes('rgba(224, 123, 38');
+     }));
+  ok('оттенок панелей — та же тёплая гамма, что у «Плюс» в названии (не ушёл в красный)', await p.evaluate(() => {
+      const hue = ([r, g, b]) => {
+        const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+        if (!d) return 0;
+        let h;
+        if (max === r) h = ((g - b) / d + 6) % 6;
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        return h * 60;
+      };
+      const probe = css => { const d = document.createElement('div'); d.style.color = css;
+        document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; };
+      const rgb = s => s.match(/[\d.]+/g).slice(0, 3).map(Number);
+      const plusHue = hue(rgb(getComputedStyle(document.querySelector('.brand-plus')).color));
+      const softHue = hue(rgb(probe('var(--soft-2)')));
+      return Math.abs(plusHue - softHue) < 12; }));
 
   console.log('Карточки «На что мы отвечаем перед заказчиком»:');
   await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
@@ -374,6 +442,18 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       .evaluate(e => getComputedStyle(e).color === 'rgb(244, 155, 63)'));
   ok('фон карточек — тёмный градиент, а не прежний белый', await p.locator('.card--dark').first()
       .evaluate(e => getComputedStyle(e).backgroundImage.includes('gradient')));
+
+  console.log('Карточки услуг — тот же тёмный дизайн, что на «О компании»:');
+  await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
+  ok('карточек услуг шесть, все тёмные (card--dark)', await p.locator('.card--dark').count() === 6);
+  ok('заголовки — тот же фирменный оранжевый', await p.locator('.card--dark .card__t').first()
+      .evaluate(e => getComputedStyle(e).color === 'rgb(244, 155, 63)'));
+  ok('иконок на карточках нет — заголовок первым', await p.locator('.card--dark .card__ico').count() === 0);
+  ok('названия услуг сохранены', await (async () => {
+      const t = await p.locator('#dalee').innerText();
+      return t.includes('Флексографическая печать') && t.includes('Покраска продукции')
+             && t.includes('Разработка конструкции') && t.includes('Высечка и рилёвка')
+             && t.includes('Изготовление по размерам') && t.includes('Доставка'); })());
 
   console.log('Мобильное меню:');
   await p.setViewportSize({ width: 390, height: 844 });

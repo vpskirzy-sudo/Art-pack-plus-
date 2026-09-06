@@ -41,6 +41,41 @@ NAV = [("index.html",       "Главная"),
        ("oborudovanie.html", "Оборудование"),
        ("korzina.html",     "Корзина")]
 
+# Разделы, на которые ведёт подменю каждого пункта — при наведении на пункт
+# сразу видно, что есть на странице, и можно попасть в нужное место без
+# прокрутки. id-якоря расставлены в src/*.html на соответствующих секциях.
+NAV_SECTIONS = {
+    "index.html": [
+        ("dalee", "Почему заказывают у нас"),
+        ("produkciya", "Продукция"),
+        ("oborudovanie-band", "Оборудование"),
+        ("etapy", "От заявки до отгрузки"),
+    ],
+    "o-kompanii.html": [
+        ("dalee", "Производство"),
+        ("principy", "Принципы работы"),
+        ("vizit", "Приезжайте на производство"),
+    ],
+    "produkciya.html": [
+        ("dalee", "Каталог продукции"),
+        ("material", "Из чего делаем упаковку"),
+    ],
+    "uslugi.html": [
+        ("dalee", "Наши услуги"),
+        ("flexopechat", "Как мы печатаем"),
+        ("faq", "Частые вопросы"),
+    ],
+    "oborudovanie.html": [
+        ("dalee", "Что мы предлагаем"),
+        ("sdelka", "Как проходит сделка"),
+    ],
+    "korzina.html": [
+        ("sostav", "Состав заказа"),
+        ("zayavka", "Заявка на расчёт"),
+        ("karta", "Как нас найти"),
+    ],
+}
+
 PAGES = {
     "index.html":       ("Производство упаковки из гофрокартона в Минске — " + LEGAL,
                          "Производим гофрокороба, лотки, защитные уголки и гофротару любой конфигурации "
@@ -125,12 +160,23 @@ def topbar():
 
 
 def nav_item(f, t, active):
-    """Пункт меню. У «Корзины» дополнительно счётчик позиций — его ведёт JS."""
+    """Пункт меню. При наведении разворачивается список разделов страницы —
+    подсказка, что на ней есть, без прокрутки. У «Корзины» дополнительно
+    счётчик позиций — его ведёт JS."""
     cls = "nav__link" + (" is-active" if f == active else "")
+    label = t
     if f == "korzina.html":
         cls += " nav__link--cart"
-        t += f'{icon("cart", "nav__cart-ico")}<span class="cart-badge" data-cart-badge hidden>0</span>'
-    return f'<li><a class="{cls}" href="{f}">{t}</a></li>'
+        label += f'{icon("cart", "nav__cart-ico")}<span class="cart-badge" data-cart-badge hidden>0</span>'
+    link = f'<a class="{cls}" href="{f}">{label}</a>'
+    sections = NAV_SECTIONS.get(f)
+    if not sections:
+        return f'<li>{link}</li>'
+    items = "".join(f'<a href="{f}#{anchor}">{title}</a>' for anchor, title in sections)
+    return f'''<li class="nav__item">
+        {link}
+        <div class="nav__drop">{items}</div>
+      </li>'''
 
 
 def header(active):
