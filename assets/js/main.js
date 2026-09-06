@@ -193,44 +193,58 @@
     });
   }
 
-  /* --- Аккордеон: обычный, по клику («Услуги», «Оборудование») ----------- */
-  $$('.acc__btn').forEach(function (btn) {
-    if (btn.closest('.acc--frame')) return;   // у рамки на «О компании» своя механика ниже
-    btn.addEventListener('click', function () {
-      var item = btn.closest('.acc__item');
-      var open = item.classList.contains('is-open');
-      $$('.acc__item', btn.closest('.acc')).forEach(function (i) {
-        i.classList.remove('is-open');
-        $('.acc__btn', i).setAttribute('aria-expanded', 'false');
+  /* --- Аккордеоны --------------------------------------------------------
+     Одна механика на весь сайт: «Услуги» (FAQ), «О компании», «Оборудование».
+     Раньше рамки на «О компании» и «Оборудовании» раскрывались наведением и
+     первый пункт стоял открытым — на сенсорном экране навести нечем, а
+     открытый по умолчанию пункт сбивал с толку: непонятно, кто его открыл.
+     Теперь везде одинаково: при загрузке всё свёрнуто, раскрывает только
+     клик, повторный клик по открытому пункту сворачивает его обратно.
+     В группе открыт один пункт — соседний закрывается сам.
+     ---------------------------------------------------------------------- */
+  $$('.acc').forEach(function (acc) {
+    var items = $$('.acc__item', acc);
+    items.forEach(function (item) {
+      var btn = $('.acc__btn', item);
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var willOpen = !item.classList.contains('is-open');
+        items.forEach(function (i) {
+          i.classList.remove('is-open');
+          var b = $('.acc__btn', i);
+          if (b) b.setAttribute('aria-expanded', 'false');
+        });
+        if (willOpen) {
+          item.classList.add('is-open');
+          btn.setAttribute('aria-expanded', 'true');
+        }
       });
-      if (!open) { item.classList.add('is-open'); btn.setAttribute('aria-expanded', 'true'); }
     });
   });
 
-  /* --- Аккордеон-рамка на «О компании»: раскрывается наведением ----------
-     Курсор навёлся на вкладку — она открывается, предыдущая сама
-     складывается. Клик и фокус с клавиатуры работают так же — без мыши
-     навести панель нельзя, поэтому это не единственный способ её открыть.
-     Курсор ушёл со всей таблицы — последняя открытая вкладка сворачивается
-     тем же движением, что и при переключении между вкладками.
-     ---------------------------------------------------------------------- */
-  $$('.acc--frame').forEach(function (acc) {
-    var items = $$('.acc__item', acc);
-    var openItem = function (item) {
-      items.forEach(function (i) {
-        var open = i === item;
-        i.classList.toggle('is-open', open);
-        $('.acc__btn', i).setAttribute('aria-expanded', String(open));
+  /* --- Кнопки «Рассчитать» у типоразмеров --------------------------------
+     Кнопка и так ведёт якорем к форме — здесь только подставляем размер
+     в комментарий, чтобы его не пришлось перепечатывать вручную. Если
+     посетитель уже что-то написал, текст не затираем: дописываем размер
+     в начало. Работает поверх обычной ссылки, поэтому без JS кнопка
+     всё равно приводит к форме. ---------------------------------------- */
+  var sizeField = $('[data-size-target]');
+  if (sizeField) {
+    $$('.pcalc[data-size]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var size = btn.getAttribute('data-size');
+        var was = sizeField.value.trim();
+        if (was.indexOf(size) === -1) {
+          sizeField.value = was ? size + ', ' + was : size + ', ';
+        }
+        // Фокус — после перехода по якорю, иначе браузер прокрутит дважды.
+        setTimeout(function () {
+          sizeField.focus();
+          sizeField.setSelectionRange(sizeField.value.length, sizeField.value.length);
+        }, 320);
       });
-    };
-    items.forEach(function (item) {
-      var btn = $('.acc__btn', item);
-      item.addEventListener('mouseenter', function () { openItem(item); });
-      btn.addEventListener('focus', function () { openItem(item); });
-      btn.addEventListener('click', function (e) { e.preventDefault(); openItem(item); });
     });
-    acc.addEventListener('mouseleave', function () { openItem(null); });
-  });
+  }
 
   /* --- Кнопка «наверх» ---------------------------------------------------- */
   var totop = $('.totop');

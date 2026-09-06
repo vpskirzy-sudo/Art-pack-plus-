@@ -464,8 +464,10 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
      (await p.locator('.ptable__note').innerText()).includes('30 рублей'));
 
   await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'domcontentloaded' });
+  // На этой странице две таблицы: прайс по тиражу и список типоразмеров,
+  // поэтому обращаемся именно к прайсовой — по её секции.
   ok('у пиццы свои тиражи — от 3000 / 5000 / 10 000 шт.',
-     (await p.locator('.ptable thead').innerText()).includes('10 000'));
+     (await p.locator('#price .ptable thead').innerText()).includes('10 000'));
 
   await p.goto('file://' + B + 'produkciya-gofrokarton.html', { waitUntil:'domcontentloaded' });
   ok('виды гофрокартона: 5 позиций без колонки цены',
@@ -494,10 +496,27 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
 
   console.log('Аккордеон:');
   await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
-  ok('первый пункт открыт', await p.locator('.acc__item').first().evaluate(e => e.classList.contains('is-open')));
+  ok('при загрузке всё свёрнуто — ни один пункт не открыт сам',
+     await p.locator('.acc__item.is-open').count() === 0);
   await p.locator('.acc__btn').nth(2).click();
   ok('клик открывает третий', await p.locator('.acc__item').nth(2).evaluate(e => e.classList.contains('is-open')));
-  ok('первый при этом закрылся', await p.locator('.acc__item').first().evaluate(e => !e.classList.contains('is-open')));
+  await p.locator('.acc__btn').first().click();
+  ok('клик по другому пункту закрывает предыдущий', await (async () => {
+      const third = await p.locator('.acc__item').nth(2).evaluate(e => e.classList.contains('is-open'));
+      const first = await p.locator('.acc__item').first().evaluate(e => e.classList.contains('is-open'));
+      return first && !third; })());
+  ok('повторный клик по открытому пункту сворачивает его обратно', await (async () => {
+      await p.locator('.acc__btn').first().click();
+      await p.waitForTimeout(200);
+      return await p.locator('.acc__item.is-open').count() === 0; })());
+  ok('aria-expanded ходит вместе с состоянием пункта', await (async () => {
+      const btn = p.locator('.acc__btn').nth(1);
+      const shut = await btn.getAttribute('aria-expanded');
+      await btn.click(); await p.waitForTimeout(150);
+      const open = await btn.getAttribute('aria-expanded');
+      await btn.click(); await p.waitForTimeout(150);
+      return shut === 'false' && open === 'true'
+             && await btn.getAttribute('aria-expanded') === 'false'; })());
 
   console.log('Корзина:');
   await p.goto('file://' + B + 'produkciya-gofroyashchiki.html', { waitUntil:'domcontentloaded' });
@@ -615,45 +634,66 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
        probe.remove();
        return parseFloat(getComputedStyle(e).fontSize) < base;
      }));
-  ok('плюсиков-разворотов на вкладках «О компании» больше нет',
-     await p.locator('.acc--frame .acc__ico').count() === 0);
-  ok('таблица в тёплой крафтовой заливке с тонкой оранжевой рамкой',
-     await p.locator('.acc--frame').evaluate(e => {
+  ok('у каждой вкладки есть шеврон-индикатор', await (async () => {
+      const items = await p.locator('.acc--frame .acc__item').count();
+      return items > 0 && await p.locator('.acc--frame .acc__ico').count() === items
+             && await p.locator('.acc--frame .acc__ico svg').count() === items; })());
+  ok('плашка вкладки белая, с тёплой окантовкой и мягкой тенью',
+     await p.locator('.acc--frame .acc__item').first().evaluate(e => {
        const cs = getComputedStyle(e);
-       return cs.backgroundColor === 'rgb(251, 246, 240)'
-              && cs.borderStyle === 'solid'
+       return cs.backgroundColor === 'rgb(255, 255, 255)'
               && parseFloat(cs.borderTopWidth) === 1
-              && cs.borderTopColor === 'rgba(235, 120, 35, 0.2)';
+              && cs.borderTopColor === 'rgba(235, 120, 35, 0.25)'
+              && cs.boxShadow !== 'none' && parseFloat(cs.borderRadius) > 0;
      }));
-  ok('закруглённые углы таблицы не тронуты', await p.locator('.acc--frame')
-      .evaluate(e => parseFloat(getComputedStyle(e).borderRadius) > 0));
-  // Рамка открывается наведением, а уход курсора её сворачивает: чтобы проверить
-  // именно состояние «по умолчанию», уводим курсор и перезагружаем страницу.
+  ok('наведение усиливает окантовку плашки', await (async () => {
+      const item = p.locator('.acc--frame .acc__item').first();
+      const rest = await item.evaluate(e => getComputedStyle(e).borderTopColor);
+      await item.hover();
+      await p.waitForTimeout(350);
+      const hov = await item.evaluate(e => getComputedStyle(e).borderTopColor);
+      await p.mouse.move(2, 2);
+      await p.waitForTimeout(300);
+      return rest === 'rgba(235, 120, 35, 0.25)' && hov === 'rgba(235, 120, 35, 0.5)'; })());
+  // Раскрытие теперь только по клику: наводить на сенсорном экране нечем,
+  // а открытая по умолчанию вкладка сбивала с толку.
   await p.mouse.move(2, 2);
   await p.reload({ waitUntil:'domcontentloaded' });
-  ok('по умолчанию открыта первая вкладка', await p.locator('.acc--frame .acc__item').first()
-      .evaluate(e => e.classList.contains('is-open')));
-  ok('наведение на третью вкладку открывает её и закрывает первую', await (async () => {
-      // Третья вкладка обычно ниже сгиба экрана: если скроллить прямо внутри
-      // .hover(), точка приземления мыши считается ДО того, как открытая
-      // первая панель успеет схлопнуться (.38s), и реальный курсор попадает
-      // на соседний пункт, сдвинувшийся вверх во время анимации. Скроллим
-      // и ждём осадки раскладки заранее, отдельно от самого наведения.
-      const third = p.locator('.acc--frame .acc__item').nth(2);
-      await third.scrollIntoViewIfNeeded();
-      await p.waitForTimeout(300);
-      await third.hover();
-      await p.waitForTimeout(300);
-      const thirdOpen = await third.evaluate(e => e.classList.contains('is-open'));
-      const firstClosed = await p.locator('.acc--frame .acc__item').first().evaluate(e => !e.classList.contains('is-open'));
-      return thirdOpen && firstClosed; })());
+  ok('по умолчанию свёрнуты все вкладки',
+     await p.locator('.acc--frame .acc__item.is-open').count() === 0);
+  ok('наведение само по себе ничего не раскрывает', await (async () => {
+      await p.locator('.acc--frame .acc__item').nth(2).hover();
+      await p.waitForTimeout(450);
+      const n = await p.locator('.acc--frame .acc__item.is-open').count();
+      await p.mouse.move(2, 2);
+      return n === 0; })());
+  ok('клик открывает третью вкладку, шеврон разворачивается вверх', await (async () => {
+      await p.locator('.acc--frame .acc__btn').nth(2).click();
+      await p.waitForTimeout(500);
+      const item = p.locator('.acc--frame .acc__item').nth(2);
+      const open = await item.evaluate(e => e.classList.contains('is-open'));
+      const ico = await item.locator('.acc__ico').evaluate(e => {
+        const cs = getComputedStyle(e);
+        // rotate(180deg) в матрице — matrix(-1, 0, 0, -1, 0, 0)
+        return cs.transform.replace(/\s/g, '').startsWith('matrix(-1,0,0,-1')
+               && cs.backgroundColor === 'rgb(224, 123, 38)';
+      });
+      return open && ico; })());
+  ok('раскрытая вкладка выделена оранжевой рамкой',
+     await p.locator('.acc--frame .acc__item').nth(2)
+       .evaluate(e => getComputedStyle(e).borderTopColor === 'rgb(224, 123, 38)'));
+  ok('клик по другой вкладке закрывает предыдущую', await (async () => {
+      await p.locator('.acc--frame .acc__btn').first().click();
+      await p.waitForTimeout(500);
+      return await p.locator('.acc--frame .acc__item').first().evaluate(e => e.classList.contains('is-open'))
+             && !(await p.locator('.acc--frame .acc__item').nth(2).evaluate(e => e.classList.contains('is-open'))); })());
   ok('панель раскрывается поворотом, а не просто списком (эффект «листа»)',
      await p.locator('.acc--frame .acc__panel > div').nth(2)
        .evaluate(e => getComputedStyle(e).transform !== 'none'));
-  ok('уход курсора со всей таблицы сворачивает последнюю открытую вкладку', await (async () => {
-      await p.mouse.move(50, 50);
-      await p.waitForTimeout(250);
-      return await p.locator('.acc--frame .acc__item').nth(2).evaluate(e => !e.classList.contains('is-open')); })());
+  ok('повторный клик по открытой вкладке сворачивает её', await (async () => {
+      await p.locator('.acc--frame .acc__btn').first().click();
+      await p.waitForTimeout(500);
+      return await p.locator('.acc--frame .acc__item.is-open').count() === 0; })());
 
   console.log('Стрелка «к содержимому» под заголовком:');
   for (const page of ['index','o-kompanii','produkciya','uslugi','oborudovanie']) {
@@ -771,20 +811,24 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   await p.goto('file://' + B + 'oborudovanie.html', { waitUntil:'domcontentloaded' });
   ok('таблица переведена на тот же аккордеон-рамку, что и на «О компании»',
      await p.locator('.acc--frame').count() === 1);
-  ok('плюсиков в таблице больше нет', await p.locator('.acc--frame .acc__ico').count() === 0);
-  ok('фон таблицы — тот же тёплый оттенок, что на «О компании»',
-     await p.locator('.acc--frame').evaluate(e => getComputedStyle(e).backgroundColor === 'rgb(251, 246, 240)'));
-  ok('наведение на подраздел раскрывает его и сворачивает предыдущий', await (async () => {
-      // Рамка раскрывается наведением, поэтому первое же наведение двигает
-      // раскладку под курсором: открытая по умолчанию первая вкладка
-      // схлопывается (.38s), и всё, что ниже, уезжает вверх. Точку клика
-      // Playwright считает ДО этой перестановки, так что одного наведения
-      // мало — курсор может оказаться уже на соседнем пункте. Наводим второй
-      // раз, по осевшей раскладке, и только потом проверяем.
+  ok('плашки вкладок выглядят так же, как на «О компании»',
+     await p.locator('.acc--frame .acc__item').first().evaluate(e => {
+       const cs = getComputedStyle(e);
+       return cs.backgroundColor === 'rgb(255, 255, 255)'
+              && cs.borderTopColor === 'rgba(235, 120, 35, 0.25)'
+              && cs.boxShadow !== 'none';
+     }));
+  ok('у каждой вкладки шеврон, при загрузке все свёрнуты', await (async () => {
+      const items = await p.locator('.acc--frame .acc__item').count();
+      return items > 0 && await p.locator('.acc--frame .acc__ico').count() === items
+             && await p.locator('.acc--frame .acc__item.is-open').count() === 0; })());
+  ok('клик раскрывает подраздел и сворачивает предыдущий', await (async () => {
+      // Раскрытие по клику, а не наведением: раньше первое же наведение
+      // двигало раскладку под курсором и проверка была неустойчивой.
       const items = p.locator('.acc--frame .acc__item');
-      await items.nth(2).hover();
+      await p.locator('.acc--frame .acc__btn').first().click();
       await p.waitForTimeout(450);
-      await items.nth(2).hover();
+      await p.locator('.acc--frame .acc__btn').nth(2).click();
       await p.waitForTimeout(450);
       return await items.nth(2).evaluate(e => e.classList.contains('is-open'))
              && !(await items.first().evaluate(e => e.classList.contains('is-open'))); })());
@@ -847,12 +891,18 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
            return { bg: cs.backgroundColor, border: cs.borderTopColor };
          });
        };
-       const list = [await probe('oborudovanie.html', '.card:not(.card--dark):not(.card--kraft)'),
-                     await probe('oborudovanie.html', '.acc--frame'),
-                     await probe('o-kompanii.html',   '.acc--frame'),
-                     await probe('uslugi.html',       '.acc')];
-       return list.every(x => x.bg === 'rgb(251, 246, 240)'
-                             && x.border === 'rgba(235, 120, 35, 0.2)');
+       // Карточки и плашки — тёплая заливка; аккордеоны намеренно белые
+       // с той же тёплой окантовкой: пункт должен читаться как кнопка
+       // поверх молочного фона, а не сливаться с ним.
+       const cards = [await probe('oborudovanie.html', '.card:not(.card--dark):not(.card--kraft)'),
+                      await probe('uslugi.html',       '.svc')];
+       const accs  = [await probe('oborudovanie.html', '.acc--frame .acc__item'),
+                      await probe('o-kompanii.html',   '.acc--frame .acc__item'),
+                      await probe('uslugi.html',       '.acc .acc__item')];
+       return cards.every(x => x.bg === 'rgb(251, 246, 240)'
+                              && x.border === 'rgba(235, 120, 35, 0.2)')
+              && accs.every(x => x.bg === 'rgb(255, 255, 255)'
+                                && x.border === 'rgba(235, 120, 35, 0.25)');
      })());
   ok('чёрный текст заголовков и описаний на тёплой заливке читается (AA и выше)',
      await (async () => {
@@ -861,8 +911,8 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
                       ['index.html', '.card--kraft', '.card__d', 4.5],
                       ['oborudovanie.html', '.card:not(.card--dark)', '.card__t', 4.5],
                       ['oborudovanie.html', '.card:not(.card--dark)', '.card__d', 4.5],
-                      ['uslugi.html', '.acc', '.acc__btn', 4.5],
-                      ['o-kompanii.html', '.acc--frame', '.acc__btn', 4.5]];
+                      ['uslugi.html', '.acc .acc__item', '.acc__btn', 4.5],
+                      ['o-kompanii.html', '.acc--frame .acc__item', '.acc__btn', 4.5]];
        for (const [page, block, sel, min] of cases) {
          await p.goto('file://' + B + page, { waitUntil:'domcontentloaded' });
          const c = await p.locator(block).first().evaluate((e, s2) => {
@@ -887,16 +937,19 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       const after = await card.evaluate(e => getComputedStyle(e).borderTopColor);
       await p.mouse.move(2, 2);
       return before === 'rgba(235, 120, 35, 0.2)' && after === 'rgba(235, 120, 35, 0.4)'; })());
-  ok('раскрытый вопрос FAQ и его круглая кнопка — в фирменном оранжевом', await (async () => {
+  ok('раскрытый вопрос FAQ и его шеврон — в фирменном оранжевом', await (async () => {
       await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
+      // Открытых пунктов при загрузке нет — открываем первый сами.
+      await p.locator('.acc__btn').first().click();
+      await p.waitForTimeout(450);
       const openBtn = p.locator('.acc__item.is-open .acc__btn').first();
       const openIco = p.locator('.acc__item.is-open .acc__ico').first();
       const shutIco = p.locator('.acc__item:not(.is-open) .acc__ico').first();
       return await openBtn.evaluate(e => getComputedStyle(e).color === 'rgb(140, 74, 14)'
-                                        && getComputedStyle(e).backgroundColor === 'rgb(241, 224, 205)')
+                                        && getComputedStyle(e).backgroundColor === 'rgb(251, 246, 240)')
              && await openIco.evaluate(e => getComputedStyle(e).backgroundColor === 'rgb(224, 123, 38)'
                                            && getComputedStyle(e).color === 'rgb(255, 255, 255)')
-             && await shutIco.evaluate(e => getComputedStyle(e).backgroundColor === 'rgba(235, 120, 35, 0.12)');
+             && await shutIco.evaluate(e => getComputedStyle(e).backgroundColor === 'rgba(235, 120, 35, 0.1)');
      })());
 
   console.log('Карточки «На что мы отвечаем перед заказчиком»:');
@@ -1042,8 +1095,8 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   console.log('Акции со старого сайта в каталоге:');
   ok('коробки для пиццы: три ступени тиража с ценами старого сайта', await (async () => {
       await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'domcontentloaded' });
-      const t = (await p.locator('.ptable').innerText()).replace(/\s+/g, ' ');
-      const note = (await p.locator('.ptable__note').innerText()).replace(/\s+/g, ' ');
+      const t = (await p.locator('#price .ptable').innerText()).replace(/\s+/g, ' ');
+      const note = (await p.locator('#price .ptable__note').innerText()).replace(/\s+/g, ' ');
       return t.includes('320×320×30') && t.includes('33 коп.') && t.includes('31 коп.') && t.includes('29 коп.')
              && t.includes('320×320×35') && t.includes('34 коп.') && t.includes('32 коп.') && t.includes('30 коп.')
              && note.includes('МКАД') && note.includes('1 коп.'); })());
@@ -1053,6 +1106,128 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       return t.includes('700×400×435') && t.includes('1,80 руб.'); })());
   await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
   await p.setViewportSize({ width: 1440, height: 900 });
+
+  console.log('Страница «Коробки для пиццы»:');
+  await p.setViewportSize({ width: 1440, height: 1000 });
+  await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'load' });
+  ok('заголовок и подзаголовок страницы — развёрнутые, под кегль пониже',
+     await p.evaluate(() => {
+       const h1 = document.querySelector('.phead h1');
+       const lead = document.querySelector('.phead .lead').textContent.replace(/\s+/g, ' ');
+       return h1.classList.contains('h1--long')
+              && h1.textContent.includes('Производство коробок для пиццы')
+              && h1.textContent.includes('Минске и Заславле')
+              && parseFloat(getComputedStyle(h1).fontSize) < 56
+              && lead.includes('микрогофрокартона') && lead.includes('профиль «E», «В»')
+              && lead.includes('Т11, Т21–Т24') && lead.includes('вентиляционными'); }));
+  ok('в шапке четыре плашки быстрых условий', await (async () => {
+      if (await p.locator('.phead .pfact').count() !== 4) return false;
+      const t = (await p.locator('.pfacts').innerText()).replace(/\s+/g, ' ');
+      return t.includes('от 50 шт.') && t.includes('5–7 рабочих дней')
+             && t.includes('1–4 цвета по Pantone') && t.includes('самовывоз из Заславля'); })());
+  ok('плашки читаются на тёмной шапке (контраст выше AA)',
+     await p.locator('.pfact').first().evaluate(e => {
+       const lum = c => { const [r, g, b] = c.match(/[\d.]+/g).slice(0, 3).map(Number)
+         .map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+         return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+       const fg = lum(getComputedStyle(e.querySelector('.pfact__v')).color);
+       const bg = lum(getComputedStyle(document.querySelector('.phead')).backgroundColor);
+       return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05) >= 4.5; }));
+
+  ok('две складские позиции с бейджем «В наличии»', await (async () => {
+      return await p.locator('#sklad .pstock').count() === 2
+             && await p.locator('#sklad .pstatus--in').count() === 2; })());
+  ok('все четыре цены на 320×320×30 и цена на 320×320×35 на месте',
+     await p.locator('#sklad').evaluate(e => {
+       const t = e.innerText.replace(/\s+/g, ' ');
+       return t.includes('320×320×30') && t.includes('Профиль «E»')
+              && t.includes('0,40 руб.') && t.includes('0,42 руб.')
+              && t.includes('0,43 руб.') && t.includes('0,48 руб.')
+              && t.includes('320×320×35') && t.includes('Профиль «В»') && t.includes('0,39 руб.')
+              && t.includes('50 шт.'); }));
+  ok('условия печати логотипа перечислены полностью',
+     await p.locator('#sklad .band').evaluate(e => {
+       const t = e.innerText.replace(/\s+/g, ' ');
+       return t.includes('+0,02 руб.') && t.includes('+0,04 руб.')
+              && t.includes('от 3000 шт.') && /четырёх цветов/.test(t); }));
+
+  ok('в таблице типоразмеров все 22 позиции из прайса', await (async () => {
+      const rows = await p.locator('#razmery .ptable tbody tr').count();
+      const t = (await p.locator('#razmery .ptable').innerText()).replace(/\s+/g, ' ');
+      const sizes = ['220×220×30','230×230×40','240×240×35','250×250×30','280×280×30',
+                     '280×280×40','295×295×40','305×305×40','320×320×30','320×320×35',
+                     '320×320×40','330×330×40','370×370×40','390×390×40','420×420×35',
+                     '430×430×40','445×445×40','460×460×30','460×460×45',
+                     '350×250×50','400×300×30','600×300×50'];
+      return rows === sizes.length && sizes.every(s => t.includes(s)); })());
+  ok('у каждого размера указан статус и стоит кнопка расчёта', await (async () => {
+      const rows = await p.locator('#razmery .ptable tbody tr').count();
+      return await p.locator('#razmery .pstatus').count() === rows
+             && await p.locator('#razmery .pcalc[data-size]').count() === rows
+             && await p.locator('#razmery .pstatus--in').count() === 2; })());
+  ok('ходовые размеры помечены отдельно', await (async () => {
+      const tags = await p.locator('#razmery .psize__tag').evaluateAll(
+        list => list.map(e => e.closest('tr').querySelector('.psize').textContent));
+      return tags.length === 6 && ['280×280×30','320×320×35','320×320×40','460×460×45']
+        .every(s => tags.includes(s)); })());
+  ok('римские прямоугольные форматы отмечены как прямоугольные',
+     await p.locator('#razmery .ptable').evaluate(e => {
+       const rows = [...e.querySelectorAll('tbody tr')].filter(r =>
+         /350×250×50|400×300×30|600×300×50/.test(r.querySelector('.psize').textContent));
+       return rows.length === 3 && rows.every(r => r.innerText.includes('прямоугольная')
+                                                  && /римская/i.test(r.innerText)); }));
+  ok('кнопка «Рассчитать» подставляет размер в форму заявки', await (async () => {
+      await p.locator('#razmery .pcalc[data-size="390×390×40"]').click();
+      await p.waitForTimeout(500);
+      const v = await p.locator('#pf-msg').inputValue();
+      // повторный клик по тому же размеру не дублирует его
+      await p.locator('#razmery .pcalc[data-size="390×390×40"]').click();
+      await p.waitForTimeout(400);
+      const again = await p.locator('#pf-msg').inputValue();
+      return v.startsWith('390×390×40') && again === v; })());
+
+  ok('две технологические карточки: горячая доставка и заморозка',
+     await p.locator('#tehnologiya .svc').evaluateAll(list => {
+       if (list.length !== 2) return false;
+       const t = list.map(e => e.innerText.replace(/\s+/g, ' ')).join(' | ');
+       return /горяч/i.test(t) && /заморож/i.test(t)
+              && t.includes('Т24') && /жиростойк/i.test(t) && /пергамент/i.test(t)
+              && /вентиляц/i.test(t) && /конденсат/i.test(t)
+              && /формоустойчивость/i.test(t) && /пищевая сертификация/i.test(t)
+              && t.includes('ЕАС'); }));
+  ok('логистика: поддонная укладка и быстрая сборка',
+     await p.locator('#logistika').evaluate(e => {
+       const t = e.innerText.replace(/\s+/g, ' ');
+       return /поддон/i.test(t) && /стрейч/i.test(t) && /упаковочным листом/i.test(t)
+              && /пыли и влаги/i.test(t) && /вырубаются по ножам/i.test(t); }));
+  ok('внизу раздела есть рабочая форма заявки со своими id',
+     await p.locator('#zakaz form.form').evaluate(f => {
+       const ids = [...f.querySelectorAll('[id]')].map(e => e.id);
+       return f.getAttribute('data-subject').includes('коробки для пиццы')
+              && ids.includes('pf-name') && ids.includes('pf-phone') && ids.includes('pf-msg')
+              && !!f.querySelector('[data-size-target]')
+              && !!f.querySelector('button[type=submit]'); }));
+  ok('форма проверяет обязательные поля так же, как на «Корзине»', await (async () => {
+      await p.locator('#zakaz .form button[type=submit]').click();
+      await p.waitForTimeout(250);
+      return p.locator('#pf-name').evaluate(e => e.closest('.field').classList.contains('has-error')); })());
+  ok('на телефоне таблица размеров превращается в карточки, а не режется', await (async () => {
+      await p.setViewportSize({ width: 390, height: 900 });
+      await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'load' });
+      const st = await p.evaluate(() => {
+        const td = document.querySelector('#razmery .ptable tbody td');
+        const tbl = document.querySelector('#razmery .ptable');
+        return { td: getComputedStyle(td).display,
+                 label: getComputedStyle(td, '::before').content,
+                 fits: tbl.scrollWidth <= document.documentElement.clientWidth + 1 };
+      });
+      await p.setViewportSize({ width: 1440, height: 1000 });
+      return st.td === 'flex' && st.label.includes('Размер') && st.fits; })());
+  ok('страница подгруппы осталась на своём адресе и в каталоге', await (async () => {
+      await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
+      const href = await p.locator('.grid--cat .prod')
+        .filter({ hasText: 'Коробки для пиццы' }).locator('a').getAttribute('href');
+      return href === 'produkciya-korobki-dlya-piccy.html'; })());
 
   console.log('Мобильное меню:');
   await p.setViewportSize({ width: 390, height: 844 });
