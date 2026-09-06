@@ -13,7 +13,7 @@ const fs = require('fs');
     .filter(f => /^produkciya-.+\.html$/.test(f))
     .map(f => f.replace(/\.html$/, ''));
   const pages = ['index','o-kompanii','produkciya','uslugi','oborudovanie','korzina', ...detail];
-  const widths = [1600,1440,1366,1280,1200,1100,1024,900,768,600,480,390,360];
+  const widths = [2560,1920,1680,1600,1440,1366,1280,1200,1100,1024,900,768,600,480,390,360,320];
   let bad = 0;
   for (const name of pages) {
     await p.goto(`file://${path.resolve(__dirname, '../..')}/${name}.html`, { waitUntil:'domcontentloaded' });
