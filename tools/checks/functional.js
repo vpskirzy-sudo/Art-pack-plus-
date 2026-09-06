@@ -775,9 +775,17 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('фон таблицы — тот же тёплый оттенок, что на «О компании»',
      await p.locator('.acc--frame').evaluate(e => getComputedStyle(e).backgroundColor === 'rgb(251, 246, 240)'));
   ok('наведение на подраздел раскрывает его и сворачивает предыдущий', await (async () => {
+      // Рамка раскрывается наведением, поэтому первое же наведение двигает
+      // раскладку под курсором: открытая по умолчанию первая вкладка
+      // схлопывается (.38s), и всё, что ниже, уезжает вверх. Точку клика
+      // Playwright считает ДО этой перестановки, так что одного наведения
+      // мало — курсор может оказаться уже на соседнем пункте. Наводим второй
+      // раз, по осевшей раскладке, и только потом проверяем.
       const items = p.locator('.acc--frame .acc__item');
       await items.nth(2).hover();
-      await p.waitForTimeout(500);
+      await p.waitForTimeout(450);
+      await items.nth(2).hover();
+      await p.waitForTimeout(450);
       return await items.nth(2).evaluate(e => e.classList.contains('is-open'))
              && !(await items.first().evaluate(e => e.classList.contains('is-open'))); })());
 
@@ -910,6 +918,141 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       return t.includes('Флексографическая печать') && t.includes('Покраска продукции')
              && t.includes('Разработка конструкции') && t.includes('Высечка и рилёвка')
              && t.includes('Изготовление по размерам') && t.includes('Доставка'); })());
+
+  console.log('Первый экран: фотографии производства:');
+  await p.setViewportSize({ width: 1440, height: 900 });
+  await p.goto('file://' + B + 'index.html', { waitUntil:'load' });
+  ok('в слайдере три фотографии, а не рисованные фоны', await (async () => {
+      const srcs = await p.evaluate(() =>
+        [...document.querySelectorAll('.slide__bg img')].map(i => i.getAttribute('src')));
+      return srcs.length === 3
+             && srcs.every((s, i) => s === `assets/img/hero-${i + 1}.jpg`)
+             && srcs.every(s => !s.endsWith('.svg')); })());
+  ok('все три фотографии реально загружаются и не пустые', await (async () => {
+      await p.waitForTimeout(600);
+      const st = await p.evaluate(() =>
+        [...document.querySelectorAll('.slide__bg img')].map(i => i.complete && i.naturalWidth));
+      return st.length === 3 && st.every(w => w >= 1900); })());
+  ok('у каждого фона осмысленное описание для скринридера',
+     await p.evaluate(() => [...document.querySelectorAll('.slide__bg img')]
+       .every(i => (i.getAttribute('alt') || '').length > 20)));
+  ok('разметка первого экрана не тронута: те же классы, заголовок и две кнопки',
+     await p.evaluate(() => {
+       const hero = document.querySelector('.hero');
+       return !!hero.querySelector('.hero__stage')
+              && hero.querySelectorAll('.slide').length === 3
+              && hero.querySelectorAll('.slide__bg').length === 3
+              && !!hero.querySelector('.wrap.hero__in .hero__copy .hero__title')
+              && hero.querySelectorAll('.hero__acts .btn').length === 2
+              && hero.querySelector('.slide').classList.contains('is-active'); }));
+
+  console.log('Услуги: приём вторсырья, доставка и склад:');
+  await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
+  ok('на странице четыре новые карточки услуг', await (async () => {
+      const ids = ['usluga-makulatura','usluga-polietilen','usluga-dostavka-tirazha','usluga-hranenie'];
+      for (const id of ids) if (await p.locator('#' + id + '.svc').count() !== 1) return false;
+      return await p.locator('#dop .svc').count() === 4; })());
+  ok('условия приёма макулатуры перенесены со старого сайта полностью',
+     await p.locator('#usluga-makulatura').evaluate(e => {
+       const t = e.innerText.replace(/\s+/g, ' ');
+       return t.includes('7–20 коп./кг') && t.includes('5 коп./кг')
+              && t.includes('от 200 кг') && t.includes('от 500 кг')
+              && t.includes('Вокзальная, 8Б') && t.includes('Пн–Сб 8:00–17:00')
+              && /без скоб, скрепок и ламинации/.test(t); }));
+  ok('условия приёма полиэтилена перенесены со старого сайта',
+     await p.locator('#usluga-polietilen').evaluate(e => {
+       const t = e.innerText.replace(/\s+/g, ' ');
+       return t.includes('0,40–0,70 руб./кг') && /[Сс]трейч-плёнка/.test(t)
+              && t.includes('ПВД') && /[Сс]ортировка/.test(t); }));
+  ok('доставка и хранение описаны с условиями со старого сайта',
+     await (async () => {
+       const d = await p.locator('#usluga-dostavka-tirazha').evaluate(e => e.innerText.replace(/\s+/g, ' '));
+       const h = await p.locator('#usluga-hranenie').evaluate(e => e.innerText.replace(/\s+/g, ' '));
+       return d.includes('МКАД') && d.includes('от 1 коп.') && /Заславл/.test(d)
+              && /отапливаем/i.test(h) && /склад/i.test(h); })());
+  ok('телефоны в карточках кликабельны и совпадают с подписью', await (async () => {
+      const tels = await p.locator('#dop .svc__tel').evaluateAll(list => list.map(a => ({
+        href: a.getAttribute('href'), text: a.textContent.trim() })));
+      if (tels.length !== 4) return false;
+      return tels.every(t => {
+        if (!/^tel:\+375\d{9}$/.test(t.href)) return false;
+        // «8 (029) 120 01 50» → +375 29 120 01 50: междугородняя «8» и ноль
+        // кода города в международной записи заменяются на код страны.
+        const shown = t.text.replace(/\D/g, '').replace(/^80/, '375');
+        return 'tel:+' + shown === t.href;
+      }); })());
+  ok('номер для вывоза полиэтилена — тот, что указан на старом сайте',
+     await p.locator('#usluga-polietilen .svc__tel').getAttribute('href') === 'tel:+375295364364');
+
+  console.log('«О компании»: документы и корпоративные стандарты:');
+  await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'load' });
+  ok('в блоке «Корпоративные стандарты» четыре карточки с нужными тезисами',
+     await (async () => {
+       if (await p.locator('#standarty .card').count() !== 4) return false;
+       const t = await p.locator('#standarty').evaluate(e => e.innerText);
+       return ['Миссия','Стабильность и гарантии','Контроль качества','Уважение к клиенту']
+         .every(x => t.includes(x)); })());
+  ok('стандарты стоят в 4 колонки на десктопе и не разъезжаются на мобильном',
+     await (async () => {
+       const cols = async w => { await p.setViewportSize({ width: w, height: 900 });
+         return p.locator('#standarty .grid').evaluate(
+           e => getComputedStyle(e).gridTemplateColumns.split(' ').length); };
+       const d = await cols(1440), t = await cols(1024), m = await cols(390);
+       await p.setViewportSize({ width: 1440, height: 900 });
+       return d === 4 && t === 2 && m === 1; })());
+  ok('в блоке документов три скана с подписями',
+     await p.locator('#dokumenty .doc').count() === 3);
+  ok('сканы реально загружаются, а не показывают битую картинку', await (async () => {
+      await p.evaluate(() => document.querySelector('#dokumenty').scrollIntoView());
+      await p.waitForTimeout(900);
+      const st = await p.evaluate(() =>
+        [...document.querySelectorAll('#dokumenty img')].map(i => i.complete && i.naturalWidth > 300));
+      return st.length === 3 && st.every(Boolean); })());
+  ok('реквизиты под сканами совпадают с самими документами',
+     await p.locator('#dokumenty').evaluate(e => {
+       const t = e.innerText.replace(/\s+/g, ' ');
+       return t.includes('691817655') && t.includes('26 августа 2016')
+              && t.includes('478.2/4874-1') && t.includes('ТР ТС 005/2011')
+              && t.includes('691817655.001-2020'); }));
+  ok('превью документа — кнопка с курсором «увеличить», а не просто картинка',
+     await p.locator('#dokumenty .doc__view').first().evaluate(e =>
+       e.tagName === 'BUTTON' && getComputedStyle(e).cursor === 'zoom-in'
+       && !!e.getAttribute('data-doc') && !!e.getAttribute('data-doc-title')));
+  ok('клик по превью открывает документ во весь экран', await (async () => {
+      await p.locator('#dokumenty .doc__view').nth(2).click();
+      await p.waitForTimeout(500);
+      return p.evaluate(() => {
+        const v = document.querySelector('.viewer');
+        return !!v && !v.hidden && v.classList.contains('is-open')
+               && v.getAttribute('role') === 'dialog'
+               && v.querySelector('img').getAttribute('src').includes('doc-deklaraciya')
+               && document.activeElement.classList.contains('viewer__close'); }); })());
+  ok('Esc закрывает просмотр и возвращает фокус на превью', await (async () => {
+      await p.keyboard.press('Escape');
+      await p.waitForTimeout(500);
+      return p.evaluate(() => document.querySelector('.viewer').hidden
+             && document.activeElement.classList.contains('doc__view')); })());
+  ok('клик мимо документа тоже закрывает просмотр', await (async () => {
+      await p.locator('#dokumenty .doc__view').first().click();
+      await p.waitForTimeout(450);
+      await p.locator('.viewer').click({ position: { x: 6, y: 6 } });
+      await p.waitForTimeout(500);
+      return p.evaluate(() => document.querySelector('.viewer').hidden); })());
+
+  console.log('Акции со старого сайта в каталоге:');
+  ok('коробки для пиццы: три ступени тиража с ценами старого сайта', await (async () => {
+      await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'domcontentloaded' });
+      const t = (await p.locator('.ptable').innerText()).replace(/\s+/g, ' ');
+      const note = (await p.locator('.ptable__note').innerText()).replace(/\s+/g, ' ');
+      return t.includes('320×320×30') && t.includes('33 коп.') && t.includes('31 коп.') && t.includes('29 коп.')
+             && t.includes('320×320×35') && t.includes('34 коп.') && t.includes('32 коп.') && t.includes('30 коп.')
+             && note.includes('МКАД') && note.includes('1 коп.'); })());
+  ok('коробка для маркетплейсов 700×400×435 — 1,80 руб.', await (async () => {
+      await p.goto('file://' + B + 'produkciya-upakovka-dlya-marketpleysov.html', { waitUntil:'domcontentloaded' });
+      const t = (await p.locator('.ptable').innerText()).replace(/\s+/g, ' ');
+      return t.includes('700×400×435') && t.includes('1,80 руб.'); })());
+  await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+  await p.setViewportSize({ width: 1440, height: 900 });
 
   console.log('Мобильное меню:');
   await p.setViewportSize({ width: 390, height: 844 });

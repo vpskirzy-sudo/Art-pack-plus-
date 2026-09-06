@@ -495,6 +495,131 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .card--dark .card__d{ position:relative; z-index:2; color:rgba(233,238,243,.68); }
 
+/* --- 8e. Официальные документы: превью и просмотрщик --------------------
+   Скан лежит в кнопке, а не в ссылке: клик открывает просмотрщик на этой же
+   странице (main.js), никуда не уводя. Пропорции документа сохраняем через
+   aspect-ratio, поэтому три карточки стоят ровным рядом независимо от того,
+   что бумага у всех трёх разного формата. ----------------------------- */
+.doc{ display:flex; flex-direction:column; gap:16px; margin:0; }
+.doc__view{
+  display:block; position:relative; width:100%; padding:0;
+  border-radius:var(--r); overflow:hidden; cursor:zoom-in;
+  background:var(--white); border:1px solid var(--warm-line);
+  box-shadow:var(--warm-shadow);
+  transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+}
+.doc__view img{
+  width:100%; height:auto; aspect-ratio:3/4; object-fit:contain; object-position:top center;
+  background:var(--white);
+}
+.doc__view:hover,
+.doc__view:focus-visible{
+  transform:translateY(-5px); border-color:var(--warm-hi); box-shadow:var(--warm-glow);
+}
+.doc__view:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+.doc__zoom{
+  position:absolute; right:12px; bottom:12px;
+  width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--accent); color:#fff; box-shadow:var(--shadow-m);
+  opacity:0; transform:translateY(6px);
+  transition:opacity .28s var(--ease), transform .28s var(--ease);
+}
+.doc__zoom svg{ width:19px; height:19px; }
+.doc__view:hover .doc__zoom,
+.doc__view:focus-visible .doc__zoom{ opacity:1; transform:none; }
+.doc__cap{ display:grid; gap:7px; }
+.doc__t{ font-family:var(--ff-head); font-weight:800; font-size:17px; letter-spacing:-.01em; }
+.doc__d{ color:var(--text-soft); font-size:14.5px; line-height:1.6; }
+
+/* Просмотрщик: затемнение на весь экран, документ по центру. Появляется
+   только по клику, поэтому в разметке страницы его нет — его создаёт JS. */
+.viewer{
+  position:fixed; inset:0; z-index:1300;
+  display:flex; align-items:center; justify-content:center;
+  padding:clamp(16px,4vw,48px); gap:18px; flex-direction:column;
+  background:rgba(8,12,17,.86);
+  opacity:0; transition:opacity .28s var(--ease);
+}
+.viewer.is-open{ opacity:1; }
+.viewer img{
+  max-width:100%; max-height:calc(100vh - 150px);
+  width:auto; height:auto; object-fit:contain;
+  border-radius:var(--r); box-shadow:var(--shadow-l); background:var(--white);
+  transform:scale(.97); transition:transform .28s var(--ease);
+}
+.viewer.is-open img{ transform:none; }
+.viewer__cap{
+  color:var(--on-dark); font-family:var(--ff-head); font-weight:700; font-size:15.5px;
+  text-align:center; text-wrap:balance; max-width:60ch;
+}
+.viewer__close{
+  position:absolute; top:clamp(14px,2.4vw,26px); right:clamp(14px,2.4vw,26px);
+  width:48px; height:48px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.12); color:#fff;
+  border:1.5px solid rgba(255,255,255,.28);
+  transition:background .22s, border-color .22s, transform .22s;
+}
+.viewer__close svg{ width:20px; height:20px; transform:rotate(45deg); }
+.viewer__close:hover{ background:var(--accent); border-color:var(--accent); transform:rotate(90deg); }
+
+/* --- 8d. Карточка дополнительной услуги (приём вторсырья, доставка, склад)
+   Основа — обычная тёплая .card, поэтому заливка, рамка, тень и подсветка
+   при наведении общие с остальным сайтом. Здесь только внутренняя раскладка:
+   иконка с заголовком в шапке, условия строкой с ценой справа и телефон
+   внизу — прижатый к низу, чтобы у карточек разной длины он стоял на одной
+   линии. ------------------------------------------------------------- */
+.svc{ display:flex; flex-direction:column; gap:16px; }
+.svc__head{ display:flex; align-items:flex-start; gap:16px; }
+.svc__head .card__ico{ margin-bottom:0; flex:none; }
+.svc__head .card__t{ margin-bottom:4px; }
+.svc__sub{ color:var(--text-dim); font-size:14px; line-height:1.45; }
+
+/* Условия и цены: подпись слева, значение справа, между ними точечная
+   выноска — читается как прайс, но без таблицы. */
+.rate{ display:grid; }
+.rate li{
+  display:flex; align-items:baseline; gap:10px;
+  padding:11px 0; border-top:1px solid var(--warm-div);
+  font-size:15px; line-height:1.45;
+}
+.rate li:last-child{ border-bottom:1px solid var(--warm-div); }
+.rate li > span{ color:var(--text-soft); order:0; }
+/* Выноска идёт по базовой линии первой строки — там же, где цена. При
+   flex-end она уезжала вниз и на узком экране, где подпись переносится
+   на две-три строки, висела огрызком под текстом. */
+.rate li::before{
+  content:""; order:1; flex:1 1 14px; min-width:14px; height:0;
+  align-self:baseline;
+  border-bottom:1px dotted var(--warm-line);
+}
+.rate li > b{
+  order:2; flex:none; white-space:nowrap;
+  font-family:var(--ff-head); font-weight:800; color:var(--accent-ink);
+}
+.svc__note{ font-size:14px; line-height:1.55; color:var(--text-dim); }
+/* На узкой карточке подпись и цена в одну строку не встают — раскладываем
+   их в два ряда, выноска между ними тогда не нужна. */
+@media (max-width:560px){
+  .rate li{ flex-direction:column; align-items:flex-start; gap:3px; }
+  .rate li::before{ display:none; }
+  .rate li > b{ order:2; }
+}
+
+.svc__foot{
+  margin-top:auto; display:flex; flex-wrap:wrap; align-items:center; gap:8px 18px;
+  padding-top:18px; border-top:1px solid var(--warm-div);
+}
+.svc__tel{
+  display:inline-flex; align-items:center; gap:9px;
+  font-family:var(--ff-head); font-weight:800; font-size:18px;
+  color:var(--accent-ink); transition:color .2s;
+}
+.svc__tel svg{ width:18px; height:18px; flex:none; }
+.svc__tel:hover{ color:var(--accent); }
+.svc__hours{ font-size:13.5px; color:var(--text-dim); }
+
 /* --- 10. Продукция ----------------------------------------------------- */
 .filters{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:32px; }
 .filter{

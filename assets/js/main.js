@@ -64,6 +64,71 @@
     });
   }
 
+  /* --- Просмотрщик документов -------------------------------------------
+     Сканы на «О компании» мелкие по своей природе — читать их в карточке
+     невозможно. Клик по превью открывает документ во весь экран поверх
+     страницы. Просмотрщик создаётся один на страницу и переиспользуется;
+     закрывается по Esc, по клику мимо документа и по крестику. Фокус
+     уходит на крестик и возвращается на превью, чтобы с клавиатуры
+     не потеряться. -------------------------------------------------- */
+  var docBtns = $$('[data-doc]');
+  if (docBtns.length) {
+    var viewer = null, viewerImg = null, viewerCap = null, lastOpener = null;
+
+    var closeViewer = function () {
+      if (!viewer || !viewer.classList.contains('is-open')) return;
+      viewer.classList.remove('is-open');
+      document.body.style.overflow = '';
+      var hide = function () { viewer.hidden = true; };
+      calm ? hide() : setTimeout(hide, 280);
+      if (lastOpener) { lastOpener.focus(); lastOpener = null; }
+    };
+
+    var buildViewer = function () {
+      viewer = document.createElement('div');
+      viewer.className = 'viewer';
+      viewer.hidden = true;
+      viewer.setAttribute('role', 'dialog');
+      viewer.setAttribute('aria-modal', 'true');
+      viewer.innerHTML =
+        '<button class="viewer__close" type="button" aria-label="Закрыть просмотр">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" ' +
+        'stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>' +
+        '<img alt=""><p class="viewer__cap"></p>';
+      viewerImg = viewer.querySelector('img');
+      viewerCap = viewer.querySelector('.viewer__cap');
+      viewer.querySelector('.viewer__close').addEventListener('click', closeViewer);
+      // Клик мимо документа закрывает: сам документ и подпись клик не пропускают.
+      viewer.addEventListener('click', function (e) {
+        if (e.target === viewer) closeViewer();
+      });
+      document.body.appendChild(viewer);
+    };
+
+    docBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!viewer) buildViewer();
+        var title = btn.getAttribute('data-doc-title') || '';
+        viewerImg.src = btn.getAttribute('data-doc');
+        viewerImg.alt = title;
+        viewerCap.textContent = title;
+        viewer.setAttribute('aria-label', title);
+        lastOpener = btn;
+        viewer.hidden = false;
+        document.body.style.overflow = 'hidden';
+        // Открываем в следующем кадре, иначе переход с hidden не проигрывается.
+        requestAnimationFrame(function () {
+          viewer.classList.add('is-open');
+          viewer.querySelector('.viewer__close').focus();
+        });
+      });
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' || e.key === 'Esc') closeViewer();
+    });
+  }
+
   /* --- Слайдер на главной -----------------------------------------------
      Фон меняется сам — это чисто задний план, без кнопок и индикаторов.
      Текст над ним статичный (лежит вне .slide в разметке), поэтому смена
