@@ -43,6 +43,54 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       const c = await btn.evaluate(e => getComputedStyle(e).borderColor);
       return c === 'rgb(255, 255, 255)'; })());
 
+  console.log('Первый экран на широких мониторах:');
+  const heroAt = async (w) => {
+    await p.setViewportSize({ width: w, height: 1000 });
+    await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+    return p.evaluate(() => {
+      const inn = document.querySelector('.hero__in');
+      const copy = document.querySelector('.hero__copy');
+      const title = document.querySelector('.hero__title');
+      const text = document.querySelector('.hero__text');
+      const btn = document.querySelector('.hero__acts .btn--primary');
+      const innW = inn.getBoundingClientRect().width;
+      return {
+        innW,
+        copyShare: copy.getBoundingClientRect().width / (innW - 80),
+        titleFS: parseFloat(getComputedStyle(title).fontSize),
+        textFS: parseFloat(getComputedStyle(text).fontSize),
+        btnFS: parseFloat(getComputedStyle(btn).fontSize),
+        btnPadY: parseFloat(getComputedStyle(btn).paddingTop),
+      };
+    });
+  };
+  const hero1280 = await heroAt(1280);
+  const hero1440 = await heroAt(1440);
+  const hero1920 = await heroAt(1920);
+  ok('контейнер героя на 1920px шире общего --wrap (доходит до 1600px)',
+     hero1920.innW === 1600 && hero1280.innW < 1300);
+  ok('заголовок героя на 1440px и 1920px в пределах 60–68px',
+     hero1440.titleFS >= 60 && hero1440.titleFS <= 68 && hero1920.titleFS >= 60 && hero1920.titleFS <= 68
+     && hero1920.titleFS >= hero1440.titleFS);
+  ok('подзаголовок героя на 1440px и 1920px — 19–20px',
+     hero1440.textFS >= 19 && hero1440.textFS <= 20 && hero1920.textFS >= 19 && hero1920.textFS <= 20);
+  ok('на экранах уже 1440px заголовок героя остаётся мельче потолка (нет надбавки)',
+     hero1280.titleFS < 60);
+  ok('левая колонка героя занимает 50–55% контейнера на 1440px и 1920px',
+     hero1440.copyShare >= 0.5 && hero1440.copyShare <= 0.55
+     && hero1920.copyShare >= 0.5 && hero1920.copyShare <= 0.55);
+  ok('кнопки героя крупнее на 1440px и ещё крупнее на 1920px',
+     hero1440.btnFS >= 17 && hero1440.btnFS <= 18 && hero1440.btnPadY >= 18
+     && hero1920.btnFS === 18 && hero1920.btnPadY > hero1440.btnPadY);
+  ok('на страницах, кроме главной, сетка каталога не задета надбавкой (по-прежнему 3 колонки на 1920px)',
+     await (async () => {
+       await p.setViewportSize({ width: 1920, height: 1000 });
+       await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });
+       const cols = await p.locator('.grid--3').first()
+         .evaluate(e => getComputedStyle(e).gridTemplateColumns.split(' ').length);
+       return cols === 3; })());
+  await p.setViewportSize({ width: 1440, height: 900 });
+
   console.log('Счётчики и анимации:');
   // Блок цифр убран целиком — и с главной, и с «О компании» (дублировал уже
   // сказанное в тексте и в карточках принципов работы). Проверяем, что
@@ -276,10 +324,15 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   await p.setViewportSize({ width: 1440, height: 1100 });
   await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
   ok('заголовок в шапке страницы начинается там же, где заголовок героя на главной', await (async () => {
+      // Ниже 1440px обе шапки делят один и тот же --wrap. От 1440px герой
+      // намеренно шире общего контейнера (см. «19b»), поэтому здесь берём
+      // ширину ДО этого порога — иначе сравнивали бы два разных контейнера.
+      await p.setViewportSize({ width: 1280, height: 1100 });
       const pheadX = await p.locator('.phead h1').evaluate(e => e.getBoundingClientRect().left);
       await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
       const heroX = await p.locator('.hero__title').evaluate(e => e.getBoundingClientRect().left);
       await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
+      await p.setViewportSize({ width: 1440, height: 1100 });
       return Math.abs(pheadX - heroX) < 1; })());
   ok('«Плюс» в заголовке — фирменный оранжевый', await p.locator('.phead h1 .brand-plus')
       .evaluate(e => getComputedStyle(e).color === 'rgb(224, 123, 38)'));
