@@ -8,11 +8,12 @@
       <h1 class="h1">Продажа нового и б/у оборудования</h1>
       <p class="lead">Подбираем, поставляем и помогаем запустить оборудование для производства
         гофротары — от отдельного станка до состава линии.</p>
+      <a class="scroll-down" href="#dalee" aria-label="Перейти к содержимому страницы">{{icon:down}}</a>
     </div>
   </div>
 </section>
 
-<section class="section">
+<section id="dalee" class="section">
   <div class="wrap">
     <div class="grid grid--2">
       <div class="reveal">
@@ -30,24 +31,27 @@
         </div>
       </div>
       <div class="reveal">
-        <div class="acc">
+        <!-- Та же механика, что и на «О компании»: вкладка раскрывается по
+             наведению курсора, предыдущая при этом сама складывается.
+             Плюсиков нет — какая активна, видно по развёрнутой панели. -->
+        <div class="acc acc--frame">
           <div class="acc__item is-open">
-            <button class="acc__btn" type="button" aria-expanded="true">Печатно-высекальные машины<span class="acc__ico">{{icon:plus}}</span></button>
+            <button class="acc__btn" type="button" aria-expanded="true">Печатно-высекальные машины</button>
             <div class="acc__panel"><div><p>Флексографические машины для печати в 1–4 краски
               с высечкой и рилёвкой — основа производства гофротары.</p></div></div>
           </div>
           <div class="acc__item">
-            <button class="acc__btn" type="button" aria-expanded="false">Линии продольной резки и рилёвки<span class="acc__ico">{{icon:plus}}</span></button>
+            <button class="acc__btn" type="button" aria-expanded="false">Линии продольной резки и рилёвки</button>
             <div class="acc__panel"><div><p>Раскрой гофрокартона на заготовки нужного формата
               с нанесением линий сгиба.</p></div></div>
           </div>
           <div class="acc__item">
-            <button class="acc__btn" type="button" aria-expanded="false">Клеевые и сшивальные станки<span class="acc__ico">{{icon:plus}}</span></button>
+            <button class="acc__btn" type="button" aria-expanded="false">Клеевые и сшивальные станки</button>
             <div class="acc__panel"><div><p>Оборудование для склейки и сшивки коробов —
               включая позиции для больших форматов.</p></div></div>
           </div>
           <div class="acc__item">
-            <button class="acc__btn" type="button" aria-expanded="false">Вспомогательное оборудование<span class="acc__ico">{{icon:plus}}</span></button>
+            <button class="acc__btn" type="button" aria-expanded="false">Вспомогательное оборудование</button>
             <div class="acc__panel"><div><p>Рольганги, обвязочные машины, прессы для отходов
               и прочая оснастка участка.</p></div></div>
           </div>

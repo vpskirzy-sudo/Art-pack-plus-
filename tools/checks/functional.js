@@ -77,12 +77,12 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
         const foot = e.querySelector('.card__foot');
         return !!foot && foot.contains(e.querySelector('.card__ico')) && foot.contains(e.querySelector('.card__num'));
       }));
-  ok('лицо панели — ровный крафт, гофра видна только на торце справа',
+  ok('лицо панели ровное, гофра видна только на торце справа',
      await p.locator('.card--kraft').first().evaluate(e => {
        const face = getComputedStyle(e, '::before').backgroundImage;
        const edge = getComputedStyle(e, '::after').backgroundImage;
        return !face.includes('repeating-linear-gradient')      // на лицевой стороне полос нет
-              && face.includes('radial-gradient')              // только мятость бумаги
+              && face.includes('radial-gradient')              // только мягкие переливы
               && edge.includes('repeating-linear-gradient');   // гофра — на торце
      }));
   ok('при наведении панель приподнимается', await (async () => {
@@ -296,9 +296,10 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
      }));
   ok('плюсиков-разворотов на вкладках «О компании» больше нет',
      await p.locator('.acc--frame .acc__ico').count() === 0);
-  ok('рамки вокруг таблицы больше нет, фон приглушённый (не яркая охра)', await p.locator('.acc--frame').evaluate(e => {
+  ok('рамки вокруг таблицы нет, фон — приглушённый полупрозрачный оранжевый', await p.locator('.acc--frame').evaluate(e => {
       const cs = getComputedStyle(e);
-      return cs.borderStyle === 'none' && cs.backgroundColor === 'rgb(241, 228, 196)';
+      // тот же оттенок, что у «Плюс» (224,123,38), но полупрозрачный
+      return cs.borderStyle === 'none' && /^rgba\(224, 123, 38, 0\.\d+\)$/.test(cs.backgroundColor);
   }));
   ok('закруглённые углы таблицы не тронуты', await p.locator('.acc--frame')
       .evaluate(e => parseFloat(getComputedStyle(e).borderRadius) > 0));
@@ -322,7 +323,52 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       await p.waitForTimeout(250);
       return await p.locator('.acc--frame .acc__item').nth(2).evaluate(e => !e.classList.contains('is-open')); })());
 
+  console.log('Стрелка «к содержимому» под заголовком:');
+  for (const page of ['index','o-kompanii','produkciya','uslugi','oborudovanie']) {
+    await p.goto('file://' + B + page + '.html', { waitUntil:'domcontentloaded' });
+    ok('на «' + page + '» есть стрелка и цель прокрутки', await (async () => {
+        const arrow = p.locator('.scroll-down');
+        return await arrow.count() === 1
+               && await arrow.getAttribute('href') === '#dalee'
+               && await p.locator('#dalee').count() === 1; })());
+  }
+  ok('клик по стрелке прокручивает к содержимому под липкой шапкой', await (async () => {
+      await p.goto('file://' + B + 'oborudovanie.html', { waitUntil:'domcontentloaded' });
+      await p.waitForTimeout(200);
+      await p.locator('.scroll-down').click();
+      await p.waitForTimeout(1200);
+      const top = await p.locator('#dalee').evaluate(e => e.getBoundingClientRect().top);
+      return await p.evaluate(() => window.scrollY) > 200 && top > 0 && top < 140; })());
+
+  console.log('Таблица на «Оборудовании»:');
+  await p.mouse.move(2, 2);
+  await p.goto('file://' + B + 'oborudovanie.html', { waitUntil:'domcontentloaded' });
+  ok('таблица переведена на тот же аккордеон-рамку, что и на «О компании»',
+     await p.locator('.acc--frame').count() === 1);
+  ok('плюсиков в таблице больше нет', await p.locator('.acc--frame .acc__ico').count() === 0);
+  ok('фон таблицы — тот же приглушённый оранжевый', await p.locator('.acc--frame')
+      .evaluate(e => /^rgba\(224, 123, 38, 0\.\d+\)$/.test(getComputedStyle(e).backgroundColor)));
+  ok('наведение на подраздел раскрывает его и сворачивает предыдущий', await (async () => {
+      const items = p.locator('.acc--frame .acc__item');
+      await items.nth(2).hover();
+      await p.waitForTimeout(500);
+      return await items.nth(2).evaluate(e => e.classList.contains('is-open'))
+             && !(await items.first().evaluate(e => e.classList.contains('is-open'))); })());
+
+  console.log('Крафт-панели на главной — цвет:');
+  await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+  ok('панели залиты полупрозрачным «плюс»-оранжевым, а не крафтом',
+     await p.locator('.card--kraft').first().evaluate(e => {
+       const bg = getComputedStyle(e).backgroundImage;
+       return bg.includes('rgba(224, 123, 38') && !bg.includes('rgb(217, 175, 137)'); }));
+  ok('оттенок панелей совпадает с «Плюс» в названии', await p.evaluate(() => {
+      const plus = getComputedStyle(document.querySelector('.brand-plus')).color;
+      const bg = getComputedStyle(document.querySelector('.card--kraft')).backgroundImage;
+      const m = plus.match(/\d+/g);                       // rgb(224, 123, 38)
+      return bg.includes('rgba(' + m[0] + ', ' + m[1] + ', ' + m[2]); }));
+
   console.log('Карточки «На что мы отвечаем перед заказчиком»:');
+  await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
   ok('карточек шесть, все тёмные (card--dark)', await p.locator('.card--dark').count() === 6);
   ok('заголовки карточек — фирменный оранжевый', await p.locator('.card--dark .card__t').first()
       .evaluate(e => getComputedStyle(e).color === 'rgb(244, 155, 63)'));

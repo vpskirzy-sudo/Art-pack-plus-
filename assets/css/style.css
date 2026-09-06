@@ -21,6 +21,15 @@
   --blue:       #1466B3;
   --blue-lite:  #2E8AD6;
 
+  /* Приглушённый «плюс»-оранжевый: полупрозрачный акцент вместо заливки.
+     Один и тот же фон у крафт-панелей на главной и у аккордеонов
+     на «О компании» и «Оборудовании» — сайт держится одной гаммой. */
+  --soft:       rgba(224,123,38,.13);
+  --soft-2:     rgba(224,123,38,.22);
+  --soft-3:     rgba(224,123,38,.32);
+  --soft-line:  rgba(160,88,26,.20);
+  --soft-ink:   #6E401A;
+
   --text:       #16202B;
   --text-soft:  #55636F;
   --text-dim:   #8A97A5;
@@ -299,38 +308,38 @@ ul{ margin:0; padding:0; list-style:none; }
 .card__t{ font-family:var(--ff-head); font-weight:800; font-size:18.5px; margin-bottom:10px; letter-spacing:-.01em; }
 .card__d{ color:var(--text-soft); font-size:15px; line-height:1.62; }
 
-/* --- 8b. Крафт-карточки: «Почему заказывают у нас» как картонные панели —
-   по образцу заказчика: заголовок и текст прямо на картоне, без бирки и
-   ленты, внизу линейная иконка и номер «Арт. №0X» по мотивам «Арт» в
-   «Арт-Пак Плюс». ------------------------------------------------------- */
+/* --- 8b. Панели «Почему заказывают у нас» — по образцу заказчика:
+   заголовок и текст прямо на фоне, без бирки и ленты, внизу линейная
+   иконка и номер «Art. №0X» по мотивам «Арт» в «Арт-Пак Плюс».
+   Заливка — приглушённый «плюс»-оранжевый, общий с аккордеонами. ------- */
 .grid--4{ counter-reset:artbox; }
 
 .card--kraft{
   display:flex; flex-direction:column;
   min-height:clamp(330px,26.5vw,430px);
-  background:#D9AF89;                             /* ровный светлый крафт, как на образце */
+  background:linear-gradient(168deg, rgba(224,123,38,.28), rgba(224,123,38,.16));
   border:none; border-radius:7px;
   padding:clamp(24px,2.1vw,30px) clamp(28px,2.5vw,34px) clamp(18px,1.5vw,22px) clamp(20px,1.8vw,26px);
-  box-shadow:0 16px 30px rgba(92,60,26,.20), 0 3px 8px rgba(92,60,26,.12);
+  box-shadow:0 16px 30px rgba(160,88,26,.14), 0 3px 8px rgba(160,88,26,.09);
   transition:transform .4s var(--ease), box-shadow .4s var(--ease);
 }
-.card--kraft::before{                             /* лёгкая мятость крафт-бумаги */
+.card--kraft::before{                             /* мягкие переливы по лицевой стороне */
   content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background:
-    radial-gradient(140px 90px at 16% 10%, rgba(255,255,255,.17), transparent 70%),
-    radial-gradient(170px 120px at 84% 66%, rgba(116,72,28,.10), transparent 72%),
-    radial-gradient(110px 80px at 55% 34%, rgba(255,255,255,.10), transparent 70%),
-    linear-gradient(178deg, rgba(255,255,255,.13), rgba(116,72,28,.09));
+    radial-gradient(140px 90px at 16% 10%, rgba(255,255,255,.34), transparent 70%),
+    radial-gradient(170px 120px at 84% 66%, rgba(224,123,38,.12), transparent 72%),
+    radial-gradient(110px 80px at 55% 34%, rgba(255,255,255,.18), transparent 70%),
+    linear-gradient(178deg, rgba(255,255,255,.20), transparent 58%);
 }
 .card--kraft::after{                              /* торец панели: видна гофра */
   content:""; position:absolute; top:0; right:0; bottom:0; left:auto;
   width:9px; height:auto; z-index:2; transform:none; border-radius:0;
-  border-left:1px solid rgba(108,68,26,.22);
-  background:repeating-linear-gradient(90deg, rgba(116,72,28,.26) 0 1.6px, rgba(255,255,255,.24) 1.6px 3.2px);
+  border-left:1px solid rgba(160,88,26,.18);
+  background:repeating-linear-gradient(90deg, rgba(160,88,26,.17) 0 1.6px, rgba(255,255,255,.34) 1.6px 3.2px);
 }
 .card.card--kraft:hover{
   transform:translateY(-8px);
-  box-shadow:0 30px 50px rgba(92,60,26,.28), 0 6px 14px rgba(92,60,26,.14);
+  box-shadow:0 30px 50px rgba(160,88,26,.22), 0 6px 14px rgba(160,88,26,.11);
 }
 .card.card--kraft:hover::after{ transform:none; }  /* оранжевая полоса .card тут не нужна */
 
@@ -340,7 +349,7 @@ ul{ margin:0; padding:0; list-style:none; }
   margin-bottom:clamp(14px,1.3vw,19px);
 }
 .card--kraft .card__d{
-  position:relative; z-index:3; color:#4A2A14;
+  position:relative; z-index:3; color:var(--soft-ink);
   font-size:clamp(14px,1vw,15.5px); line-height:1.5;
 }
 
@@ -353,12 +362,12 @@ ul{ margin:0; padding:0; list-style:none; }
 .card--kraft{ counter-increment:artbox; }
 .card--kraft .card__ico{
   width:clamp(42px,4.2vw,56px); height:clamp(42px,4.2vw,56px);
-  margin-bottom:0; border-radius:0; background:none; color:rgba(74,42,10,.30);
+  margin-bottom:0; border-radius:0; background:none; color:rgba(160,88,26,.42);
 }
 .card--kraft .card__ico svg{ width:100%; height:100%; stroke-width:1.4; }
 .card__num{
   font-family:var(--ff-head); font-weight:600; font-size:12px;
-  letter-spacing:.01em; color:rgba(74,42,10,.55);
+  letter-spacing:.01em; color:rgba(160,88,26,.62);
 }
 .card__num::before{ content:"Art. №0" counter(artbox); }
 
@@ -691,22 +700,37 @@ ul{ margin:0; padding:0; list-style:none; }
 .acc__panel > div{ overflow:hidden; }
 .acc__panel p{ padding:0 clamp(18px,2vw,26px) 22px; color:var(--text-soft); font-size:15.2px; line-height:1.68; max-width:75ch; }
 
-/* --- 12b. Аккордеон-рамка («О компании»): приглушённый охристый фон,
-   раскрывается наведением курсора, без плюсиков и без рамки — фон должен
-   оставаться фоном, а не перетягивать на себя внимание. Панель не просто
-   выезжает по высоте — она откидывается от верхнего края, как листок
+/* --- 11b. Стрелка «к содержимому» под заголовком страницы ---------------
+   Стоит на тёмной шапке — и в герое на главной, и в .phead на остальных
+   страницах. Прокрутку до содержимого делает сам браузер: у html задан
+   scroll-behavior:smooth и отступ под липкую шапку. -------------------- */
+.scroll-down{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:48px; height:48px; margin-top:clamp(24px,3vw,34px);
+  border-radius:50%; border:1.5px solid rgba(255,255,255,.30); color:#fff;
+  transition:border-color .25s var(--ease), background .25s var(--ease), transform .25s var(--ease);
+}
+.scroll-down:hover{ border-color:#fff; background:rgba(255,255,255,.12); transform:translateY(3px); }
+.scroll-down svg{ width:20px; height:20px; animation:nudge 2s var(--ease) infinite; }
+@keyframes nudge{ 0%,100%{ transform:translateY(-2px); } 50%{ transform:translateY(3px); } }
+
+/* --- 12b. Аккордеон-рамка («О компании», «Оборудование»): тот же
+   приглушённый оранжевый, что у крафт-панелей на главной. Раскрывается
+   наведением курсора, без плюсиков и без рамки — фон должен оставаться
+   фоном, а не перетягивать на себя внимание. Панель не просто выезжает
+   по высоте — она откидывается от верхнего края, как листок
    в журнале. -------------------------------------------------------- */
 .acc--frame{
-  background:#F1E4C4;                              /* приглушённая охра — именно фон, не акцент */
+  background:var(--soft);
   border:none;
-  box-shadow:0 10px 26px rgba(60,45,20,.12);
+  box-shadow:0 10px 26px rgba(160,88,26,.11);
   perspective:1100px;                                /* для «откидывания» панелей ниже */
 }
-.acc--frame .acc__item + .acc__item{ border-top-color:rgba(74,58,34,.16); }
-.acc--frame .acc__btn{ color:#2C2218; }
-.acc--frame .acc__btn:hover{ background:rgba(212,168,67,.28); }
-.acc--frame .acc__item.is-open .acc__btn{ background:rgba(212,168,67,.40); }
-.acc--frame .acc__panel p{ color:rgba(44,34,24,.75); }
+.acc--frame .acc__item + .acc__item{ border-top-color:var(--soft-line); }
+.acc--frame .acc__btn{ color:var(--text); }
+.acc--frame .acc__btn:hover{ background:var(--soft-2); }
+.acc--frame .acc__item.is-open .acc__btn{ background:var(--soft-3); }
+.acc--frame .acc__panel p{ color:var(--soft-ink); }
 /* внешний блок по-прежнему складывает пространство по высоте (grid-rows),
    а вложенный — «падает» как страница: поворот от верхнего края + прозрачность */
 .acc--frame .acc__panel > div{
@@ -923,4 +947,5 @@ ul{ margin:0; padding:0; list-style:none; }
   html{ scroll-behavior:auto; }
   .reveal{ opacity:1; transform:none; }
   .hero__copy{ opacity:1; transform:none; }
+  .scroll-down svg{ animation:none; }
 }
