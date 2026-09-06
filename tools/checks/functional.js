@@ -97,6 +97,22 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
          if (r.w !== 1760 || r.left !== 80) return false;
        }
        return true; })());
+  ok('логотип в шапке стоит на той же направляющей, что текст под ним',
+     await (async () => {
+       for (const w of [1280, 1440, 1600, 1920, 2560]) {
+         await p.setViewportSize({ width: w, height: 1000 });
+         await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+         const m = await p.evaluate(() => {
+           const L = s => document.querySelector(s).getBoundingClientRect().left;
+           return { logo: L('.logo'), hero: L('.hero__title'), foot: L('.footer .wrap') };
+         });
+         // Логотип лежит внутри .wrap шапки, поэтому сравниваем его с текстом
+         // героя (тоже внутри .wrap) — оба должны начинаться в одной точке.
+         if (Math.abs(m.logo - m.hero) >= 1) return false;
+         if (Math.abs(m.foot + 40 - m.hero) >= 1) return false;
+       }
+       await p.setViewportSize({ width: 1440, height: 900 });
+       return true; })());
   ok('первый экран стоит на той же направляющей, что и остальные секции',
      hero1440.innW === 1440 && hero1920.innW === 1760 && hero1280.innW === 1280);
   ok('заголовок героя на 1440px — 62–72px, на 1920px — 72–80px',
@@ -211,6 +227,133 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
        }
        return r.w === 1280; })());
   await p.setViewportSize({ width: 1440, height: 900 });
+
+  console.log('Выпадающее меню в шапке:');
+  await p.setViewportSize({ width: 1440, height: 900 });
+  await p.mouse.move(2, 2);
+  await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+  ok('подменю — семантический список: ul > li > a, без «ссылок» на div-ах',
+     await p.evaluate(() => [...document.querySelectorAll('.nav__drop')].every(d => {
+       const list = d.firstElementChild;
+       if (!list || list.tagName !== 'UL') return false;
+       return [...list.children].every(li => li.tagName === 'LI'
+              && li.children.length === 1 && li.firstElementChild.tagName === 'A'
+              && li.firstElementChild.getAttribute('href'));
+     })));
+  ok('пункт с подменю помечен aria-haspopup, у кнопки раскрытия есть подпись',
+     await p.evaluate(() => [...document.querySelectorAll('.nav__item')].every(it =>
+       it.querySelector('.nav__link').getAttribute('aria-haspopup') === 'true'
+       && it.querySelector('.nav__toggle').getAttribute('aria-label')
+       && it.querySelector('.nav__toggle').getAttribute('aria-expanded') === 'false')));
+  ok('подменю «Продукция» ведёт на страницы конкретных подгрупп гофротары',
+     await (async () => {
+       const hrefs = await p.evaluate(() => [...document.querySelectorAll('.nav__item')]
+         .filter(it => it.querySelector('.nav__link').getAttribute('href') === 'produkciya.html')
+         .flatMap(it => [...it.querySelectorAll('.nav__drop a')].map(a => a.getAttribute('href'))));
+       const detail = fs.readdirSync(path.resolve(__dirname, '../..'))
+         .filter(f => /^produkciya-.+\.html$/.test(f));
+       // все страницы подгрупп представлены, и каждая ссылка существует
+       return detail.every(f => hrefs.includes(f))
+              && hrefs.every(h => fs.existsSync(path.resolve(__dirname, '../..', h.split('#')[0]))); })());
+  ok('подменю «Услуги» ведёт на конкретные услуги, и каждый якорь есть на странице',
+     await (async () => {
+       const hrefs = await p.evaluate(() => [...document.querySelectorAll('.nav__item')]
+         .filter(it => it.querySelector('.nav__link').getAttribute('href') === 'uslugi.html')
+         .flatMap(it => [...it.querySelectorAll('.nav__drop a')].map(a => a.getAttribute('href'))));
+       if (!hrefs.some(h => h.includes('usluga-flexopechat'))) return false;
+       await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
+       const missing = await p.evaluate(hh => hh
+         .map(h => h.split('#')[1]).filter(Boolean)
+         .filter(id => !document.getElementById(id)), hrefs);
+       await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+       return missing.length === 0; })());
+  ok('во всех шапках сайта ни одна ссылка подменю не ведёт в никуда',
+     await (async () => {
+       for (const page of ['index.html','o-kompanii.html','produkciya.html','uslugi.html',
+                           'oborudovanie.html','korzina.html','produkciya-gofrolotki.html']) {
+         await p.goto('file://' + B + page, { waitUntil:'domcontentloaded' });
+         const hrefs = await p.evaluate(() =>
+           [...document.querySelectorAll('.nav__drop a')].map(a => a.getAttribute('href')));
+         if (!hrefs.length) return false;
+         for (const h of hrefs)
+           if (!fs.existsSync(path.resolve(__dirname, '../..', h.split('#')[0]))) return false;
+       }
+       await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+       return true; })());
+
+  const dropAt = n => p.locator('.nav__item').nth(n).locator('.nav__drop');
+  ok('по умолчанию подменю скрыто, наведение его раскрывает', await (async () => {
+      const hidden = await dropAt(2).evaluate(e => getComputedStyle(e).visibility === 'hidden');
+      await p.locator('.nav__item').nth(2).locator('.nav__link').hover();
+      await p.waitForTimeout(400);
+      const shown = await dropAt(2).evaluate(e => getComputedStyle(e).visibility === 'visible'
+                                                 && getComputedStyle(e).opacity === '1');
+      return hidden && shown; })());
+  ok('меню ложится поверх первого экрана: высокий z-index, тень и скругление',
+     await dropAt(2).evaluate(e => {
+       const cs = getComputedStyle(e);
+       const header = parseFloat(getComputedStyle(document.querySelector('.header')).zIndex);
+       return parseFloat(cs.zIndex) >= 950 && header >= 800
+              && cs.boxShadow !== 'none' && parseFloat(cs.borderRadius) > 0; }));
+  ok('безопасная зона: курсор в зазоре между пунктом и меню его не закрывает',
+     await (async () => {
+       const it = p.locator('.nav__item').nth(2);
+       await it.locator('.nav__link').hover();
+       await p.waitForTimeout(350);
+       const link = await it.locator('.nav__link').boundingBox();
+       const drop = await dropAt(2).boundingBox();
+       // Середина зазора: тут нет ни пункта, ни самого меню — только мостик.
+       const gapY = (link.y + link.height + drop.y) / 2;
+       if (gapY <= link.y + link.height || gapY >= drop.y) return false;
+       await p.mouse.move(link.x + link.width / 2, gapY);
+       await p.waitForTimeout(400);
+       return dropAt(2).evaluate(e => getComputedStyle(e).visibility === 'visible'); })());
+  ok('уход курсора с пункта закрывает меню — но с задержкой, а не мгновенно',
+     await (async () => {
+       // Задержку читаем в покое: под курсором она намеренно обнулена —
+       // меню появляется сразу, а закрывается с паузой. Предыдущая проверка
+       // оставила курсор на меню, поэтому сначала уводим его в сторону.
+       await p.mouse.move(700, 600);
+       await p.waitForTimeout(500);
+       const delay = await dropAt(2).evaluate(e => getComputedStyle(e).transitionDelay);
+       await p.locator('.nav__item').nth(2).locator('.nav__link').hover();
+       await p.waitForTimeout(350);
+       const openDelay = await dropAt(2).evaluate(e => getComputedStyle(e).transitionDelay);
+       await p.mouse.move(700, 600);
+       await p.waitForTimeout(600);
+       const closed = await dropAt(2).evaluate(e => getComputedStyle(e).visibility === 'hidden');
+       return closed && /^0\.1\d*s/.test(delay) && openDelay === '0s'; })());
+  ok('подпункт отзывается на наведение: подложка, цвет текста и стрелка',
+     await (async () => {
+       await p.locator('.nav__item').nth(2).locator('.nav__link').hover();
+       await p.waitForTimeout(350);
+       const a = dropAt(2).locator('a').nth(1);
+       const rest = await a.evaluate(e => ({
+         bg: getComputedStyle(e).backgroundColor, fg: getComputedStyle(e).color,
+         mark: getComputedStyle(e, '::after').opacity,
+         tr: getComputedStyle(e).transitionDuration, cur: getComputedStyle(e).cursor }));
+       await a.hover();
+       await p.waitForTimeout(350);
+       const on = await a.evaluate(e => ({
+         bg: getComputedStyle(e).backgroundColor, fg: getComputedStyle(e).color,
+         mark: getComputedStyle(e, '::after').opacity }));
+       return rest.bg !== on.bg && rest.fg !== on.fg
+              && on.bg === 'rgb(246, 234, 220)' && on.fg === 'rgb(140, 74, 14)'
+              && parseFloat(rest.mark) === 0 && parseFloat(on.mark) === 1
+              && rest.tr.startsWith('0.2s') && rest.cur === 'pointer'; })());
+  ok('кликается вся строка подпункта, а не только буквы', await (async () => {
+      await p.locator('.nav__item').nth(2).locator('.nav__link').hover();
+      await p.waitForTimeout(350);
+      const a = dropAt(2).locator('a').first();
+      const box = await a.boundingBox();
+      // Пустое место справа от текста, у самого края строки
+      await Promise.all([
+        p.waitForURL('**/produkciya-gofroyashchiki.html', { timeout: 5000 }).catch(() => {}),
+        p.mouse.click(box.x + box.width - 8, box.y + box.height / 2),
+      ]);
+      const url = p.url();
+      await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+      return url.endsWith('produkciya-gofroyashchiki.html'); })());
 
   console.log('Счётчики и анимации:');
   // Блок цифр убран целиком — и с главной, и с «О компании» (дублировал уже
@@ -474,10 +617,13 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
      }));
   ok('плюсиков-разворотов на вкладках «О компании» больше нет',
      await p.locator('.acc--frame .acc__ico').count() === 0);
-  ok('рамки вокруг таблицы нет, фон — приглушённый непрозрачный оранжевый (--soft)',
+  ok('таблица в тёплой крафтовой заливке с тонкой оранжевой рамкой',
      await p.locator('.acc--frame').evaluate(e => {
        const cs = getComputedStyle(e);
-       return cs.borderStyle === 'none' && cs.backgroundColor === 'rgb(236, 218, 202)';
+       return cs.backgroundColor === 'rgb(251, 246, 240)'
+              && cs.borderStyle === 'solid'
+              && parseFloat(cs.borderTopWidth) === 1
+              && cs.borderTopColor === 'rgba(235, 120, 35, 0.2)';
      }));
   ok('закруглённые углы таблицы не тронуты', await p.locator('.acc--frame')
       .evaluate(e => parseFloat(getComputedStyle(e).borderRadius) > 0));
@@ -572,14 +718,53 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       const okUrl = p.url().endsWith('index.html#oborudovanie-band');
       const top = await p.locator('#oborudovanie-band').evaluate(e => e.getBoundingClientRect().top);
       return okUrl && top > 0 && top < 140; })());
-  ok('на мобильном подменю не показывается — навести некуда', await (async () => {
+  ok('на мобильном подменю раскрывается тапом, а не наведением', await (async () => {
       await p.setViewportSize({ width: 390, height: 800 });
       await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
       await p.locator('.burger').click();
       await p.waitForTimeout(300);
-      const visible = await p.locator('.nav__drop').first().isVisible();
+      const item = p.locator('.nav__item').nth(2);
+      // Список сворачивается высотой контейнера (grid-template-rows), поэтому
+      // меряем именно её: сама ссылка внутри свой бокс сохраняет, и
+      // isVisible() про обрезку предком ничего не знает.
+      const subH = () => item.locator('.nav__drop').evaluate(e => e.getBoundingClientRect().height);
+      const shut = await subH();
+      // Наведение на сенсорном экране ничего не открывает — только кнопка.
+      await item.locator('.nav__link').hover();
+      await p.waitForTimeout(300);
+      const afterHover = await subH();
+      await item.locator('.nav__toggle').click();
+      await p.waitForTimeout(450);
+      const afterTap = await subH();
+      const aria = await item.locator('.nav__toggle').getAttribute('aria-expanded');
       await p.setViewportSize({ width: 1440, height: 900 });
-      return !visible; })());
+      return shut === 0 && afterHover === 0 && afterTap > 200 && aria === 'true'; })());
+  ok('на мобильном открыт один раздел: тап по другому сворачивает предыдущий', await (async () => {
+      await p.setViewportSize({ width: 390, height: 800 });
+      await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+      await p.locator('.burger').click();
+      await p.waitForTimeout(300);
+      await p.locator('.nav__item').nth(2).locator('.nav__toggle').click();
+      await p.waitForTimeout(400);
+      await p.locator('.nav__item').nth(3).locator('.nav__toggle').click();
+      await p.waitForTimeout(400);
+      const first = await p.locator('.nav__item').nth(2).evaluate(e => e.classList.contains('is-open'));
+      const second = await p.locator('.nav__item').nth(3).evaluate(e => e.classList.contains('is-open'));
+      await p.setViewportSize({ width: 1440, height: 900 });
+      return !first && second; })());
+  ok('тап по подпункту уводит на страницу и закрывает бургер', await (async () => {
+      await p.setViewportSize({ width: 390, height: 800 });
+      await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
+      await p.locator('.burger').click();
+      await p.waitForTimeout(300);
+      await p.locator('.nav__item').nth(2).locator('.nav__toggle').click();
+      await p.waitForTimeout(450);
+      await p.locator('.nav__item').nth(2).locator('.nav__drop a').first().click();
+      await p.waitForLoadState('domcontentloaded');
+      const url = p.url();
+      const menuShut = !(await p.locator('.nav').evaluate(e => e.classList.contains('is-open')));
+      await p.setViewportSize({ width: 1440, height: 900 });
+      return url.endsWith('produkciya-gofroyashchiki.html') && menuShut; })());
 
   console.log('Таблица на «Оборудовании»:');
   await p.mouse.move(2, 2);
@@ -587,8 +772,8 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('таблица переведена на тот же аккордеон-рамку, что и на «О компании»',
      await p.locator('.acc--frame').count() === 1);
   ok('плюсиков в таблице больше нет', await p.locator('.acc--frame .acc__ico').count() === 0);
-  ok('фон таблицы — тот же приглушённый оранжевый (--soft), что на «О компании»',
-     await p.locator('.acc--frame').evaluate(e => getComputedStyle(e).backgroundColor === 'rgb(236, 218, 202)'));
+  ok('фон таблицы — тот же тёплый оттенок, что на «О компании»',
+     await p.locator('.acc--frame').evaluate(e => getComputedStyle(e).backgroundColor === 'rgb(251, 246, 240)'));
   ok('наведение на подраздел раскрывает его и сворачивает предыдущий', await (async () => {
       const items = p.locator('.acc--frame .acc__item');
       await items.nth(2).hover();
@@ -596,13 +781,34 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       return await items.nth(2).evaluate(e => e.classList.contains('is-open'))
              && !(await items.first().evaluate(e => e.classList.contains('is-open'))); })());
 
-  console.log('Крафт-панели на главной — цвет:');
+  console.log('Единая тёплая палитра карточек, плашек и аккордеонов:');
   await p.goto('file://' + B + 'index.html', { waitUntil:'domcontentloaded' });
-  ok('панели залиты непрозрачным приглушённым оранжевым (--soft/--soft-2), не крафтом и не полупрозрачным',
+  // Контраст по WCAG: считаем прямо на странице по фактически применённым
+  // цветам, а не по токенам — так проверка ловит и случайную прозрачность.
+  const CONTRAST = `(fg, bg) => {
+    const lum = c => {
+      const [r, g, b] = c.match(/[\\d.]+/g).slice(0, 3).map(Number).map(v => {
+        v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const a = lum(fg), b2 = lum(bg);
+    return (Math.max(a, b2) + 0.05) / (Math.min(a, b2) + 0.05);
+  }`;
+  ok('крафт-панели залиты чистым тёплым оттенком, без песочной «грязи»',
      await p.locator('.card--kraft').first().evaluate(e => {
-       const bg = getComputedStyle(e).backgroundImage;
-       return bg.includes('rgb(231, 202, 177)') && bg.includes('rgb(236, 218, 202)')
-              && !bg.includes('rgb(217, 175, 137)') && !bg.includes('rgba(224, 123, 38');
+       const cs = getComputedStyle(e);
+       const bg = cs.backgroundImage;
+       return bg.includes('rgb(246, 234, 220)') && bg.includes('rgb(251, 246, 240)')
+              && !bg.includes('rgb(231, 202, 177)') && !bg.includes('rgb(236, 218, 202)')
+              && cs.borderTopColor === 'rgba(235, 120, 35, 0.2)';
+     }));
+  ok('иконка и номер «Art. №» внизу панели — тёплый фирменный оранжевый',
+     await p.locator('.card--kraft').first().evaluate(e => {
+       const ico = getComputedStyle(e.querySelector('.card__ico')).color;
+       const num = getComputedStyle(e.querySelector('.card__num')).color;
+       const op  = getComputedStyle(e.querySelector('.card__num')).opacity;
+       return ico === 'rgb(224, 123, 38)' && num === 'rgb(154, 85, 20)' && op === '1';
      }));
   ok('оттенок панелей — та же тёплая гамма, что у «Плюс» в названии (не ушёл в красный)', await p.evaluate(() => {
       const hue = ([r, g, b]) => {
@@ -618,8 +824,72 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
         document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; };
       const rgb = s => s.match(/[\d.]+/g).slice(0, 3).map(Number);
       const plusHue = hue(rgb(getComputedStyle(document.querySelector('.brand-plus')).color));
-      const softHue = hue(rgb(probe('var(--soft-2)')));
-      return Math.abs(plusHue - softHue) < 12; }));
+      const warmHue = hue(rgb(probe('var(--warm-2)')));
+      return Math.abs(plusHue - warmHue) < 12; }));
+
+  // Одна палитра на все четыре вида блоков: панели на главной, плашки
+  // преимуществ на «Оборудовании», аккордеон-рамка и FAQ. Смотрим фактическую
+  // заливку и рамку — расхождение здесь и есть «разнобой», от которого уходили.
+  ok('все информационные блоки сайта держат одну заливку и одну рамку',
+     await (async () => {
+       const probe = async (page, sel) => {
+         await p.goto('file://' + B + page, { waitUntil:'domcontentloaded' });
+         return p.locator(sel).first().evaluate(e => {
+           const cs = getComputedStyle(e);
+           return { bg: cs.backgroundColor, border: cs.borderTopColor };
+         });
+       };
+       const list = [await probe('oborudovanie.html', '.card:not(.card--dark):not(.card--kraft)'),
+                     await probe('oborudovanie.html', '.acc--frame'),
+                     await probe('o-kompanii.html',   '.acc--frame'),
+                     await probe('uslugi.html',       '.acc')];
+       return list.every(x => x.bg === 'rgb(251, 246, 240)'
+                             && x.border === 'rgba(235, 120, 35, 0.2)');
+     })());
+  ok('чёрный текст заголовков и описаний на тёплой заливке читается (AA и выше)',
+     await (async () => {
+       const contrast = new Function('return ' + CONTRAST)();
+       const cases = [['index.html', '.card--kraft', '.card__t', 4.5],
+                      ['index.html', '.card--kraft', '.card__d', 4.5],
+                      ['oborudovanie.html', '.card:not(.card--dark)', '.card__t', 4.5],
+                      ['oborudovanie.html', '.card:not(.card--dark)', '.card__d', 4.5],
+                      ['uslugi.html', '.acc', '.acc__btn', 4.5],
+                      ['o-kompanii.html', '.acc--frame', '.acc__btn', 4.5]];
+       for (const [page, block, sel, min] of cases) {
+         await p.goto('file://' + B + page, { waitUntil:'domcontentloaded' });
+         const c = await p.locator(block).first().evaluate((e, s2) => {
+           const t = e.querySelector(s2) || e;
+           // Заливка блока: у панели она градиентная, поэтому берём самый
+           // светлый край — худший случай для тёмного текста здесь не он,
+           // но именно он лежит под большей частью строки.
+           const cs = getComputedStyle(e);
+           const grad = cs.backgroundImage.match(/rgb\([^)]+\)/g);
+           return { fg: getComputedStyle(t).color,
+                    bg: grad ? grad[grad.length - 1] : cs.backgroundColor };
+         }, sel);
+         if (contrast(c.fg, c.bg) < min) return false;
+       }
+       return true; })());
+  ok('наведение на карточку насыщает рамку тёплым оранжевым', await (async () => {
+      await p.goto('file://' + B + 'oborudovanie.html', { waitUntil:'domcontentloaded' });
+      const card = p.locator('.card:not(.card--dark)').first();
+      const before = await card.evaluate(e => getComputedStyle(e).borderTopColor);
+      await card.hover();
+      await p.waitForTimeout(450);
+      const after = await card.evaluate(e => getComputedStyle(e).borderTopColor);
+      await p.mouse.move(2, 2);
+      return before === 'rgba(235, 120, 35, 0.2)' && after === 'rgba(235, 120, 35, 0.4)'; })());
+  ok('раскрытый вопрос FAQ и его круглая кнопка — в фирменном оранжевом', await (async () => {
+      await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
+      const openBtn = p.locator('.acc__item.is-open .acc__btn').first();
+      const openIco = p.locator('.acc__item.is-open .acc__ico').first();
+      const shutIco = p.locator('.acc__item:not(.is-open) .acc__ico').first();
+      return await openBtn.evaluate(e => getComputedStyle(e).color === 'rgb(140, 74, 14)'
+                                        && getComputedStyle(e).backgroundColor === 'rgb(241, 224, 205)')
+             && await openIco.evaluate(e => getComputedStyle(e).backgroundColor === 'rgb(224, 123, 38)'
+                                           && getComputedStyle(e).color === 'rgb(255, 255, 255)')
+             && await shutIco.evaluate(e => getComputedStyle(e).backgroundColor === 'rgba(235, 120, 35, 0.12)');
+     })());
 
   console.log('Карточки «На что мы отвечаем перед заказчиком»:');
   await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });

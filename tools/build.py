@@ -41,40 +41,53 @@ NAV = [("index.html",       "Главная"),
        ("oborudovanie.html", "Оборудование"),
        ("korzina.html",     "Корзина")]
 
-# Разделы, на которые ведёт подменю каждого пункта — при наведении на пункт
-# сразу видно, что есть на странице, и можно попасть в нужное место без
-# прокрутки. id-якоря расставлены в src/*.html на соответствующих секциях.
+# Подменю пунктов навигации. Ключ — страница, значение — список пар
+# (ссылка, подпись). Ссылки полные, а не якоря на своей странице: в подменю
+# «Продукция» стоят страницы конкретных подгрупп гофротары, в «Услугах» —
+# конкретные услуги, у остальных пунктов — разделы своей страницы. Так из
+# шапки можно попасть сразу в нужное место сайта, а не только на страницу.
+# Категории берутся из products_data.py — список нигде не дублируется.
 NAV_SECTIONS = {
     "index.html": [
-        ("dalee", "Почему заказывают у нас"),
-        ("produkciya", "Продукция"),
-        ("oborudovanie-band", "Оборудование"),
-        ("etapy", "От заявки до отгрузки"),
+        ("index.html#dalee",             "Почему заказывают у нас"),
+        ("index.html#produkciya",        "Продукция"),
+        ("index.html#oborudovanie-band", "Оборудование"),
+        ("index.html#etapy",             "От заявки до отгрузки"),
     ],
     "o-kompanii.html": [
-        ("dalee", "Производство"),
-        ("principy", "Принципы работы"),
-        ("vizit", "Приезжайте на производство"),
+        ("o-kompanii.html#dalee",    "Производство"),
+        ("o-kompanii.html#principy", "Принципы работы"),
+        ("o-kompanii.html#vizit",    "Приезжайте на производство"),
     ],
     "produkciya.html": [
-        ("dalee", "Каталог продукции"),
-        ("material", "Из чего делаем упаковку"),
+        *((f'produkciya-{c["slug"]}.html', c["name"]) for c in CATEGORIES),
+        ("produkciya.html#dalee",    "Весь каталог продукции"),
+        ("produkciya.html#material", "Из чего делаем упаковку"),
     ],
     "uslugi.html": [
-        ("dalee", "Наши услуги"),
-        ("flexopechat", "Как мы печатаем"),
-        ("faq", "Частые вопросы"),
+        ("uslugi.html#usluga-flexopechat",  "Флексографическая печать"),
+        ("uslugi.html#usluga-pokraska",     "Покраска продукции"),
+        ("uslugi.html#usluga-konstrukciya", "Разработка конструкции"),
+        ("uslugi.html#usluga-vysechka",     "Высечка и рилёвка"),
+        ("uslugi.html#usluga-razmery",      "Изготовление по размерам"),
+        ("uslugi.html#usluga-dostavka",     "Доставка"),
+        ("uslugi.html#flexopechat",         "Как мы печатаем"),
+        ("uslugi.html#faq",                 "Частые вопросы"),
     ],
     "oborudovanie.html": [
-        ("dalee", "Что мы предлагаем"),
-        ("sdelka", "Как проходит сделка"),
+        ("oborudovanie.html#dalee",  "Что мы предлагаем"),
+        ("oborudovanie.html#sdelka", "Как проходит сделка"),
     ],
     "korzina.html": [
-        ("sostav", "Состав заказа"),
-        ("zayavka", "Заявка на расчёт"),
-        ("karta", "Как нас найти"),
+        ("korzina.html#sostav",  "Состав заказа"),
+        ("korzina.html#zayavka", "Заявка на расчёт"),
+        ("korzina.html#karta",   "Как нас найти"),
     ],
 }
+
+# Подменю, которые не помещаются в одну колонку разумной высоты: каталог
+# продукции и услуги раскладываются в два столбца.
+NAV_WIDE = {"produkciya.html", "uslugi.html"}
 
 PAGES = {
     "index.html":       ("Производство упаковки из гофрокартона в Минске — " + LEGAL,
@@ -104,6 +117,7 @@ ICONS = {
     "right":    '<path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "down":     '<path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "up":       '<path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    "chev":     '<path d="M6 9.5 12 15l6-5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "plus":     '<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
     "phone":    '<path d="M6.6 3h3l1.5 4-2 1.4a12 12 0 0 0 5.5 5.5l1.4-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.6 5.2 2 2 0 0 1 6.6 3Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
     "mail":     '<rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="m3.5 7 8.5 6 8.5-6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
@@ -160,23 +174,31 @@ def topbar():
 
 
 def nav_item(f, t, active):
-    """Пункт меню. При наведении разворачивается список разделов страницы —
-    подсказка, что на ней есть, без прокрутки. У «Корзины» дополнительно
-    счётчик позиций — его ведёт JS."""
+    """Пункт меню. У пунктов с подменю — семантический список ссылок:
+    на десктопе он раскрывается наведением, на мобильном (где наводить
+    нечем) — тапом по кнопке-шеврону рядом с пунктом. Сам пункт остаётся
+    обычной ссылкой на свою страницу в обоих случаях.
+    У «Корзины» дополнительно счётчик позиций — его ведёт JS."""
     cls = "nav__link" + (" is-active" if f == active else "")
     label = t
     if f == "korzina.html":
         cls += " nav__link--cart"
         label += f'{icon("cart", "nav__cart-ico")}<span class="cart-badge" data-cart-badge hidden>0</span>'
-    link = f'<a class="{cls}" href="{f}">{label}</a>'
     sections = NAV_SECTIONS.get(f)
     if not sections:
-        return f'<li>{link}</li>'
-    items = "".join(f'<a href="{f}#{anchor}">{title}</a>' for anchor, title in sections)
-    return f'''<li class="nav__item">
-        {link}
-        <div class="nav__drop">{items}</div>
-      </li>'''
+        return f'<li><a class="{cls}" href="{f}">{label}</a></li>'
+
+    link = f'<a class="{cls}" href="{f}" aria-haspopup="true">{label}</a>'
+    items = "".join(f'<li><a href="{href}">{title}</a></li>' for href, title in sections)
+    wide = " nav__drop--wide" if f in NAV_WIDE else ""
+    return (f'<li class="nav__item">\n'
+            f'        {link}\n'
+            f'        <button class="nav__toggle" type="button" aria-expanded="false"'
+            f' aria-label="Разделы: {t}">{icon("chev")}</button>\n'
+            f'        <div class="nav__drop{wide}">\n'
+            f'          <ul class="nav__drop-list">{items}</ul>\n'
+            f'        </div>\n'
+            f'      </li>')
 
 
 def header(active):
