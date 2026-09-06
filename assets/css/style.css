@@ -48,8 +48,8 @@
   --shadow-m: 0 12px 32px rgba(11,17,24,.10), 0 2px 8px rgba(11,17,24,.05);
   --shadow-l: 0 28px 70px rgba(11,17,24,.18), 0 6px 18px rgba(11,17,24,.08);
 
-  --wrap: 1240px;
-  --gut:  clamp(18px, 4vw, 40px);
+  --wrap: 1280px;
+  --gut:  clamp(20px, 4vw, 40px);
 
   --ff-head: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
   --ff-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -973,7 +973,9 @@ ul{ margin:0; padding:0; list-style:none; }
   .cta__in{ grid-template-columns:1fr; }
   .topbar__links{ display:none; }
 }
-@media (max-width:720px){
+@media (max-width:560px){
+  /* Ниже — только самые узкие телефоны: до этого держим 2 колонки
+     (repeat(2,1fr) унаследован из блока max-width:1023px), тут — 1. */
   .grid--3,.grid--4{ grid-template-columns:1fr; }
 }
 @media (max-width:860px){
@@ -986,6 +988,16 @@ ul{ margin:0; padding:0; list-style:none; }
   .step{ grid-template-columns:56px 1fr; }
   .hero__acts .btn{ flex:1; }
   .logo__sub{ display:none; }
+}
+@media (max-width:479px){
+  /* На самых узких экранах логотип + корзина-значок + бургер не помещаются
+     в строку. «Корзина» и так первым пунктом видна в открытом меню со
+     своим счётчиком — прячем дублирующий значок, а не логотип. */
+  .header__in{ gap:10px; }
+  .header__cart{ display:none; }
+  /* Длинный текст кнопки («Весь каталог продукции» и т. п.) на nowrap
+     не помещается в 320px — на самом узком экране даём ему перенестись. */
+  .btn{ white-space:normal; text-align:center; }
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }

@@ -310,9 +310,17 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('по умолчанию открыта первая вкладка', await p.locator('.acc--frame .acc__item').first()
       .evaluate(e => e.classList.contains('is-open')));
   ok('наведение на третью вкладку открывает её и закрывает первую', await (async () => {
-      await p.locator('.acc--frame .acc__item').nth(2).hover();
-      await p.waitForTimeout(200);
-      const thirdOpen = await p.locator('.acc--frame .acc__item').nth(2).evaluate(e => e.classList.contains('is-open'));
+      // Третья вкладка обычно ниже сгиба экрана: если скроллить прямо внутри
+      // .hover(), точка приземления мыши считается ДО того, как открытая
+      // первая панель успеет схлопнуться (.38s), и реальный курсор попадает
+      // на соседний пункт, сдвинувшийся вверх во время анимации. Скроллим
+      // и ждём осадки раскладки заранее, отдельно от самого наведения.
+      const third = p.locator('.acc--frame .acc__item').nth(2);
+      await third.scrollIntoViewIfNeeded();
+      await p.waitForTimeout(300);
+      await third.hover();
+      await p.waitForTimeout(300);
+      const thirdOpen = await third.evaluate(e => e.classList.contains('is-open'));
       const firstClosed = await p.locator('.acc--frame .acc__item').first().evaluate(e => !e.classList.contains('is-open'));
       return thirdOpen && firstClosed; })());
   ok('панель раскрывается поворотом, а не просто списком (эффект «листа»)',
