@@ -942,26 +942,150 @@ ul{ margin:0; padding:0; list-style:none; }
 .reveal{ opacity:0; transform:translateY(26px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
 .reveal.is-in{ opacity:1; transform:none; }
 
-/* --- 19b. Первый экран на широких мониторах ----------------------------
-   На Full HD и шире общий --wrap (1280px) держит герой у́же, чем позволяет
-   монитор, а сам clamp() заголовка уже упирался в потолок — упирается
-   один раз, дальше сколько угодно vw не добавляют ни пикселя. Здесь —
-   точечная надбавка только для героя: контейнер шире, заголовок и кнопки
-   крупнее, левая колонка — заметная доля контейнера, а не потерянная
-   узкая лента на широком фоне склада. Остальные страницы и сетки эта
-   надбавка не задевает — .hero__in/.hero__title/.hero__text/.hero__acts
-   есть только в герое. --------------------------------------------------- */
+/* --- 19b. Широкий десктоп: 1440px, Full HD и выше -----------------------
+   Базовый --wrap в 1280px рассчитан на ноутбук. На Full HD он оставлял по
+   краям больше чем по 300px пустого фона, и весь сайт — секции, каталог,
+   внутренние страницы, подвал — стоял узкой колонкой посреди монитора.
+   Здесь контейнер раскрывается ступенями (1560px → 1760px), а вместе с ним
+   подтягиваются сетки, поля карточек и типографика: на широком экране текст
+   не должен мельчать вместе с ростом свободного места. Первый экран больше
+   не живёт по своей ширине — .hero__in берёт тот же --wrap, поэтому заголовок
+   героя, заголовки разделов и колонки подвала стоят на одной вертикальной
+   направляющей. Диапазон до 1439px эти правила не задевают вовсе. ------- */
 @media (min-width:1440px){
-  .hero__in{ max-width:1600px; }
+  :root{
+    --wrap: 1560px;
+    /* --gut уже упирается в свои 40px на этих ширинах — безопасное поле
+       по краям заведомо больше требуемых 30px, менять его не нужно. */
+  }
+
+  /* Первый экран: та же ширина, что у всех секций, но крупнее шрифт —
+     clamp() заголовка упирался в потолок задолго до Full HD. */
   .hero__copy{ max-width:52%; }
-  .hero__title{ font-size:clamp(60px, 4.4vw, 64px); }
-  .hero__text{ font-size:19px; }
+  .hero__title{ font-size:clamp(62px, 4.6vw, 70px); }
+  .hero__text{ font-size:20px; max-width:600px; }
   .hero__acts .btn{ padding:18px 34px; font-size:17px; }
+
+  /* Заголовки разделов и вводные абзацы */
+  .h2{ font-size:44px; }
+  .h2--tight{ font-size:41px; }
+  .h3{ font-size:24px; }
+  .lead{ font-size:19px; line-height:1.7; }
+  .head{ max-width:860px; }
+  .phead__in{ max-width:900px; }
+  .phead .lead{ max-width:720px; }
+
+  /* Сетки: шире контейнер — шире и промежутки, иначе карточки слипаются */
+  .grid{ gap:28px; }
+
+  /* Карточки: поля и текст растут вместе с шириной, чтобы карточка не
+     выглядела пустым растянутым блином. */
+  .card{ padding:36px; }
+  .card__t{ font-size:20px; }
+  .card__d{ font-size:17px; line-height:1.65; }
+  .card__ico{ width:58px; height:58px; border-radius:17px; }
+  .card__ico svg{ width:28px; height:28px; }
+  .card--dark .card__t{ font-size:22px; padding-bottom:16px; margin-bottom:16px; }
+  .card--kraft{
+    min-height:430px;
+    padding:34px 38px 24px 30px;
+  }
+  .card--kraft .card__t{ font-size:26px; margin-bottom:20px; }
+  .card--kraft .card__d{ font-size:17px; line-height:1.55; }
+  .card--kraft .card__ico{ width:60px; height:60px; }
+  .card__num{ font-size:13px; }
+
+  /* Каталог продукции */
+  .prod__body{ padding:28px; gap:14px; }
+  .prod__t{ font-size:21px; }
+  .prod__d{ font-size:16px; line-height:1.62; }
+  .filter{ font-size:15.5px; padding:11px 22px; }
+
+  /* Этапы, аккордеоны, плашки */
+  .step{ grid-template-columns:96px 1fr; }
+  .step__t{ font-size:22px; }
+  .step__d{ font-size:17px; line-height:1.65; }
+  .acc__btn{ font-size:18px; padding:22px clamp(22px,2vw,30px); }
+  .acc__panel p{ font-size:17px; line-height:1.68; padding-bottom:24px; }
+  .band__t{ font-size:24px; }
+  .band__d{ font-size:16.5px; line-height:1.62; }
+
+  /* Прайс-таблицы и текстовые блоки страниц подгрупп */
+  .ptable{ font-size:16px; }
+  .ptable th{ font-size:13.5px; padding:16px 18px; }
+  .ptable td{ padding:16px 18px; }
+  .ptable__photo{ width:112px; height:84px; }
+  .ptable__note{ font-size:14.5px; }
+  .ptext__lead{ font-size:17px; }
+  .ptext__list li{ font-size:16.5px; }
+  .ptext__after{ font-size:15.5px; }
+  .ptable__empty-d,.cart__empty-d{ font-size:17px; }
+
+  /* Корзина, контакты, карта, подвал */
+  .cart__total{ font-size:17px; }
+  .form__cart{ font-size:15.5px; }
+  .ct__v{ font-size:18.5px; }
+  .map,.map iframe{ min-height:480px; }
+  .footer__list a,.footer__list span{ font-size:15.5px; }
+  .footer__about{ font-size:15.5px; max-width:38ch; }
 }
+
+/* Каталог продукции — десять подгрупп, единственная длинная сетка на сайте.
+   Здесь колонки считает сам браузер: auto-fit добавляет колонку, как только
+   в ряд помещается ещё одна карточка не у́же 380px. На 1440–1900px это три
+   широкие колонки, на Full HD и выше — четыре полноценные (по 396px, шире
+   прежних 384px на ноутбуке), десять карточек ложатся 4+4+2 вместо
+   3+3+3+1. Нижняя граница в 380px — страховка от главного побочного
+   эффекта четырёх колонок: карточка на большом мониторе не должна стать
+   мельче, чем была на 1280px. Превью при этом берут более высокий кадр —
+   картинка товара на широком экране должна читаться, а не съёживаться.
+   Другие сетки (три и шесть карточек на главной, «Услугах», «О компании»,
+   «Оборудовании») это не задевает: там лишняя колонка оставила бы дыру. */
+@media (min-width:1440px){
+  .grid--cat{ grid-template-columns:repeat(auto-fit, minmax(380px, 1fr)); }
+  .grid--cat .prod__pic{ aspect-ratio:5/4; }
+}
+
 @media (min-width:1920px){
-  .hero__title{ font-size:clamp(64px, 3.6vw, 68px); }
-  .hero__text{ font-size:20px; }
+  :root{ --wrap: 1760px; }
+
+  .hero__title{ font-size:clamp(70px, 3.9vw, 78px); }
+  .hero__text{ font-size:21px; max-width:640px; }
   .hero__acts .btn{ padding:19px 36px; font-size:18px; }
+
+  .h2{ font-size:46px; }
+  .h2--tight{ font-size:43px; }
+  .lead{ font-size:20px; line-height:1.7; }
+  .head{ max-width:920px; }
+  .phead__in{ max-width:980px; }
+  .phead .lead{ max-width:780px; }
+
+  .grid{ gap:32px; }
+
+  .card{ padding:40px; }
+  .card__t{ font-size:21px; }
+  .card__d{ font-size:17.5px; line-height:1.66; }
+  .card--dark .card__t{ font-size:23px; }
+  .card--kraft{ min-height:470px; padding:38px 42px 26px 34px; }
+  .card--kraft .card__t{ font-size:28px; }
+  .card--kraft .card__d{ font-size:17.5px; }
+  .card--kraft .card__ico{ width:64px; height:64px; }
+
+  .prod__body{ padding:32px; }
+  .prod__t{ font-size:22px; }
+  .prod__d{ font-size:16.5px; }
+
+  .step__t{ font-size:23px; }
+  .step__d{ font-size:17.5px; }
+  .acc__panel p{ font-size:17.5px; }
+  .band__d{ font-size:17px; }
+
+  .ptable{ font-size:16.5px; }
+  .ptext__lead,.ptext__list li{ font-size:17px; }
+  .ptable__empty-d,.cart__empty-d{ font-size:17.5px; }
+
+  .cta{ padding:72px; }
+  .map,.map iframe{ min-height:520px; }
 }
 
 /* --- 20. Адаптив ------------------------------------------------------- */
