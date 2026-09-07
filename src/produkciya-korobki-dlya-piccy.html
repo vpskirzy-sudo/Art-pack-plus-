@@ -1,0 +1,204 @@
+<!-- ================= Позиции со склада =================
+     Готовые коробки, которые можно забрать сразу: минимальная партия —
+     одна пачка. Цены за штуку без НДС. -->
+<section class="section" id="sklad">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">В наличии</span>
+      <h2 class="h2">Популярные позиции со склада</h2>
+      <p class="lead">Эти два размера лежат готовыми — забрать можно от одной пачки,
+        без ожидания тиража. Цены за штуку без НДС.</p>
+    </div>
+
+    <div class="grid grid--2">
+      <article class="card pstock reveal">
+        <div class="pstock__head">
+          <div>
+            <span class="pstatus pstatus--in">В наличии</span>
+            <h3 class="card__t pstock__t">320×320×30 мм</h3>
+            <p class="pstock__spec">Профиль «E», скошенные углы</p>
+          </div>
+        </div>
+        <ul class="rate">
+          <li><span>Крафт без печати</span><b>0,40 руб.</b></li>
+          <li><span>Крафт с рисунком «PIZZA»</span><b>0,42 руб.</b></li>
+          <li><span>Белая без печати</span><b>0,43 руб.</b></li>
+          <li><span>Белая с рисунком «PIZZA»</span><b>0,48 руб.</b></li>
+        </ul>
+        <p class="svc__note">Цены за штуку без НДС. Минимальная партия — 50 шт. (одна пачка).</p>
+        <div class="svc__foot">
+          <a class="btn btn--primary btn--sm pcalc" href="#zakaz" data-size="320×320×30">Заказать {{icon:arrow}}</a>
+        </div>
+      </article>
+
+      <article class="card pstock reveal">
+        <div class="pstock__head">
+          <div>
+            <span class="pstatus pstatus--in">В наличии</span>
+            <h3 class="card__t pstock__t">320×320×35 мм</h3>
+            <p class="pstock__spec">Профиль «В», скошенные углы</p>
+          </div>
+        </div>
+        <ul class="rate">
+          <li><span>Крафт без печати</span><b>0,39 руб.</b></li>
+        </ul>
+        <p class="svc__note">Цена за штуку без НДС. Минимальная партия — 50 шт. (одна пачка).
+          Белое исполнение и печать — под заказ.</p>
+        <div class="svc__foot">
+          <a class="btn btn--primary btn--sm pcalc" href="#zakaz" data-size="320×320×35">Заказать {{icon:arrow}}</a>
+        </div>
+      </article>
+    </div>
+
+    <div class="band reveal" style="margin-top:clamp(20px,2.4vw,28px)">
+      <div class="band__ico">{{icon:print}}</div>
+      <div class="band__txt">
+        <div class="band__t">Печать логотипа под заказ</div>
+        <div class="band__d">1 цвет — <b>+0,02 руб.</b> к цене коробки, 2 цвета — <b>+0,04 руб.</b>
+          (обе + НДС), минимальная партия от 3000 шт. До четырёх цветов флексопечати высокой
+          чёткости — по индивидуальному макету.</div>
+      </div>
+      <a class="btn btn--outline" href="#zakaz">Прислать макет</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Типоразмеры ================= -->
+<section class="section section--paper" id="razmery">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">Типоразмеры</span>
+      <h2 class="h2">Все размеры коробок для пиццы</h2>
+      <p class="lead">Круглая пицца — от 22 до 46 см, римская — прямоугольные форматы.
+        Что не лежит на складе, делаем под заказ за 5–7 рабочих дней.</p>
+    </div>
+    {{sizes}}
+    <p class="ptable__note">Углы бывают скошенные и прямые: скошенные удобнее для стопки
+      и переноски, прямые дают больше места под печать. Нужен размер, которого нет
+      в списке, — изготовим по вашему чертежу.</p>
+  </div>
+</section>
+
+<!-- ================= Технология ================= -->
+<section class="section" id="tehnologiya">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">Технология</span>
+      <h2 class="h2">Под горячую доставку и под заморозку</h2>
+      <p class="lead">Это разные задачи, и картон под них подбирается по-разному.</p>
+    </div>
+    <div class="grid grid--2">
+      <article class="card svc reveal">
+        <div class="svc__head">
+          <span class="card__ico">{{icon:heat}}</span>
+          <div>
+            <h3 class="card__t">Для горячей доставки</h3>
+            <p class="svc__sub">Тепло внутри, конденсат наружу</p>
+          </div>
+        </div>
+        <p class="card__d">Трёхслойный микрогофрокартон держит тепло на всём пути до клиента,
+          а вентиляционные окошки выпускают пар — корж не размокает от конденсата.</p>
+        <ul class="rate">
+          <li><span>Картон</span><b>трёхслойный микрогофро</b></li>
+          <li><span>Жиростойкость</span><b>марка Т24 — без пергамента</b></li>
+          <li><span>Вентиляция</span><b>окошки от конденсата</b></li>
+        </ul>
+      </article>
+
+      <article class="card svc reveal">
+        <div class="svc__head">
+          <span class="card__ico">{{icon:snow}}</span>
+          <div>
+            <h3 class="card__t">Для замороженной пиццы</h3>
+            <p class="svc__sub">Морозильная камера и полка магазина</p>
+          </div>
+        </div>
+        <p class="card__d">Коробка не ведёт и не теряет геометрию при низких температурах,
+          поэтому стопка в камере стоит ровно, а на полке упаковка выглядит как надо.</p>
+        <ul class="rate">
+          <li><span>Формоустойчивость</span><b>при низких температурах</b></li>
+          <li><span>Сырьё</span><b>пищевая сертификация</b></li>
+          <li><span>Маркировка</span><b>наносим знак ЕАС</b></li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Логистика ================= -->
+<section class="section section--tight" id="logistika">
+  <div class="wrap">
+    <div class="grid grid--2">
+      <div class="band reveal">
+        <div class="band__ico">{{icon:layers}}</div>
+        <div class="band__txt">
+          <div class="band__t">Поддонная укладка</div>
+          <div class="band__d">Партия приходит на поддоне под стрейч-плёнкой, с упаковочным
+            листом: коробки защищены от пыли и влаги, а количество в партии совпадает
+            с накладной до штуки.</div>
+        </div>
+      </div>
+      <div class="band reveal">
+        <div class="band__ico">{{icon:ruler}}</div>
+        <div class="band__txt">
+          <div class="band__t">Быстрая сборка</div>
+          <div class="band__d">Заготовки вырубаются по ножам, поэтому рилёвки ложатся точно
+            и коробка собирается одним движением — без доводки руками на кухне.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Заявка ================= -->
+<section class="section section--paper" id="zakaz">
+  <div class="wrap">
+    <div class="grid grid--2">
+      <div class="reveal">
+        <span class="eyebrow">Расчёт</span>
+        <h2 class="h2 h2--tight">Посчитаем вашу партию</h2>
+        <p class="lead" style="margin-top:16px">Укажите размер, тираж и нужна ли печать —
+          назовём цену и срок. Если размера нет в списке, пришлите габариты пиццы:
+          подберём ближайший или сделаем по вашему чертежу.</p>
+        <div style="margin-top:24px">
+          <div class="ct" style="border-top:0"><div class="ct__ico">{{icon:phone}}</div>
+            <div><div class="ct__l">Отдел продаж</div><div class="ct__v">{{phones}}</div></div></div>
+          <div class="ct"><div class="ct__ico">{{icon:mail}}</div>
+            <div><div class="ct__l">Макеты и заявки</div>
+              <div class="ct__v"><a href="mailto:{{email}}">{{email}}</a></div></div></div>
+        </div>
+      </div>
+      <div class="reveal">
+        <form class="form" data-subject="Заявка на коробки для пиццы с сайта gofrocarton.by" novalidate>
+          <div class="form__row">
+            <div class="field">
+              <label for="pf-name">Имя</label>
+              <input id="pf-name" name="name" type="text" placeholder="Как к вам обращаться" required>
+              <span class="field__err">Укажите, как к вам обращаться</span>
+            </div>
+            <div class="field">
+              <label for="pf-phone">Телефон</label>
+              <input id="pf-phone" name="phone" type="tel" placeholder="+375 (__) ___-__-__" required>
+              <span class="field__err">Укажите телефон для связи</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="pf-email">E-mail</label>
+            <input id="pf-email" name="email" type="email" placeholder="you@company.by">
+            <span class="field__err">Проверьте адрес — похоже, в нём опечатка</span>
+          </div>
+          <div class="field">
+            <label for="pf-msg">Размер, тираж и печать</label>
+            <textarea id="pf-msg" name="message" data-size-target
+              placeholder="Например: 320×320×30, крафт, 5000 шт., печать в один цвет"></textarea>
+          </div>
+          <button class="btn btn--primary" type="submit">Отправить заявку {{icon:arrow}}</button>
+          <p class="form__ok">Спасибо! Мы подготовили письмо — отправьте его из своей почтовой
+            программы, и мы ответим в рабочее время.</p>
+          <p class="form__note">Нажимая кнопку, вы соглашаетесь на обработку указанных данных
+            для ответа на заявку.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

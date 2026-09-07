@@ -122,6 +122,8 @@ ICONS = {
     "right":    '<path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "down":     '<path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "up":       '<path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    "heat":     '<path d="M12.6 2.6c1.6 2.4.6 3.9-.5 5.3-1.2 1.5-2.2 2.9-.8 5.2" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M8 6.4c1 1.6.4 2.6-.3 3.5-.8 1-1.5 1.9-.6 3.4M17 6.4c1 1.6.4 2.6-.3 3.5-.8 1-1.5 1.9-.6 3.4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".65"/><path d="M4.5 17.2h15M6.5 20.4h11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+    "snow":     '<path d="M12 2.6v18.8M4 7.2l16 9.6M20 7.2 4 16.8" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M9.4 5.1 12 7.7l2.6-2.6M9.4 18.9 12 16.3l2.6 2.6M3.4 10.6l.9 3.5 3.4-1M20.6 10.6l-.9 3.5-3.4-1M7.7 8.5l-3.4-1-.9 3.5M16.3 8.5l3.4-1 .9 3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     "talk":     '<path d="M4 5.5h11a1.6 1.6 0 0 1 1.6 1.6v5.3a1.6 1.6 0 0 1-1.6 1.6H9.2L5.4 17v-3H4a1.6 1.6 0 0 1-1.6-1.6V7.1A1.6 1.6 0 0 1 4 5.5Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M18.6 9.2H20a1.6 1.6 0 0 1 1.6 1.6v4.4A1.6 1.6 0 0 1 20 16.8h-1v2.6l-2.8-2.6" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/>',
     "zoom":     '<circle cx="11" cy="11" r="6.6" stroke="currentColor" stroke-width="1.9" fill="none"/><path d="M15.8 15.8 21 21M8.6 11h4.8M11 8.6v4.8" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round"/>',
     "chev":     '<path d="M6 9.5 12 15l6-5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -505,6 +507,88 @@ def text_sections(cat):
 '''
 
 
+def h1_class(cat):
+    """Длинному заголовку — своя ступень кегля.
+
+    Обычное имя подгруппы («Коробки для пиццы») в 66px читается как заголовок.
+    Развёрнутый заголовок из данных категории тем же кеглем занимает четыре
+    строки на всю шапку и перевешивает страницу, поэтому для него ступень ниже.
+    """
+    return "h1 h1--long" if len(cat.get("h1", "")) > 40 else "h1"
+
+
+def hero_facts(cat):
+    """Плашки быстрых условий под заголовком страницы подгруппы."""
+    if not cat.get("facts"):
+        return ""
+    items = "".join(f'''
+        <li class="pfact">
+          <span class="pfact__ico">{icon(ic)}</span>
+          <span class="pfact__txt"><b class="pfact__k">{k}</b><span class="pfact__v">{v}</span></span>
+        </li>''' for ic, k, v in cat["facts"])
+    return f'''
+      <ul class="pfacts">{items}
+      </ul>'''
+
+
+def sizes_table(cat):
+    """Таблица типоразмеров: размер, углы, назначение, статус и кнопка расчёта.
+
+    Та же .ptable, что и у прайса, поэтому на узком экране она так же
+    разбирается на карточки по data-label, а не скроллится вбок.
+    """
+    if not cat.get("sizes"):
+        return ""
+    rows = []
+    for s in cat["sizes"]:
+        stock = s.get("stock")
+        badge = ('<span class="pstatus pstatus--in">В наличии</span>' if stock
+                 else '<span class="pstatus">Под заказ</span>')
+        # Размер и бейдж лежат в одной обёртке .psize__cell: на узком экране
+        # .ptable разбирает строку в flex-карточку, и два соседних span стали
+        # бы двумя flex-элементами, которые не переносятся. Внутри обёртки
+        # между ними стоит пробел — единственная точка переноса.
+        tag = '<span class="psize__tag">ходовой</span>' if s.get("tag") else ""
+        rows.append(f'''      <tr>
+        <td data-label="Размер, мм"><span class="psize__cell"><span class="psize">{s['size']}</span> {tag}</span></td>
+        <td data-label="Углы">{s['corners']}</td>
+        <td data-label="Назначение">{s['use']}</td>
+        <td data-label="Статус">{badge}</td>
+        <td data-label="" class="pcalc__cell">
+          <a class="btn btn--outline btn--sm pcalc" href="#zakaz" data-size="{s['size']}">Рассчитать</a>
+        </td>
+      </tr>''')
+    body = "\n".join(rows)
+    return f'''<div class="ptable__wrap reveal">
+    <table class="ptable">
+      <thead><tr>
+        <th style="text-align:left">Размер, мм</th>
+        <th style="text-align:left">Углы</th>
+        <th style="text-align:left">Назначение</th>
+        <th style="text-align:left">Статус</th>
+        <th><span class="visually-hidden">Расчёт</span></th>
+      </tr></thead>
+      <tbody>
+{body}
+      </tbody>
+    </table>
+  </div>'''
+
+
+def extra_blocks(cat):
+    """Дополнительные секции страницы подгруппы из src/<blocks>.html.
+
+    Нужны там, где содержимого больше, чем укладывается в общий шаблон:
+    у коробок для пиццы это позиции со склада, условия печати, технология
+    и логистика. Файл проходит ту же подстановку, что и обычные страницы,
+    поэтому {{icon:…}}, {{phones}} и прочие метки в нём работают.
+    """
+    name = cat.get("blocks")
+    if not name:
+        return ""
+    with open(os.path.join(SRC, f"{name}.html"), encoding="utf-8") as fh:
+        return fh.read().replace("{{sizes}}", sizes_table(cat))
+
 def product_page(cat):
     """Страница одной подгруппы: описание, таблица прайса, заявка."""
     body = f'''<section class="phead">
@@ -514,8 +598,8 @@ def product_page(cat):
         <a href="index.html">Главная</a><span class="crumbs__sep">{icon('crumb')}</span><a href="produkciya.html">Продукция</a><span class="crumbs__sep">{icon('crumb')}</span><span>{cat['name']}</span>
       </nav>
       <span class="eyebrow">Продукция</span>
-      <h1 class="h1">{cat['name']}</h1>
-      <p class="lead">{cat['desc']}</p>
+      <h1 class="{h1_class(cat)}">{cat.get('h1', cat['name'])}</h1>
+      <p class="lead">{cat.get('lead', cat['desc'])}</p>{hero_facts(cat)}
     </div>
   </div>
 </section>
@@ -549,7 +633,7 @@ def product_page(cat):
   </div>
 </section>
 
-{text_sections(cat)}<section class="section section--tight">
+{extra_blocks(cat)}{text_sections(cat)}<section class="section section--tight">
   <div class="wrap">
     <div class="cta reveal">
       <div class="cta__in">
