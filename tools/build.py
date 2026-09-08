@@ -372,6 +372,11 @@ def row_tiers(cols, row):
             for col in cols if "min" in col and row.get(col["key"])]
 
 
+def has_cart(cat):
+    """Есть ли в подгруппе хоть одна позиция, которую можно положить в корзину."""
+    return any(row_tiers(cat["columns"], r) or r.get("ask") for r in cat["rows"])
+
+
 def add_button(cat, num):
     """Плюсик рядом с номером позиции: раскрывает окошко с тиражом."""
     return (f'<button class="padd" type="button" aria-expanded="false" '
@@ -408,16 +413,29 @@ def price_table(cat):
 
     cols = cat["columns"]
     head = table_head(cols)
+    # Ценовые колонки этой таблицы: у позиции «по запросу» они схлопываются в одну.
+    price_keys = [c["key"] for c in cols if "min" in c]
     body = []
     num = 0
     for row in cat["rows"]:
         num += 1
         tiers = row_tiers(cols, row)
+        # `ask` — позиция без прайса: тираж вводится, цену считает менеджер.
+        ask = bool(row.get("ask")) and not tiers
         cells = []
         for col in cols:
             key = col["key"]
+            if ask and key in price_keys:
+                # Одна ячейка на все ценовые колонки — вместо трёх прочерков.
+                if key == price_keys[0]:
+                    cells.append(f'<td class="ptable__c ptable__c--ask" '
+                                 f'colspan="{len(price_keys)}" style="text-align:center" '
+                                 f'data-label="Цена без НДС">'
+                                 f'<span class="ptable__ask">Цена по запросу</span></td>')
+                continue
             if key == "no":
-                val = f'<span class="ptable__n">{num}</span>' + (add_button(cat, num) if tiers else "")
+                val = (f'<span class="ptable__n">{num}</span>'
+                       + (add_button(cat, num) if (tiers or ask) else ""))
             elif key == "photo":
                 img = row.get("photo")
                 val = (f'<img class="ptable__photo" src="assets/img/{img}" '
@@ -429,19 +447,20 @@ def price_table(cat):
                          f'style="text-align:{col.get("align", "left")}" '
                          f'data-label="{col["title"]}">{val}</td>')
 
-        if tiers:
+        if tiers or ask:
             data = (f' class="ptable__row" data-id="{cat["slug"]}-{num}"'
                     f' data-name="{esc(row.get("name", ""))}"'
                     f' data-photo="assets/img/{row.get("photo", "")}"'
                     f' data-size="{row_size(row.get("name", ""))}"'
                     f' data-cat="{esc(cat["name"])}"'
                     f' data-url="produkciya-{cat["slug"]}.html"'
-                    f" data-tiers='{json.dumps(tiers, ensure_ascii=False)}'")
+                    f" data-tiers='{json.dumps(tiers, ensure_ascii=False)}'"
+                    + (' data-ask="1"' if ask else ""))
         else:
             data = ""
         body.append(f"<tr{data}>" + "".join(cells) + "</tr>")
-        if tiers:
-            body.append(add_panel(cat, num, tiers[0][0], len(cols)))
+        if tiers or ask:
+            body.append(add_panel(cat, num, tiers[0][0] if tiers else 1, len(cols)))
 
     note = cat.get("note") or ("Цены указаны без НДС. Итоговая стоимость зависит от тиража, "
                                "марки картона и печати — уточняйте у отдела продаж.")
@@ -627,7 +646,7 @@ def product_page(cat):
     <div class="head reveal">
       <span class="eyebrow">{cat.get("table_eyebrow", "Прайс")}</span>
       <h2 class="h2">{cat.get("table_t", "Номенклатура и цены")}</h2>
-      {'<p class="lead">Выберите позицию, нажмите «плюс» рядом с номером, укажите тираж — и добавьте в корзину.</p>' if cat["rows"] and row_tiers(cat["columns"], cat["rows"][0]) else ''}
+      {'<p class="lead">Выберите позицию, нажмите «плюс» рядом с номером, укажите тираж — и добавьте в корзину.</p>' if has_cart(cat) else ''}
     </div>
     {price_table(cat)}
   </div>
