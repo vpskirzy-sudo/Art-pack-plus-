@@ -647,13 +647,18 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
               && cs.boxShadow !== 'none' && parseFloat(cs.borderRadius) > 0;
      }));
   ok('наведение усиливает окантовку плашки', await (async () => {
-      const item = p.locator('.acc--frame .acc__item').first();
+      // Смотрим на FAQ: у списка преимуществ наведение заодно раскрывает
+      // вкладку, и её рамку перебивает акцент раскрытого состояния —
+      // «наведён, но закрыт» там просто не встречается.
+      await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
+      const item = p.locator('#faq .acc__item').first();
       const rest = await item.evaluate(e => getComputedStyle(e).borderTopColor);
       await item.hover();
       await p.waitForTimeout(350);
       const hov = await item.evaluate(e => getComputedStyle(e).borderTopColor);
       await p.mouse.move(2, 2);
       await p.waitForTimeout(300);
+      await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
       return rest === 'rgba(235, 120, 35, 0.25)' && hov === 'rgba(235, 120, 35, 0.5)'; })());
   // Раскрытие теперь только по клику: наводить на сенсорном экране нечем,
   // а открытая по умолчанию вкладка сбивала с толку.
@@ -661,12 +666,47 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   await p.reload({ waitUntil:'domcontentloaded' });
   ok('по умолчанию свёрнуты все вкладки',
      await p.locator('.acc--frame .acc__item.is-open').count() === 0);
-  ok('наведение само по себе ничего не раскрывает', await (async () => {
+  ok('наведение раскрывает вкладку — список работает без клика', await (async () => {
       await p.locator('.acc--frame .acc__item').nth(2).hover();
+      await p.waitForTimeout(400);
+      const open = await p.locator('.acc--frame .acc__item').nth(2)
+        .evaluate(e => e.classList.contains('is-open'));
+      return open && await p.locator('.acc--frame .acc__item.is-open').count() === 1; })());
+  ok('наведение на соседнюю вкладку сворачивает предыдущую', await (async () => {
+      await p.locator('.acc--frame .acc__item').nth(0).hover();
+      await p.waitForTimeout(400);
+      return await p.locator('.acc--frame .acc__item').first()
+               .evaluate(e => e.classList.contains('is-open'))
+             && await p.locator('.acc--frame .acc__item.is-open').count() === 1; })());
+  ok('уход курсора со списка не схлопывает прочитанное', await (async () => {
+      await p.mouse.move(200, 620);
       await p.waitForTimeout(450);
-      const n = await p.locator('.acc--frame .acc__item.is-open').count();
-      await p.mouse.move(2, 2);
-      return n === 0; })());
+      return await p.locator('.acc--frame .acc__item.is-open').count() === 1; })());
+  ok('быстрый проезд курсором через список не заставляет вкладки мелькать',
+     await p.locator('.acc--frame').evaluate(async acc => {
+       const items = [...acc.querySelectorAll('.acc__item')];
+       const sweep = async gap => {
+         items.forEach(i => i.classList.remove('is-open'));
+         let opens = 0;
+         const obs = new MutationObserver(ms => ms.forEach(m => {
+           if (m.target.classList.contains('is-open')) opens++; }));
+         obs.observe(acc, { subtree: true, attributes: true, attributeFilter: ['class'] });
+         const wait = ms => new Promise(r => setTimeout(r, ms));
+         for (const it of items) {
+           it.dispatchEvent(new MouseEvent('mouseenter'));
+           await wait(gap);
+           it.dispatchEvent(new MouseEvent('mouseleave'));
+         }
+         await wait(200);
+         obs.disconnect();
+         return opens;
+       };
+       // Курсор летит через весь список — раскрыться не должна ни одна.
+       // Курсор идёт неспешно — раскрывается каждая, на которой задержались.
+       const fast = await sweep(12);
+       const slow = await sweep(90);
+       return fast === 0 && slow === items.length;
+     }));
   ok('клик открывает третью вкладку, шеврон разворачивается вверх', await (async () => {
       await p.locator('.acc--frame .acc__btn').nth(2).click();
       await p.waitForTimeout(500);
@@ -690,10 +730,33 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('панель раскрывается поворотом, а не просто списком (эффект «листа»)',
      await p.locator('.acc--frame .acc__panel > div').nth(2)
        .evaluate(e => getComputedStyle(e).transform !== 'none'));
-  ok('повторный клик по открытой вкладке сворачивает её', await (async () => {
-      await p.locator('.acc--frame .acc__btn').first().click();
-      await p.waitForTimeout(500);
-      return await p.locator('.acc--frame .acc__item.is-open').count() === 0; })());
+  ok('на сенсорном экране список работает тапом: открыть и свернуть', await (async () => {
+      // Отдельный контекст: наведения там нет вовсе, и клик обязан и
+      // открывать, и закрывать — иначе на телефоне список не свернуть.
+      const touch = await b.newContext({ viewport: { width: 390, height: 844 },
+                                         hasTouch: true, isMobile: true });
+      await touch.route('**', r => r.request().url().startsWith('file:') ? r.continue() : r.abort());
+      const tp = await touch.newPage();
+      await tp.goto('file://' + B + 'o-kompanii.html', { waitUntil:'load' });
+      const hoverless = await tp.evaluate(() => !matchMedia('(hover: hover) and (pointer: fine)').matches);
+      const shut = await tp.locator('.acc--frame .acc__item.is-open').count();
+      await tp.locator('.acc--frame .acc__btn').nth(2).tap();
+      await tp.waitForTimeout(450);
+      const opened = await tp.locator('.acc--frame .acc__item').nth(2)
+        .evaluate(e => e.classList.contains('is-open'));
+      await tp.locator('.acc--frame .acc__btn').nth(2).tap();
+      await tp.waitForTimeout(450);
+      const closed = await tp.locator('.acc--frame .acc__item.is-open').count();
+      await touch.close();
+      return hoverless && shut === 0 && opened && closed === 0; })());
+  ok('FAQ по наведению не открывается — там только клик', await (async () => {
+      await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
+      await p.locator('#faq .acc__item').nth(1).hover();
+      await p.waitForTimeout(450);
+      const n = await p.locator('#faq .acc__item.is-open').count();
+      await p.mouse.move(2, 2);
+      await p.goto('file://' + B + 'o-kompanii.html', { waitUntil:'domcontentloaded' });
+      return n === 0; })());
 
   console.log('Стрелка «к содержимому» под заголовком:');
   for (const page of ['index','o-kompanii','produkciya','uslugi','oborudovanie']) {
