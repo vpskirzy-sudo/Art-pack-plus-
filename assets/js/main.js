@@ -219,7 +219,9 @@
     var items   = $$('.acc__item', acc);
     var byHover = acc.classList.contains('acc--frame');
     var timer   = null;
+    var closeTimer = null;
     var hold    = function () { if (timer) { clearTimeout(timer); timer = null; } };
+    var holdClose = function () { if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; } };
 
     // Открыть один пункт и закрыть остальные. null — свернуть все.
     var setOpen = function (item) {
@@ -237,6 +239,7 @@
 
       btn.addEventListener('click', function () {
         hold();
+        holdClose();
         // Под курсором вкладка уже открыта — клик её просто фиксирует.
         // Везде, где курсора нет, клик и открывает, и закрывает.
         if (byHover && canHover()) setOpen(item);
@@ -248,6 +251,7 @@
       item.addEventListener('mouseenter', function () {
         if (!canHover()) return;
         hold();
+        holdClose();
         timer = setTimeout(function () { timer = null; setOpen(item); }, 40);
       });
       // Курсор ушёл, не дождавшись задержки — открывать уже не нужно.
@@ -261,6 +265,15 @@
         setOpen(item);
       });
     });
+
+    if (byHover) {
+      acc.addEventListener('mouseleave', function () {
+        if (!canHover()) return;
+        hold();
+        closeTimer = setTimeout(function () { closeTimer = null; setOpen(null); }, 120);
+      });
+      acc.addEventListener('mouseenter', holdClose);
+    }
   });
 
   /* --- Кнопки «Рассчитать» у типоразмеров --------------------------------
@@ -321,7 +334,10 @@
   var money = function (n) { return n.toFixed(2).replace('.', ',') + ' руб.'; };
 
   // Цена за штуку по тиражу: последняя ступень, порог которой уже пройден.
+  // У позиций «цена по запросу» ступеней нет вовсе — возвращаем null, и дальше
+  // по нему видно, что цену подставлять неоткуда.
   var tierPrice = function (tiers, qty) {
+    if (!tiers || !tiers.length) return null;
     var pick = tiers[0];
     tiers.forEach(function (t) { if (qty >= t[0]) pick = t; });
     return pick[1];
@@ -375,15 +391,23 @@
     var qty  = $('.pform__qty', panel);
     var calc = $('[data-calc]', panel);
     var go   = $('.pform__go', panel);
+    // Позиция без прайса: тираж вводится как обычно, но цену считает менеджер.
+    var ask  = row.dataset.ask === '1';
     var tiers;
     try { tiers = JSON.parse(row.dataset.tiers); } catch (e) { return; }
 
     var recalc = function () {
       var n = Math.max(parseInt(qty.value, 10) || 0, 0);
       var unit = tierPrice(tiers, n);
-      calc.innerHTML = n
-        ? 'Цена за штуку: <b>' + unit + '</b> · Сумма: <b>' + money(toRub(unit) * n) + '</b>'
-        : 'Укажите тираж — покажем цену по прайсу.';
+      if (ask) {
+        calc.innerHTML = n
+          ? 'Тираж: <b>' + n + '</b> шт. · Цену сообщит менеджер после заявки.'
+          : 'Укажите тираж — цену рассчитает менеджер после заявки.';
+      } else {
+        calc.innerHTML = n
+          ? 'Цена за штуку: <b>' + unit + '</b> · Сумма: <b>' + money(toRub(unit) * n) + '</b>'
+          : 'Укажите тираж — покажем цену по прайсу.';
+      }
       return { n: n, unit: unit };
     };
     recalc();
@@ -400,12 +424,12 @@
       if (!r.n) { qty.focus(); return; }
       var list = readCart();
       var same = list.filter(function (i) { return i.id === row.dataset.id; })[0];
-      if (same) { same.qty = r.n; same.price = r.unit; }
+      if (same) { same.qty = r.n; same.price = r.unit; same.ask = ask; }
       else {
         list.push({
           id: row.dataset.id, name: row.dataset.name, photo: row.dataset.photo,
           size: row.dataset.size, cat: row.dataset.cat, url: row.dataset.url,
-          tiers: tiers, qty: r.n, price: r.unit
+          tiers: tiers, qty: r.n, price: r.unit, ask: ask
         });
       }
       writeCart(list);
@@ -434,26 +458,38 @@
       if (box)   { if (has) box.removeAttribute('hidden'); else box.setAttribute('hidden', ''); }
       if (empty) { empty.style.display = has ? 'none' : ''; }
 
-      var sum = 0;
+      // Позиции «по запросу» в сумму не идут: цены у них ещё нет, и подставлять
+      // вместо неё ноль — врать про итог заказа.
+      var sum = 0, asks = 0;
       cartRows.innerHTML = list.map(function (i, n) {
-        var line = toRub(i.price) * i.qty;
-        sum += line;
+        var line = i.ask ? 0 : toRub(i.price) * i.qty;
+        if (i.ask) asks++; else sum += line;
+        var byAsk = '<span class="cart__ask">по запросу</span>';
         return '<tr data-row="' + n + '">' +
           cell('Фото', i.photo ? '<img class="ptable__photo" src="' + i.photo + '" alt="' + i.name + '" loading="lazy">' : '—') +
           cell('Наименование', '<a href="' + i.url + '">' + i.name + '</a><span class="ptable__cat">' + i.cat + '</span>') +
           cell('Размер, мм', i.size || '—') +
           cell('Тираж, шт.', '<input class="cart__qty" type="number" min="1" step="1" value="' + i.qty + '" aria-label="Тираж">', 'right') +
-          cell('Цена без НДС', i.price, 'right') +
-          cell('Сумма', '<b>' + money(line) + '</b>', 'right') +
+          cell('Цена без НДС', i.ask ? byAsk : i.price, 'right') +
+          cell('Сумма', i.ask ? byAsk : '<b>' + money(line) + '</b>', 'right') +
           cell('', '<button class="cart__del" type="button" aria-label="Убрать из корзины">' +
                    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6.8h15M9.6 6.8V4.6h4.8v2.2M7 6.8l.9 13a1.6 1.6 0 0 0 1.6 1.5h5a1.6 1.6 0 0 0 1.6-1.5l.9-13" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>', 'right') +
           '</tr>';
       }).join('');
 
-      if (total) total.textContent = money(sum);
+      // Заказ целиком «по запросу» — итога нет, показываем это прямо.
+      if (total) total.innerHTML = (asks && !sum)
+        ? '<span class="cart__ask">по запросу</span>'
+        : money(sum);
       if (summary) {
+        var tail = asks
+          ? ' Цену по <b>' + asks + '</b> поз. менеджер сообщит после заявки.'
+          : '';
         summary.innerHTML = has
-          ? 'К заявке приложим состав заказа: <b>' + list.length + '</b> поз. на сумму <b>' + money(sum) + '</b> без НДС.'
+          ? (sum
+              ? 'К заявке приложим состав заказа: <b>' + list.length + '</b> поз. на сумму <b>' +
+                money(sum) + '</b> без НДС.' + tail
+              : 'К заявке приложим состав заказа: <b>' + list.length + '</b> поз.' + tail)
           : 'Корзина пуста — заявка уйдёт только с вашим комментарием.';
       }
     };
@@ -465,7 +501,7 @@
       var list = readCart();
       if (!list[n]) return;
       list[n].qty = Math.max(parseInt(e.target.value, 10) || 1, 1);
-      if (list[n].tiers) list[n].price = tierPrice(list[n].tiers, list[n].qty);
+      if (!list[n].ask && list[n].tiers) list[n].price = tierPrice(list[n].tiers, list[n].qty);
       writeCart(list);
       paintCart();
     });
@@ -524,16 +560,25 @@
 
       // Состав заказа переносим в письмо из корзины — руками его вводить не нужно.
       if (form.hasAttribute('data-cart-form')) {
-        var order = readCart(), sum = 0;
+        var order = readCart(), sum = 0, asks = 0;
         if (order.length) {
           lines.push('', 'Состав заказа:');
           order.forEach(function (i, n) {
+            // По таким позициям в письме идёт только тираж — цену считает отдел продаж.
+            if (i.ask) {
+              asks++;
+              lines.push((n + 1) + '. ' + i.cat + ' — ' + i.name +
+                         ' · тираж ' + i.qty + ' шт. · цена по запросу');
+              return;
+            }
             sum += toRub(i.price) * i.qty;
             lines.push((n + 1) + '. ' + i.cat + ' — ' + i.name +
                        ' · тираж ' + i.qty + ' шт. · ' + i.price + ' за шт. · ' +
                        money(toRub(i.price) * i.qty));
           });
-          lines.push('Итого без НДС: ' + money(sum));
+          if (sum) lines.push('Итого без НДС: ' + money(sum));
+          if (asks) lines.push('Позиций с ценой по запросу: ' + asks +
+                               ' — просьба рассчитать стоимость и прислать прайс.');
         }
       }
 

@@ -687,6 +687,11 @@ ul{ margin:0; padding:0; list-style:none; }
   border-radius:8px; border:1px solid rgba(22,32,43,.08);
 }
 .ptable__note{ margin-top:14px; font-size:13.5px; color:var(--text-dim); line-height:1.6; }
+/* Позиция без прайса: «по запросу» вместо цифр — и в таблице, и в корзине.
+   Приглушённый курсив, чтобы не читалось как цена. */
+.ptable__ask, .cart__ask{
+  font-style:italic; color:var(--text-dim); white-space:nowrap; font-weight:600;
+}
 /* На узком экране таблица не скроллится вбок, а разбирается на карточки */
 @media (max-width:640px){
   .ptable__wrap{ overflow-x:visible; border:0; background:none; box-shadow:none; }
