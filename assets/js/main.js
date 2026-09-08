@@ -219,7 +219,9 @@
     var items   = $$('.acc__item', acc);
     var byHover = acc.classList.contains('acc--frame');
     var timer   = null;
+    var closeTimer = null;
     var hold    = function () { if (timer) { clearTimeout(timer); timer = null; } };
+    var holdClose = function () { if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; } };
 
     // Открыть один пункт и закрыть остальные. null — свернуть все.
     var setOpen = function (item) {
@@ -237,6 +239,7 @@
 
       btn.addEventListener('click', function () {
         hold();
+        holdClose();
         // Под курсором вкладка уже открыта — клик её просто фиксирует.
         // Везде, где курсора нет, клик и открывает, и закрывает.
         if (byHover && canHover()) setOpen(item);
@@ -248,6 +251,7 @@
       item.addEventListener('mouseenter', function () {
         if (!canHover()) return;
         hold();
+        holdClose();
         timer = setTimeout(function () { timer = null; setOpen(item); }, 40);
       });
       // Курсор ушёл, не дождавшись задержки — открывать уже не нужно.
@@ -261,6 +265,15 @@
         setOpen(item);
       });
     });
+
+    if (byHover) {
+      acc.addEventListener('mouseleave', function () {
+        if (!canHover()) return;
+        hold();
+        closeTimer = setTimeout(function () { closeTimer = null; setOpen(null); }, 120);
+      });
+      acc.addEventListener('mouseenter', holdClose);
+    }
   });
 
   /* --- Кнопки «Рассчитать» у типоразмеров --------------------------------
