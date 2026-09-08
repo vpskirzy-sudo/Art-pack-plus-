@@ -194,30 +194,71 @@
   }
 
   /* --- Аккордеоны --------------------------------------------------------
-     Одна механика на весь сайт: «Услуги» (FAQ), «О компании», «Оборудование».
-     Раньше рамки на «О компании» и «Оборудовании» раскрывались наведением и
-     первый пункт стоял открытым — на сенсорном экране навести нечем, а
-     открытый по умолчанию пункт сбивал с толку: непонятно, кто его открыл.
-     Теперь везде одинаково: при загрузке всё свёрнуто, раскрывает только
-     клик, повторный клик по открытому пункту сворачивает его обратно.
-     В группе открыт один пункт — соседний закрывается сам.
+     Два поведения на одном компоненте, потому что задачи у блоков разные.
+
+     Список преимуществ (.acc--frame на «О компании» и «Оборудовании»)
+     раскрывается НАВЕДЕНИЕМ: это витрина, по ней просматривают, а не читают
+     подряд, и лишний клик там только мешает. Открыт всегда один пункт.
+     Чтобы вкладки не мелькали, когда курсор просто проезжает через весь
+     список, открытие идёт с задержкой в 40мс: пункт раскроется, только если
+     на нём задержались. Уход курсора со списка ничего не сворачивает —
+     схлопывать прочитанное под курсором значит дёргать вёрстку.
+
+     FAQ («Услуги») остаётся на клике: там читают ответ целиком, и панель,
+     открывающаяся сама при прокрутке мимо, сбивала бы с толку.
+
+     Без курсора (телефоны, планшеты) наведения нет вовсе, поэтому там оба
+     вида работают одинаково — тапом, с повторным тапом на сворачивание.
+     Проверяем это не один раз при загрузке, а на каждом событии: у гибридных
+     устройств (ноутбук с сенсорным экраном) режим меняется на ходу.
      ---------------------------------------------------------------------- */
+  var hoverMQ  = window.matchMedia ? window.matchMedia('(hover: hover) and (pointer: fine)') : null;
+  var canHover = function () { return !!(hoverMQ && hoverMQ.matches); };
+
   $$('.acc').forEach(function (acc) {
-    var items = $$('.acc__item', acc);
+    var items   = $$('.acc__item', acc);
+    var byHover = acc.classList.contains('acc--frame');
+    var timer   = null;
+    var hold    = function () { if (timer) { clearTimeout(timer); timer = null; } };
+
+    // Открыть один пункт и закрыть остальные. null — свернуть все.
+    var setOpen = function (item) {
+      items.forEach(function (i) {
+        var open = i === item;
+        i.classList.toggle('is-open', open);
+        var b = $('.acc__btn', i);
+        if (b) b.setAttribute('aria-expanded', String(open));
+      });
+    };
+
     items.forEach(function (item) {
       var btn = $('.acc__btn', item);
       if (!btn) return;
+
       btn.addEventListener('click', function () {
-        var willOpen = !item.classList.contains('is-open');
-        items.forEach(function (i) {
-          i.classList.remove('is-open');
-          var b = $('.acc__btn', i);
-          if (b) b.setAttribute('aria-expanded', 'false');
-        });
-        if (willOpen) {
-          item.classList.add('is-open');
-          btn.setAttribute('aria-expanded', 'true');
-        }
+        hold();
+        // Под курсором вкладка уже открыта — клик её просто фиксирует.
+        // Везде, где курсора нет, клик и открывает, и закрывает.
+        if (byHover && canHover()) setOpen(item);
+        else setOpen(item.classList.contains('is-open') ? null : item);
+      });
+
+      if (!byHover) return;
+
+      item.addEventListener('mouseenter', function () {
+        if (!canHover()) return;
+        hold();
+        timer = setTimeout(function () { timer = null; setOpen(item); }, 40);
+      });
+      // Курсор ушёл, не дождавшись задержки — открывать уже не нужно.
+      item.addEventListener('mouseleave', hold);
+
+      btn.addEventListener('focus', function () {
+        // Только клавиатурный фокус: у мыши и у тапа своё поведение выше,
+        // иначе тап сначала открыл бы пункт фокусом, а следом закрыл кликом.
+        if (!btn.matches(':focus-visible')) return;
+        hold();
+        setOpen(item);
       });
     });
   });
