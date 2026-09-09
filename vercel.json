@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/ящик-для-бокалов",
+      "destination": "/produkciya-prokladki-i-reshyotki.html",
+      "statusCode": 301
+    },
+    {
+      "source": "/%d1%8f%d1%89%d0%b8%d0%ba-%d0%b4%d0%bb%d1%8f-%d0%b1%d0%be%d0%ba%d0%b0%d0%bb%d0%be%d0%b2",
+      "destination": "/produkciya-prokladki-i-reshyotki.html",
+      "statusCode": 301
+    }
+  ]
+}
