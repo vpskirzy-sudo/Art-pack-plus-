@@ -386,12 +386,18 @@ def add_button(cat, num):
 
 
 def add_panel(cat, num, min_qty, span):
-    """Окошко под строкой: тираж, пересчёт цены и кнопка «в корзину»."""
+    """Окошко под строкой: тираж, пересчёт цены и кнопка «в корзину».
+
+    Лист картона считают в м², уголок — в метрах погонных. Там, где единица
+    не штука, категория задаёт свою подпись: иначе цена за м² умножалась бы
+    на штуки и в корзине получалась бы неверная сумма.
+    """
+    lbl = cat.get("qty_label", "Тираж, шт.")
     return f'''<tr class="pform" id="add-{cat['slug']}-{num}"><td colspan="{span}">
           <div class="pform__wrap"><div class="pform__in">
-            <label class="pform__field"><span class="pform__lbl">Тираж, шт.</span>
+            <label class="pform__field"><span class="pform__lbl">{lbl}</span>
               <input class="pform__qty" type="number" inputmode="numeric" step="1"
-                     min="{min_qty}" value="{min_qty}" aria-label="Тираж, шт."></label>
+                     min="{min_qty}" value="{min_qty}" aria-label="{lbl}"></label>
             <p class="pform__calc" data-calc></p>
             <button class="btn btn--primary btn--sm pform__go" type="button">
               В корзину {icon('cart')}</button>
