@@ -454,9 +454,13 @@ def price_table(cat):
                          f'data-label="{col["title"]}">{val}</td>')
 
         if tiers or ask:
+            # Позиции без фото (пока) не должны получать «assets/img/» с пустым
+            # именем файла — иначе корзина сочтёт путь непустым и покажет
+            # битую картинку вместо честного прочерка.
+            photo_path = f'assets/img/{row["photo"]}' if row.get("photo") else ""
             data = (f' class="ptable__row" data-id="{cat["slug"]}-{num}"'
                     f' data-name="{esc(row.get("name", ""))}"'
-                    f' data-photo="assets/img/{row.get("photo", "")}"'
+                    f' data-photo="{photo_path}"'
                     f' data-size="{row_size(row.get("name", ""))}"'
                     f' data-cat="{esc(cat["name"])}"'
                     f' data-url="produkciya-{cat["slug"]}.html"'
