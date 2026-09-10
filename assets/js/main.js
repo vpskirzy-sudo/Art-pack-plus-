@@ -9,6 +9,32 @@
   var $  = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
+  // Проверка обязательных полей, e-mail и телефона — общая для всех форм
+  // сайта (обычная mailto-форма и форма заявки в корзине с отправкой на
+  // сервер сверяют поля одинаково, чтобы сообщения об ошибках не расходились).
+  var validateForm = function (form) {
+    var valid = true;
+    $$('[required], input[type=email], input[type=tel]', form).forEach(function (input) {
+      var field = input.closest('.field');
+      var val = input.value.trim();
+      var need = input.hasAttribute('required');
+      var bad;
+      if (!val) {
+        bad = need;                                   // пустое поле — ошибка только если обязательное
+      } else if (input.type === 'email') {
+        bad = !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val);
+      } else if (input.type === 'tel') {
+        bad = val.replace(/\D/g, '').length < 7;
+      } else {
+        bad = false;
+      }
+      field.classList.toggle('has-error', bad);
+      if (bad && valid) { input.focus(); }
+      if (bad) valid = false;
+    });
+    return valid;
+  };
+
   // Один раз на всю страницу: с отключёнными анимациями не крутим слайды
   // и не запускаем полёт коробки в корзину.
   var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -514,40 +540,100 @@
       writeCart(list);
       paintCart();
     });
+
+    /* Заявка на расчёт из корзины: настоящая отправка на сервер (Vercel
+       serverless-функция /api/send-order, см. api/send-order.js), а не
+       mailto-ссылка во внешнюю почту — письмо с составом заказа уходит
+       менеджеру напрямую, пока клиент видит статус и результат на странице.
+       Обработчик — здесь, а не в общем цикле форм ниже, потому что ему
+       нужны readCart/writeCart/paintCart, которые живут в этой замыкании. */
+    var cartForm = $('[data-cart-form]');
+    if (cartForm) {
+      var goBtn      = $('button[type=submit]', cartForm);
+      var goBtnLabel = goBtn.innerHTML;
+      var okMsg      = $('.form__ok', cartForm);
+      var errMsg     = $('.form__error', cartForm);
+
+      var setSending = function (on) {
+        goBtn.disabled = on;
+        goBtn.innerHTML = on
+          ? '<span class="btn__spinner" aria-hidden="true"></span>Отправка заявки…'
+          : goBtnLabel;
+      };
+
+      cartForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (errMsg) errMsg.classList.remove('is-shown');
+        if (okMsg)  okMsg.classList.remove('is-shown');
+        if (!validateForm(cartForm)) return;
+
+        var get  = function (n) { var el = cartForm.elements[n]; return el ? el.value.trim() : ''; };
+        var name = get('name');
+
+        // Тот же расчёт суммы, что и в paintCart выше: строку «по запросу»
+        // в сумму не включаем, письмо не должно врать про итог заказа.
+        var sum = 0, asksCount = 0;
+        var cartPayload = readCart().map(function (i) {
+          var lineSum = i.ask ? 0 : toRub(i.price) * i.qty;
+          if (i.ask) asksCount++; else sum += lineSum;
+          return {
+            name: i.name, cat: i.cat, size: i.size, qty: i.qty,
+            price: i.price, ask: !!i.ask, lineSum: lineSum
+          };
+        });
+
+        setSending(true);
+        fetch('/api/send-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name, phone: get('phone'), email: get('email'), comment: get('message'),
+            cart: cartPayload, sum: sum, asksCount: asksCount,
+            company: get('company')                          // honeypot: у человека всегда пусто
+          })
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (data) {
+            return { ok: res.ok && data.ok, data: data };
+          });
+        }).then(function (result) {
+          setSending(false);
+          if (result.ok) {
+            if (okMsg) {
+              okMsg.textContent = 'Спасибо, ' + name + '! Заявка успешно принята. ' +
+                'Владимир свяжется с вами в ближайшее время.';
+              okMsg.classList.add('is-shown');
+            }
+            writeCart([]);
+            paintCart();
+            cartForm.reset();
+          } else if (errMsg) {
+            errMsg.classList.add('is-shown');
+          }
+        }).catch(function () {
+          setSending(false);
+          if (errMsg) errMsg.classList.add('is-shown');
+        });
+      });
+
+      $$('input, textarea', cartForm).forEach(function (input) {
+        input.addEventListener('input', function () {
+          input.closest('.field').classList.remove('has-error');
+        });
+      });
+    }
   }
 
   /* --- Форма заявки -------------------------------------------------------
-     Сайт статический, серверной части нет: форма собирает письмо на
-     info@gofrocarton.by и открывает почтовый клиент. Если появится бэкенд —
-     достаточно заменить тело submit-обработчика на fetch().
+     Единственная оставшаяся форма на mailto: — на странице пиццы, отдельно
+     от корзины и без бэкенда. Форма заявки в корзине (data-cart-form) сюда
+     не попадает — у неё свой обработчик выше, с отправкой на сервер.
      ---------------------------------------------------------------------- */
   $$('.form').forEach(function (form) {
+    if (form.hasAttribute('data-cart-form')) return;   // у неё свой обработчик, см. выше
     var ok = $('.form__ok', form);
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var valid = true;
-      // Проверяем обязательные поля и, дополнительно, заполненные необязательные:
-      // необязательный e-mail с опечаткой иначе молча ушёл бы в письмо.
-      var checked = $$('[required], input[type=email], input[type=tel]', form);
-      checked.forEach(function (input) {
-        var field = input.closest('.field');
-        var val = input.value.trim();
-        var need = input.hasAttribute('required');
-        var bad;
-        if (!val) {
-          bad = need;                                   // пустое поле — ошибка только если обязательное
-        } else if (input.type === 'email') {
-          bad = !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val);
-        } else if (input.type === 'tel') {
-          bad = val.replace(/\D/g, '').length < 7;
-        } else {
-          bad = false;
-        }
-        field.classList.toggle('has-error', bad);
-        if (bad && valid) { input.focus(); }
-        if (bad) valid = false;
-      });
-      if (!valid) return;
+      if (!validateForm(form)) return;
 
       var get = function (n) { var el = form.elements[n]; return el ? el.value.trim() : ''; };
       var lines = [
@@ -557,30 +643,6 @@
         '',
         get('message')
       ].filter(Boolean);
-
-      // Состав заказа переносим в письмо из корзины — руками его вводить не нужно.
-      if (form.hasAttribute('data-cart-form')) {
-        var order = readCart(), sum = 0, asks = 0;
-        if (order.length) {
-          lines.push('', 'Состав заказа:');
-          order.forEach(function (i, n) {
-            // По таким позициям в письме идёт только тираж — цену считает отдел продаж.
-            if (i.ask) {
-              asks++;
-              lines.push((n + 1) + '. ' + i.cat + ' — ' + i.name +
-                         ' · тираж ' + i.qty + ' шт. · цена по запросу');
-              return;
-            }
-            sum += toRub(i.price) * i.qty;
-            lines.push((n + 1) + '. ' + i.cat + ' — ' + i.name +
-                       ' · тираж ' + i.qty + ' шт. · ' + i.price + ' за шт. · ' +
-                       money(toRub(i.price) * i.qty));
-          });
-          if (sum) lines.push('Итого без НДС: ' + money(sum));
-          if (asks) lines.push('Позиций с ценой по запросу: ' + asks +
-                               ' — просьба рассчитать стоимость и прислать прайс.');
-        }
-      }
 
       window.location.href = 'mailto:info@gofrocarton.by'
         + '?subject=' + encodeURIComponent(form.dataset.subject || 'Заявка с сайта gofrocarton.by')

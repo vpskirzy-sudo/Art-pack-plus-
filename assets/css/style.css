@@ -1183,6 +1183,33 @@ ul{ margin:0; padding:0; list-style:none; }
   color:#2E9B68; font-size:14.5px; font-weight:600;
 }
 .form__ok.is-shown{ display:block; }
+/* Ошибка отправки — тот же крой, что у .form__ok, но в тревожной гамме
+   .field__err, чтобы два статуса формы читались как одна система. */
+.form__error{
+  display:none; padding:16px 18px; border-radius:var(--r-sm);
+  background:rgba(214,69,60,.10); border:1px solid rgba(214,69,60,.32);
+  color:#B3352C; font-size:14.5px; font-weight:600; line-height:1.5;
+}
+.form__error a{ color:inherit; text-decoration:underline; }
+.form__error.is-shown{ display:block; }
+
+/* Honeypot-поле формы заявки: скрыто от глаз и от Tab, но остаётся в DOM
+   и доступно для заполнения скриптом — в отличие от display:none, которое
+   часть простых ботов уже научилась пропускать. */
+.field--trap{
+  position:absolute; width:1px; height:1px; overflow:hidden;
+  clip:rect(0 0 0 0); white-space:nowrap;
+}
+
+/* Спиннер кнопки на время отправки заявки — тот же акцентный цвет, что и
+   остальные состояния .btn--primary, без лишней анимации библиотек. */
+.btn__spinner{
+  width:16px; height:16px; border-radius:50%;
+  border:2px solid rgba(255,255,255,.4); border-top-color:#fff;
+  animation:btn-spin .7s linear infinite;
+}
+@keyframes btn-spin{ to{ transform:rotate(360deg); } }
+.btn[disabled]{ opacity:.72; cursor:not-allowed; pointer-events:none; }
 
 /* --- 14. Контакты ------------------------------------------------------ */
 .ct{ display:flex; gap:16px; align-items:flex-start; padding:22px 0; border-top:1px solid rgba(255,255,255,.11); }
