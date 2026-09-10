@@ -575,7 +575,38 @@ ul{ margin:0; padding:0; list-style:none; }
 .svc__head{ display:flex; align-items:flex-start; gap:16px; }
 .svc__head .card__ico{ margin-bottom:0; flex:none; }
 .svc__head .card__t{ margin-bottom:4px; }
+/* .card__t не задаёт свой color — на светлой секции это var(--text) от body,
+   но .svc иногда стоит на .section--dark (см. «Акции»), где .card сама
+   светлая, а цвет текста наследуется от тёмной секции. Явно возвращаем
+   тот же оттенок, что и у заголовков карточек «Продукция». */
+.card.svc .card__t{ color:var(--text); }
 .svc__sub{ color:var(--text-dim); font-size:14px; line-height:1.45; }
+
+/* Фото товара внутри .svc-карточки — тот же приём выноса за поля карточки,
+   что у .card--kraft::after (overflow:hidden на .card плюс отрицательные
+   поля), только для настоящего фото, а не декоративной текстуры. */
+.svc__pic{
+  position:relative;
+  margin:calc(-1 * clamp(24px,2.6vw,32px)) calc(-1 * clamp(24px,2.6vw,32px)) 4px;
+  aspect-ratio:4/3; overflow:hidden;
+  background:linear-gradient(160deg,#EFE6D9,#DFCFB8);
+}
+.svc__pic img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .6s var(--ease);
+}
+.card:hover .svc__pic img{ transform:scale(1.06); }
+/* Плашка «Акция» поверх фото — красная нарочно: единственный не-оранжевый
+   акцент на сайте, чтобы не потеряться среди обычных оранжевых бейджей. */
+.badge-sale{
+  position:absolute; top:14px; right:14px; z-index:2;
+  display:inline-flex; align-items:center;
+  padding:6px 14px; border-radius:100px;
+  background:linear-gradient(135deg,#E5726A,#C94940);
+  box-shadow:0 8px 18px rgba(160,50,44,.38);
+  font-family:var(--ff-head); font-weight:800; font-size:11.5px;
+  letter-spacing:.08em; text-transform:uppercase; color:#fff;
+}
 
 /* Условия и цены: подпись слева, значение справа, между ними точечная
    выноска — читается как прайс, но без таблицы. */
@@ -611,6 +642,20 @@ ul{ margin:0; padding:0; list-style:none; }
 .svc__foot{
   margin-top:auto; display:flex; flex-wrap:wrap; align-items:center; gap:8px 18px;
   padding-top:18px; border-top:1px solid var(--warm-div);
+}
+/* «Подробнее» на карточках акций: вместо стандартной заливки в ink при
+   наведении — акцентно-оранжевая обводка и лёгкий подпрыг, чтобы кнопка
+   сама притягивала взгляд на тёмной секции. Специфичность в два класса
+   (.svc__foot .btn--outline) перебивает общий .btn--outline:hover. */
+.svc__foot .btn--outline:hover{
+  border-color:var(--accent); background:transparent; color:var(--accent-ink);
+  animation:btn-bounce .5s var(--ease);
+}
+@keyframes btn-bounce{
+  0%,100%{ transform:translateY(0); }
+  30%{ transform:translateY(-6px); }
+  55%{ transform:translateY(0); }
+  75%{ transform:translateY(-2px); }
 }
 .svc__tel{
   display:inline-flex; align-items:center; gap:9px;
