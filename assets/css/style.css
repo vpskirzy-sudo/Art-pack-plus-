@@ -103,7 +103,41 @@ ul{ margin:0; padding:0; list-style:none; }
 .wrap{ width:100%; max-width:var(--wrap); margin-inline:auto; padding-inline:var(--gut); }
 .section{ padding:clamp(56px, 8vw, 108px) 0; }
 .section--tight{ padding:clamp(40px, 5vw, 68px) 0; }
-.section--dark{ background:var(--ink); color:var(--on-dark); }
+/* Тёмная секция сама по себе — ровный тёмно-синий фон. «Фонарики» (мягкие
+   цветные пятна поверх) навешиваются отдельным классом .glow-a/b/c/d ниже:
+   так каждая секция может получить свой рисунок засветки, а не одинаковый
+   на весь сайт. Приём тот же, что уже раньше использован на .cta и .phead —
+   радиальные градиенты на ::before, контент поверх через .wrap{position}. */
+.section--dark{ position:relative; background:var(--ink); color:var(--on-dark); overflow:hidden; }
+.section--dark::before{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+}
+.section--dark > .wrap{ position:relative; z-index:1; }
+/* Четыре раскладки засветки — одна и та же пара «оранжевый + синий» (цвета
+   .cta::before/::after), развёрнутая по разным углам, плюс где-то мягкий
+   белый блик. Ни одна секция не повторяет расположение другой. */
+.glow-a::before{
+  background:
+    radial-gradient(640px 420px at 86% -12%, rgba(224,123,38,.24), transparent 62%),
+    radial-gradient(520px 420px at 6% 112%, rgba(20,102,179,.22), transparent 66%);
+}
+.glow-b::before{
+  background:
+    radial-gradient(560px 420px at 92% 108%, rgba(224,123,38,.22), transparent 64%),
+    radial-gradient(600px 440px at 4% -14%, rgba(20,102,179,.22), transparent 64%),
+    radial-gradient(300px 300px at 60% 30%, rgba(255,255,255,.05), transparent 70%);
+}
+.glow-c::before{
+  background:
+    radial-gradient(560px 440px at 8% -10%, rgba(224,123,38,.23), transparent 64%),
+    radial-gradient(620px 460px at 96% 100%, rgba(20,102,179,.22), transparent 64%);
+}
+.glow-d::before{
+  background:
+    radial-gradient(540px 420px at 10% 106%, rgba(224,123,38,.22), transparent 64%),
+    radial-gradient(600px 440px at 94% -12%, rgba(20,102,179,.22), transparent 64%),
+    radial-gradient(260px 260px at 34% 76%, rgba(255,255,255,.05), transparent 70%);
+}
 .section--paper{ background:var(--paper-2); }
 
 .eyebrow{
