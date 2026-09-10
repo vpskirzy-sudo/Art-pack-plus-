@@ -49,6 +49,7 @@ NAV = [("index.html",       "Главная"),
 # Категории берутся из products_data.py — список нигде не дублируется.
 NAV_SECTIONS = {
     "index.html": [
+        ("index.html#akcii",             "Акции"),
         ("index.html#dalee",             "Почему заказывают у нас"),
         ("index.html#produkciya",        "Продукция"),
         ("index.html#oborudovanie-band", "Оборудование"),
