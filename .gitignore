@@ -3,3 +3,10 @@ node_modules/
 *.log
 __pycache__/
 *.pyc
+
+# Секреты SMTP/почты для api/send-order.js — только в переменных окружения
+# на Vercel и в локальном .env.local, в репозиторий не попадают.
+.env
+.env.local
+.env*.local
+.vercel

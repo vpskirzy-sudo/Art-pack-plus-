@@ -60,11 +60,11 @@
   <div class="wrap">
     <div class="grid grid--2">
       <div class="reveal">
-        <span class="eyebrow">Заявка на расчёт</span>
+        <span class="eyebrow">Заявка на расчёт для Владимира</span>
         <h2 class="h2 h2--tight">Оставьте контакты</h2>
         <p class="lead" style="margin-top:16px">Состав заказа подставится из корзины — заполнять
-          размеры и тираж второй раз не нужно. Форма соберёт письмо и откроет вашу почтовую
-          программу. Если удобнее, напишите на
+          размеры и тираж второй раз не нужно. Заявка уходит напрямую Владимиру, и он свяжется
+          с вами в рабочее время. Если удобнее, напишите на
           <a href="mailto:{{email}}" style="color:var(--accent);font-weight:600">{{email}}</a>
           или позвоните по телефону {{phone1}}.</p>
 
@@ -81,7 +81,14 @@
       </div>
 
       <div class="reveal">
-        <form class="form" data-cart-form data-subject="Заявка на расчёт из корзины gofrocarton.by" novalidate>
+        <form class="form" data-cart-form novalidate>
+          <!-- Honeypot: настоящим людям это поле не видно и не нужно — простые
+               боты, наоборот, заполняют все поля формы подряд. Заполненное
+               значение здесь для сервера означает «это спам», см. api/send-order.js. -->
+          <div class="field field--trap" aria-hidden="true">
+            <label for="f-company">Компания</label>
+            <input id="f-company" name="company" type="text" tabindex="-1" autocomplete="off">
+          </div>
           <div class="form__row">
             <div class="field">
               <label for="f-name">Имя *</label>
@@ -101,12 +108,15 @@
           </div>
           <div class="field">
             <label for="f-msg">Комментарий</label>
-            <textarea id="f-msg" name="message" placeholder="Нужна ли печать, сроки, особые пожелания"></textarea>
+            <textarea id="f-msg" name="message"
+              placeholder="Укажите пожелания к тиражу, срокам или комментарий для Владимира..."></textarea>
           </div>
           <p class="form__cart" data-cart-summary></p>
-          <button class="btn btn--primary btn--wide" type="submit">Отправить заявку {{icon:arrow}}</button>
-          <p class="form__ok">Спасибо! Мы подготовили письмо — отправьте его из своей почтовой программы,
-            и мы свяжемся с вами.</p>
+          <button class="btn btn--primary btn--wide" type="submit">Отправить на расчёт {{icon:arrow}}</button>
+          <p class="form__ok" role="status"></p>
+          <p class="form__error" role="alert">Не получилось отправить заявку — проверьте связь с интернетом
+            и попробуйте ещё раз. Не выходит — позвоните по телефону {{phone1}} или напишите на
+            <a href="mailto:{{email}}">{{email}}</a>.</p>
           <p class="form__note">Нажимая кнопку, вы соглашаетесь на обработку указанных данных
             для ответа на обращение.</p>
         </form>
