@@ -1,17 +1,22 @@
 /**
  * POST /api/send-order — принимает заявку на расчёт из корзины (см.
- * assets/js/main.js, обработчик формы data-cart-form) и письмом уходит
- * администратору. Serverless-функция Vercel: любой файл в api/ становится
- * отдельным эндпоинтом автоматически, отдельного роутера не нужно.
+ * assets/js/main.js, обработчик формы data-cart-form) и рассылает её
+ * менеджеру: в Telegram-бота и письмом. Serverless-функция Vercel: любой
+ * файл в api/ становится отдельным эндпоинтом автоматически, отдельного
+ * роутера не нужно.
  *
- * Секреты (SMTP-логин/пароль, адрес администратора) — только в переменных
- * окружения (см. .env.example и README): в браузер и в код репозитория
- * они никогда не попадают.
+ * Секреты (токен Telegram-бота, SMTP-логин/пароль, адрес администратора) —
+ * только в переменных окружения (см. .env.example и README): в браузер и
+ * в код репозитория они никогда не попадают. Каналы независимы: если
+ * настроен только Telegram или только почта — заявка уходит туда, куда
+ * настроена; отказавший канал не должен «терять» заявку целиком, пока
+ * хотя бы один настроенный канал доставил её.
  */
 'use strict';
 
 var nodemailer = require('nodemailer');
 var emailTemplate = require('../lib/email-template');
+var telegramTemplate = require('../lib/telegram-template');
 
 var DEFAULT_ADMIN_EMAIL = 'vps.kirzis@gmail.com';
 
@@ -48,6 +53,29 @@ function getTransporter() {
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
   });
   return cachedTransporter;
+}
+
+/** Отправка сообщения через Telegram Bot API — обычный HTTPS POST,
+ *  библиотека не нужна. Бросает исключение при неуспехе — вызывающий код
+ *  сам решает, что делать со сбоем одного из каналов. */
+async function sendTelegramMessage(text) {
+  var token = process.env.TELEGRAM_BOT_TOKEN;
+  var chatId = process.env.TELEGRAM_CHAT_ID;
+  var resp = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true
+    })
+  });
+  var json = null;
+  try { json = await resp.json(); } catch (e) { /* тело не JSON — json останется null */ }
+  if (!resp.ok || !json || !json.ok) {
+    throw new Error('telegram: ' + (json && json.description ? json.description : resp.status));
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -102,11 +130,14 @@ module.exports = async function handler(req, res) {
   var sum = Math.max(0, Number(body.sum) || 0);
   var asksCount = Math.max(0, Math.round(Number(body.asksCount) || 0));
 
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  var telegramConfigured = !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
+  var emailConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+
+  if (!telegramConfigured && !emailConfigured) {
     // Так молча не «теряем» заявку в логах: любой, кто откроет логи
-    // функции, сразу увидит, что письмо не ушло из-за настроек, а не
+    // функции, сразу увидит, что заявка не ушла из-за настроек, а не
     // из-за ошибки клиента.
-    console.error('send-order: SMTP не настроен — проверьте SMTP_HOST/SMTP_USER/SMTP_PASS в переменных окружения');
+    console.error('send-order: не настроен ни один канал — проверьте TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID или SMTP_HOST/SMTP_USER/SMTP_PASS в переменных окружения');
     res.status(500).json({ ok: false, error: 'server_not_configured' });
     return;
   }
@@ -122,19 +153,35 @@ module.exports = async function handler(req, res) {
   var data = { name: name, phone: phone, email: email, comment: comment, cart: cart, sum: sum, asksCount: asksCount, dateStr: dateStr };
   var subject = '[Заказы Артпак+] Новый расчёт от ' + name + ' — ' + phone;
 
-  try {
+  var jobs = [];
+  if (telegramConfigured) {
+    jobs.push(sendTelegramMessage(telegramTemplate.buildOrderTelegramMessage(data))
+      .then(function () { return { channel: 'telegram', ok: true }; })
+      .catch(function (err) { return { channel: 'telegram', ok: false, err: err }; }));
+  }
+  if (emailConfigured) {
     var transporter = getTransporter();
-    await transporter.sendMail({
+    jobs.push(transporter.sendMail({
       from: '"Арт-Пак Плюс — сайт" <' + process.env.SMTP_USER + '>',
       to: process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL,
       replyTo: email || undefined,
       subject: subject,
       html: emailTemplate.buildOrderEmailHtml(data),
       text: emailTemplate.buildOrderEmailText(data)
-    });
+    }).then(function () { return { channel: 'email', ok: true }; })
+      .catch(function (err) { return { channel: 'email', ok: false, err: err }; }));
+  }
+
+  var results = await Promise.all(jobs);
+  results.filter(function (r) { return !r.ok; }).forEach(function (r) {
+    console.error('send-order: канал «' + r.channel + '» не доставил заявку', r.err);
+  });
+
+  // Успех — если доставил хотя бы один настроенный канал: неполадка с
+  // одним из них не должна превращать реальную заявку клиента в ошибку 502.
+  if (results.some(function (r) { return r.ok; })) {
     res.status(200).json({ ok: true });
-  } catch (err) {
-    console.error('send-order: ошибка отправки письма', err);
+  } else {
     res.status(502).json({ ok: false, error: 'send_failed' });
   }
 };
