@@ -28,10 +28,10 @@ TAGLINE   = "Производство упаковки из гофрокарто
 PHONES    = [("8 (017) 547 44 44", "+375175474444"),
              ("8 (044) 517 44 45", "+375445174445"),
              ("8 (029) 120 01 50", "+375291200150")]
-FAX       = "8 (017) 511 44 02"
 EMAIL     = "info@gofrocarton.by"
+EMAIL2    = "gofrotar@mail.ru"
 ADDRESS   = "223036, Минский р-н, г. Заславль, ул. Вокзальная, 8Б"
-HOURS     = "Пн–Пт 8:30–17:30, обед 13:00–13:30"
+HOURS     = "Пн–Пт 8:00–17:00, обед 12:00–13:00"
 UNP       = "691817655"
 
 NAV = [("index.html",       "Главная"),
@@ -262,7 +262,7 @@ def footer():
           <div class="footer__t">Контакты</div>
           <ul class="footer__list">
             {tels}
-            <li><span>факс: {FAX}</span></li>
+            <li><a href="mailto:{EMAIL2}">{EMAIL2}</a></li>
             <li><a href="mailto:{EMAIL}">{EMAIL}</a></li>
             <li><span>{ADDRESS}</span></li>
           </ul>
@@ -311,7 +311,7 @@ def substitute(body):
     """Подстановка иконок и контактов в тело страницы."""
     body = re.sub(r"\{\{icon:(\w+)(?::([\w-]+))?\}\}",
                   lambda m: icon(m.group(1), m.group(2) or ""), body)
-    return (body.replace("{{email}}", EMAIL).replace("{{fax}}", FAX)
+    return (body.replace("{{email}}", EMAIL).replace("{{email2}}", EMAIL2)
                 .replace("{{address}}", ADDRESS).replace("{{hours}}", HOURS)
                 .replace("{{unp}}", UNP).replace("{{legal}}", LEGAL_HTML)
                 .replace("{{phones}}", phones_html())
