@@ -1,16 +1,17 @@
 /**
  * POST /api/send-order — принимает заявку на расчёт из корзины (см.
  * assets/js/main.js, обработчик формы data-cart-form) и рассылает её
- * менеджеру: в Telegram-бота и письмом. Serverless-функция Vercel: любой
+ * менеджеру сразу тремя независимыми каналами: в Telegram-бота, письмом
+ * через SMTP и письмом через Web3Forms. Serverless-функция Vercel: любой
  * файл в api/ становится отдельным эндпоинтом автоматически, отдельного
  * роутера не нужно.
  *
- * Секреты (токен Telegram-бота, SMTP-логин/пароль, адрес администратора) —
- * только в переменных окружения (см. .env.example и README): в браузер и
- * в код репозитория они никогда не попадают. Каналы независимы: если
- * настроен только Telegram или только почта — заявка уходит туда, куда
- * настроена; отказавший канал не должен «терять» заявку целиком, пока
- * хотя бы один настроенный канал доставил её.
+ * Секреты (токен Telegram-бота, ключ Web3Forms, SMTP-логин/пароль, адрес
+ * администратора) — только в переменных окружения (см. .env.example и
+ * README): в браузер и в код репозитория они никогда не попадают. Каналы
+ * независимы: настроен хоть один — заявка уходит туда; отказавший канал
+ * не должен «терять» заявку целиком, пока хотя бы один настроенный канал
+ * доставил её.
  */
 'use strict';
 
@@ -78,6 +79,33 @@ async function sendTelegramMessage(text) {
   }
 }
 
+/** Отправка письма через Web3Forms — сторонний сервис, который сам
+ *  доставляет письмо на адрес, привязанный к access-ключу в личном
+ *  кабинете Web3Forms (не здесь: ключ только пересылает данные, адрес
+ *  получателя настраивается на их стороне). Ключ читается из переменной
+ *  окружения WEB3FORMS_KEY — в код и в репозиторий не попадает. */
+async function sendWeb3Forms(data, subject) {
+  var key = process.env.WEB3FORMS_KEY;
+  var resp = await fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({
+      access_key: key,
+      subject: subject,
+      from_name: 'Арт-Пак Плюс — сайт',
+      name: data.name,
+      email: data.email || undefined,
+      replyto: data.email || undefined,
+      message: emailTemplate.buildOrderEmailText(data)
+    })
+  });
+  var json = null;
+  try { json = await resp.json(); } catch (e) { /* тело не JSON — json останется null */ }
+  if (!resp.ok || !json || !json.success) {
+    throw new Error('web3forms: ' + (json && json.message ? json.message : resp.status));
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') {
@@ -132,12 +160,13 @@ module.exports = async function handler(req, res) {
 
   var telegramConfigured = !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
   var emailConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+  var web3formsConfigured = !!process.env.WEB3FORMS_KEY;
 
-  if (!telegramConfigured && !emailConfigured) {
+  if (!telegramConfigured && !emailConfigured && !web3formsConfigured) {
     // Так молча не «теряем» заявку в логах: любой, кто откроет логи
     // функции, сразу увидит, что заявка не ушла из-за настроек, а не
     // из-за ошибки клиента.
-    console.error('send-order: не настроен ни один канал — проверьте TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID или SMTP_HOST/SMTP_USER/SMTP_PASS в переменных окружения');
+    console.error('send-order: не настроен ни один канал — проверьте TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID, SMTP_HOST/SMTP_USER/SMTP_PASS или WEB3FORMS_KEY в переменных окружения');
     res.status(500).json({ ok: false, error: 'server_not_configured' });
     return;
   }
@@ -170,6 +199,11 @@ module.exports = async function handler(req, res) {
       text: emailTemplate.buildOrderEmailText(data)
     }).then(function () { return { channel: 'email', ok: true }; })
       .catch(function (err) { return { channel: 'email', ok: false, err: err }; }));
+  }
+  if (web3formsConfigured) {
+    jobs.push(sendWeb3Forms(data, subject)
+      .then(function () { return { channel: 'web3forms', ok: true }; })
+      .catch(function (err) { return { channel: 'web3forms', ok: false, err: err }; }));
   }
 
   var results = await Promise.all(jobs);
