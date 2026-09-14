@@ -99,10 +99,15 @@ async function sendWeb3Forms(data, subject) {
       message: emailTemplate.buildOrderEmailText(data)
     })
   });
+  var raw = await resp.text();
   var json = null;
-  try { json = await resp.json(); } catch (e) { /* тело не JSON — json останется null */ }
+  try { json = JSON.parse(raw); } catch (e) { /* тело не JSON — json останется null */ }
+  // ВРЕМЕННАЯ диагностика: показывает в логах Vercel, что именно вернул
+  // Web3Forms — статус и тело ответа, ключ доступа не логируется. Убрать
+  // после того, как канал подтверждённо заработает.
+  console.log('send-order: web3forms ответил', resp.status, raw);
   if (!resp.ok || !json || !json.success) {
-    throw new Error('web3forms: ' + (json && json.message ? json.message : resp.status));
+    throw new Error('web3forms: status=' + resp.status + ' body=' + raw);
   }
 }
 
