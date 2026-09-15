@@ -420,17 +420,22 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .card::after{
   content:""; position:absolute; left:0; right:0; top:0; height:3px;
-  background:linear-gradient(90deg,var(--accent),var(--kraft));
+  background:linear-gradient(90deg,var(--kraft),var(--kraft-dark));
   transform:scaleX(0); transform-origin:left; transition:transform .4s var(--ease);
 }
-.card:hover{ transform:translateY(-5px); box-shadow:var(--warm-glow); border-color:var(--warm-hi); }
+.card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 12px 26px rgba(201,138,75,.12), 0 2px 6px rgba(22,32,43,.05);
+  border-color:rgba(201,138,75,.30);
+}
 .card:hover::after{ transform:scaleX(1); }
 .card__ico{
   width:52px; height:52px; border-radius:15px; margin-bottom:20px;
   display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(140deg, rgba(235,120,35,.16), rgba(235,120,35,.07));
-  border:1px solid var(--warm-line); color:var(--accent-ink);
-  color:var(--accent);
+  /* Приглушённая крафтовая заливка вместо чистого оранжевого — тот же
+     тёплый диапазон сайта (--kraft), но заметно спокойнее. */
+  background:linear-gradient(140deg, rgba(201,138,75,.14), rgba(201,138,75,.05));
+  border:1px solid rgba(201,138,75,.22); color:var(--kraft-dark);
 }
 .card__ico svg{ width:25px; height:25px; }
 .card__t{ font-family:var(--ff-head); font-weight:800; font-size:18.5px; margin-bottom:10px; letter-spacing:-.01em; }
@@ -446,7 +451,7 @@ ul{ margin:0; padding:0; list-style:none; }
   display:flex; flex-direction:column;
   min-height:clamp(330px,26.5vw,430px);
   background:linear-gradient(168deg, var(--warm-2), var(--warm));
-  border:1px solid var(--warm-line); border-radius:7px;
+  border:1px solid rgba(201,138,75,.18); border-radius:7px;
   padding:clamp(24px,2.1vw,30px) clamp(28px,2.5vw,34px) clamp(18px,1.5vw,22px) clamp(20px,1.8vw,26px);
   box-shadow:var(--warm-shadow);
   transition:transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease);
@@ -455,20 +460,20 @@ ul{ margin:0; padding:0; list-style:none; }
   content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background:
     radial-gradient(140px 90px at 16% 10%, rgba(255,255,255,.40), transparent 70%),
-    radial-gradient(170px 120px at 84% 66%, rgba(235,120,35,.09), transparent 72%),
+    radial-gradient(170px 120px at 84% 66%, rgba(201,138,75,.07), transparent 72%),
     radial-gradient(110px 80px at 55% 34%, rgba(255,255,255,.22), transparent 70%),
     linear-gradient(178deg, rgba(255,255,255,.20), transparent 58%);
 }
 .card--kraft::after{                              /* торец панели: видна гофра */
   content:""; position:absolute; top:0; right:0; bottom:0; left:auto;
   width:9px; height:auto; z-index:2; transform:none; border-radius:0;
-  border-left:1px solid var(--warm-line);
-  background:repeating-linear-gradient(90deg, var(--warm-edge) 0 1.6px, rgba(255,255,255,.60) 1.6px 3.2px);
+  border-left:1px solid rgba(201,138,75,.22);
+  background:repeating-linear-gradient(90deg, rgba(201,138,75,.22) 0 1.6px, rgba(255,255,255,.60) 1.6px 3.2px);
 }
 .card.card--kraft:hover{
   transform:translateY(-8px);
-  border-color:var(--warm-hi);
-  box-shadow:var(--warm-glow);
+  border-color:rgba(201,138,75,.30);
+  box-shadow:0 12px 26px rgba(201,138,75,.13), 0 2px 6px rgba(22,32,43,.05);
 }
 .card.card--kraft:hover::after{ transform:none; }  /* оранжевая полоса .card тут не нужна */
 
@@ -491,7 +496,7 @@ ul{ margin:0; padding:0; list-style:none; }
 .card--kraft{ counter-increment:artbox; }
 .card--kraft .card__ico{
   width:clamp(42px,4.2vw,56px); height:clamp(42px,4.2vw,56px);
-  margin-bottom:0; border:0; border-radius:0; background:none; color:var(--accent);
+  margin-bottom:0; border:0; border-radius:0; background:none; color:var(--kraft-dark);
 }
 .card--kraft .card__ico svg{ width:100%; height:100%; stroke-width:1.4; }
 .card__num{
@@ -524,9 +529,11 @@ ul{ margin:0; padding:0; list-style:none; }
   box-shadow:0 22px 44px rgba(4,8,14,.44), inset 0 1px 0 rgba(255,255,255,.08);
 }
 .card--dark .card__t{
-  position:relative; z-index:2; color:var(--accent-2);
+  /* Приглушённый тёплый тон (--kraft) вместо яркого --accent-2 — тот же
+     оранжевый диапазон сайта, но спокойнее на тёмном фоне. */
+  position:relative; z-index:2; color:var(--kraft);
   font-size:20px; padding-bottom:14px; margin-bottom:14px;
-  border-bottom:1px solid rgba(244,155,63,.22);
+  border-bottom:1px solid rgba(201,138,75,.22);
 }
 .card--dark .card__d{ position:relative; z-index:2; color:rgba(233,238,243,.68); }
 
