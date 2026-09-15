@@ -9,10 +9,12 @@ const fs = require('fs');
   // Страницы подгрупп продукции генерируются из tools/products_data.py,
   // поэтому подхватываем их с диска — список не придётся править руками.
   const root = path.resolve(__dirname, '../..');
+  // Статьи раздела «Полезное» точно так же собираются из tools/articles_data.py.
   const detail = fs.readdirSync(root)
-    .filter(f => /^produkciya-.+\.html$/.test(f))
+    .filter(f => /^(produkciya|poleznoe)-.+\.html$/.test(f))
     .map(f => f.replace(/\.html$/, ''));
-  const pages = ['index','o-kompanii','produkciya','uslugi','oborudovanie','korzina', ...detail];
+  const pages = ['index','o-kompanii','produkciya','uslugi','oborudovanie','poleznoe','korzina',
+                 ...detail];
   // Ступени раскрытия контейнера (1440px и 1920px) и их ближайшие окрестности
   // проверяем отдельно: именно на границе медиазапроса легче всего получить
   // лишний пиксель по горизонтали.

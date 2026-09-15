@@ -1,0 +1,50 @@
+<section class="phead">
+  <div class="wrap">
+    <div class="phead__in">
+      <nav class="crumbs" aria-label="Хлебные крошки">
+        <a href="index.html">Главная</a><span class="crumbs__sep">{{icon:crumb}}</span><span>Полезное</span>
+      </nav>
+      <span class="eyebrow">Полезное</span>
+      <h1 class="h1">Полезное об упаковке</h1>
+      <p class="lead">Короткие ответы на вопросы, которые чаще всего задают перед заказом:
+        марка картона, размер короба, требования площадок, хранение и переработка.
+        Без теории — только то, что влияет на ваш заказ.</p>
+    </div>
+  </div>
+  <a class="scroll-down" href="#dalee" aria-label="Перейти к содержимому страницы">{{icon:down}}</a>
+</section>
+
+<section id="dalee" class="section">
+  <div class="wrap">
+    <!-- Карточки статей собираются из tools/articles_data.py — тот же
+         компонент .prod, что и у карточек подгрупп в каталоге. -->
+    <div class="grid grid--3 grid--cat">
+{{articles}}
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="cta reveal">
+      <div class="cta__in">
+        <div>
+          <h2 class="h2">Не нашли ответ?</h2>
+          <p class="lead" style="margin-top:16px">Оставьте заявку — поможем разобраться.
+            Расскажите, что упаковываете, а мы подберём конструкцию, марку картона
+            и посчитаем тираж. Расчёт бесплатный.</p>
+          <div class="cta__acts">
+            <a class="btn btn--primary" href="korzina.html#zayavka">Оставить заявку {{icon:arrow}}</a>
+            <a class="btn btn--ghost" href="produkciya.html">Каталог продукции</a>
+          </div>
+        </div>
+        <div>
+          <div class="ct" style="border-top:0"><div class="ct__ico">{{icon:phone}}</div>
+            <div><div class="ct__l">Отдел продаж</div><div class="ct__v">{{phones}}</div></div></div>
+          <div class="ct"><div class="ct__ico">{{icon:mail}}</div>
+            <div><div class="ct__l">E-mail</div><div class="ct__v"><a href="mailto:{{email}}">{{email}}</a></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
