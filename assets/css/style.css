@@ -290,9 +290,14 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 /* последний пункт («Корзина») стоит у самого правого края шапки — центрируя
    подменю под ним, оно вылезало бы за экран; растим его влево от пункта. */
-.nav__item:last-child > .nav__drop{ left:auto; right:0; transform:translateY(6px); }
+/* То же и у широкого подменю предпоследнего пункта («Полезное»): в 536px
+   оно, отцентрованное под пунктом, уходило бы за правый край экрана. */
+.nav__item:last-child > .nav__drop,
+.nav__item:nth-last-child(2) > .nav__drop--wide{ left:auto; right:0; transform:translateY(6px); }
 .nav__item:last-child:hover > .nav__drop,
-.nav__item:last-child:focus-within > .nav__drop{ transform:translateY(0); }
+.nav__item:last-child:focus-within > .nav__drop,
+.nav__item:nth-last-child(2):hover > .nav__drop--wide,
+.nav__item:nth-last-child(2):focus-within > .nav__drop--wide{ transform:translateY(0); }
 
 .nav__drop-list{ display:grid; gap:1px; }
 /* Каталог продукции (12 пунктов) и услуги (8) в одну колонку выросли бы
@@ -727,6 +732,10 @@ ul{ margin:0; padding:0; list-style:none; }
 .prod__pic{ position:relative; aspect-ratio:4/3; background:linear-gradient(160deg,#EFE6D9,#DFCFB8); overflow:hidden; }
 .prod__pic img,.prod__pic svg{ width:100%; height:100%; object-fit:cover; transition:transform .6s var(--ease); }
 .prod:hover .prod__pic img,.prod:hover .prod__pic svg{ transform:scale(1.06); }
+/* Карточка статьи со схемой: схема нарисована в пропорции 16:10 и с текстом,
+   поэтому её нельзя кадрировать под 4:3 — вписываем целиком на тёмный фон. */
+.prod__pic--scheme{ background:var(--ink); }
+.prod__pic--scheme img{ object-fit:contain; }
 .prod__body{ padding:24px; display:flex; flex-direction:column; flex:1; gap:12px; }
 .prod__t{ font-family:var(--ff-head); font-weight:800; font-size:19px; letter-spacing:-.01em; }
 .prod__d{ color:var(--text-soft); font-size:14.7px; line-height:1.6; }
@@ -929,6 +938,40 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .ptext__after{ margin-top:16px; font-size:14.5px; line-height:1.65; color:var(--text-dim); }
 @media (max-width:860px){ .ptext__grid{ columns:1; } }
+
+/* --- 10f. Текст статьи раздела «Полезное» --------------------------------
+   Отдельного «типографского» блока на сайте не было: страницы собраны из
+   карточек, плашек и таблиц. Статье нужен просто читаемый столбец текста,
+   поэтому здесь только отбивки, кегль и ссылки. Всё остальное статья берёт
+   готовым: заголовки — .h2--tight/.h3, списки — .ptext__list, таблицы —
+   .ptable (включая разбор в карточки на телефоне), вопросы внизу — .acc. */
+.art{ max-width:76ch; }
+.art > * + *{ margin-top:clamp(15px,1.7vw,21px); }
+.art p{ font-size:clamp(16px,1.5vw,17.5px); color:var(--text-soft); line-height:1.75; }
+.art p b, .art p strong, .art li b{ color:var(--text); font-weight:700; }
+/* Первый абзац — прямой ответ на вопрос заголовка: крупнее и темнее,
+   чтобы его было видно, не читая всё остальное. */
+.art .art__answer{
+  font-size:clamp(17px,1.7vw,19.5px); color:var(--text); font-weight:500;
+  border-left:3px solid var(--kraft); padding-left:clamp(14px,1.6vw,20px);
+}
+.art .h2, .art .h3{ margin-top:clamp(30px,3.4vw,44px); }
+.art .ptable__wrap, .art .art__fig{ margin-top:clamp(22px,2.4vw,30px); }
+.art .ptext__list{ margin-top:0; }
+.art .ptext__list li{ font-size:clamp(15px,1.4vw,16.5px); }
+.art a{
+  color:var(--accent-ink); font-weight:600;
+  text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px;
+  text-decoration-color:var(--warm-hi); transition:color .2s, text-decoration-color .2s;
+}
+.art a:hover{ color:var(--kraft-dark); text-decoration-color:var(--kraft); }
+/* Схема в статье: тот же светлый «бумажный» кадр, что у фото товара. */
+.art__fig{ margin:0; }
+.art__fig img{
+  width:100%; border-radius:var(--r-lg); background:var(--ink);
+  box-shadow:var(--shadow-m);
+}
+.art__cap{ margin-top:10px; font-size:13.5px; color:var(--text-dim); line-height:1.6; }
 
 /* --- 10d. Корзина: кнопка в прайсе, окошко тиража, счётчик и сама корзина --
    Заказ собирается прямо в таблице цен: «плюс» у номера позиции раскрывает
@@ -1496,12 +1539,18 @@ ul{ margin:0; padding:0; list-style:none; }
 /* --- 20. Адаптив ------------------------------------------------------- */
 /* Шапка сжимается ступенями: сначала уходит кнопка, затем подпись логотипа,
    затем меню целиком прячется под бургер. */
-@media (max-width:1439px){ .header__cta{ display:none; } }
-/* Ниже 1280px шапка идёт впритык: шесть пунктов со стрелками уже не
-   помещаются между логотипом и краем экрана (замер: +29px за поле на
-   1024px). Шеврон-подсказку убираем — само подменю по наведению остаётся. */
-@media (max-width:1279px){ .nav__item > .nav__link::after{ display:none; } }
+/* Кнопка «Рассчитать заказ» в шапке помещается рядом с меню из семи пунктов
+   только на широком десктопе — ниже она упиралась в правый край. */
+@media (max-width:1519px){ .header__cta{ display:none; } }
+/* Ниже 1280px шапка идёт впритык: пункты со стрелками уже не помещаются
+   между логотипом и краем экрана. Шеврон-подсказку убираем — само подменю
+   по наведению остаётся. */
+@media (max-width:1359px){ .nav__item > .nav__link::after{ display:none; } }
 @media (max-width:1199px){ .logo__sub{ display:none; } .nav__link{ padding:10px 10px; font-size:14px; } }
+/* Седьмой пункт меню («Полезное») занял ещё ~80px, и ниже 1120px меню
+   в прежней плотности упиралось в логотип. Здесь ступень теснее — она
+   работает до 1024px, где меню целиком уходит под бургер. */
+@media (max-width:1119px){ .nav__link{ padding:10px 6px; font-size:13.5px; } }
 @media (max-width:1080px){
   .grid--4{ grid-template-columns:repeat(2,1fr); }
   .footer__grid{ grid-template-columns:1fr 1fr; }

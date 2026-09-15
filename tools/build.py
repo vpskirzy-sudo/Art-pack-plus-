@@ -15,6 +15,7 @@ import json
 import os
 import re
 
+from articles_data import ARTICLES
 from products_data import CATEGORIES
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
@@ -34,11 +35,17 @@ ADDRESS   = "223036, Минский р-н, г. Заславль, ул. Вокз�
 HOURS     = "Пн–Пт 8:00–17:00, обед 12:00–13:00"
 UNP       = "691817655"
 
+# Адрес сайта: нужен только для абсолютных ссылок в метатегах (og:image
+# и og:url обязаны быть абсолютными). Переезд на другой домен = правка строки.
+SITE      = "https://gofrocarton.by"
+OG_IMAGE  = "assets/img/hero-1.jpg"      # картинка по умолчанию для соцсетей
+
 NAV = [("index.html",       "Главная"),
        ("o-kompanii.html",  "О компании"),
        ("produkciya.html",  "Продукция"),
        ("uslugi.html",      "Услуги"),
        ("oborudovanie.html", "Оборудование"),
+       ("poleznoe.html",    "Полезное"),
        ("korzina.html",     "Корзина")]
 
 # Подменю пунктов навигации. Ключ — страница, значение — список пар
@@ -84,6 +91,10 @@ NAV_SECTIONS = {
         ("oborudovanie.html#dalee",  "Что мы предлагаем"),
         ("oborudovanie.html#sdelka", "Как проходит сделка"),
     ],
+    "poleznoe.html": [
+        *((f'poleznoe-{a["slug"]}.html', a["name"]) for a in ARTICLES),
+        ("poleznoe.html#dalee", "Все статьи раздела"),
+    ],
     "korzina.html": [
         ("korzina.html#sostav",  "Состав заказа"),
         ("korzina.html#zayavka", "Заявка на расчёт"),
@@ -93,7 +104,7 @@ NAV_SECTIONS = {
 
 # Подменю, которые не помещаются в одну колонку разумной высоты: каталог
 # продукции и услуги раскладываются в два столбца.
-NAV_WIDE = {"produkciya.html", "uslugi.html"}
+NAV_WIDE = {"produkciya.html", "uslugi.html", "poleznoe.html"}
 
 PAGES = {
     "index.html":       ("Производство упаковки из гофрокартона в Минске — " + LEGAL,
@@ -111,9 +122,22 @@ PAGES = {
     "oborudovanie.html": ("Оборудование — продажа нового и б/у оборудования",
                           "Наш производственный парк и продажа нового и б/у оборудования "
                           "для производства гофротары."),
+    "poleznoe.html":    ("Полезное — статьи о выборе гофроупаковки",
+                         "Как выбрать марку картона, рассчитать размер короба, упаковать товар "
+                         "для маркетплейса и хранить гофротару — короткие ответы от производителя."),
     "korzina.html":     ("Корзина и заявка на расчёт — " + LEGAL,
                          "Соберите заказ из каталога и отправьте заявку на расчёт: "
                          "имя, телефон и e-mail — остальное подставится из корзины."),
+}
+
+# Картинка для соцсетей у страниц-разделов. Остальные страницы берут OG_IMAGE,
+# страницы подгрупп и статей — свою иллюстрацию.
+PAGE_IMAGES = {
+    "produkciya.html":   "assets/img/pr-photo-gofroyashchiki.jpg",
+    "uslugi.html":       "assets/img/pr-photo-gofrokarton.jpg",
+    "oborudovanie.html": "assets/img/hero-2.jpg",
+    "o-kompanii.html":   "assets/img/hero-3.jpg",
+    "poleznoe.html":     "assets/img/pr-photo-gofrokarton-trehsloyny.jpg",
 }
 
 # --- Иконки (подставляются как {{icon:имя}}) ------------------------------
@@ -287,8 +311,11 @@ LAYOUT = '''<!DOCTYPE html>
 <meta name="theme-color" content="#0B1118">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
-<meta property="og:type" content="website">
+<meta property="og:type" content="{og_type}">
 <meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{image}">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -318,9 +345,15 @@ def substitute(body):
                 .replace("{{phone1}}", PHONES[0][0]).replace("{{tel1}}", PHONES[0][1]))
 
 
-def write_page(name, title, desc, body, active=None):
-    """Собирает страницу из каркаса и записывает её в корень проекта."""
+def write_page(name, title, desc, body, active=None, image=None, og_type="website"):
+    """Собирает страницу из каркаса и записывает её в корень проекта.
+
+    `image` — путь к картинке для соцсетей относительно корня сайта; в og:image
+    он превращается в абсолютный, иначе соцсети его не подхватят.
+    """
     html = LAYOUT.format(title=title, desc=desc,
+                         url=f"{SITE}/{name}", image=f"{SITE}/{image or OG_IMAGE}",
+                         og_type=og_type,
                          header=header(active or name), body=substitute(body), footer=footer())
     with open(os.path.join(ROOT, name), "w", encoding="utf-8") as fh:
         fh.write(html)
@@ -333,7 +366,9 @@ def render(name):
         body = fh.read()
     if name == "produkciya.html":                      # сетка карточек — из данных каталога
         body = body.replace("{{catalog}}", catalog_grid())
-    return write_page(name, title, desc, body)
+    if name == "poleznoe.html":                        # сетка статей — из articles_data
+        body = body.replace("{{articles}}", articles_grid())
+    return write_page(name, title, desc, body, image=PAGE_IMAGES.get(name))
 
 
 # --- Каталог продукции ----------------------------------------------------
@@ -690,7 +725,182 @@ def product_page(cat):
     return write_page(f"produkciya-{cat['slug']}.html",
                       f"{cat['name']} — цены и номенклатура | {LEGAL}",
                       f"{cat['desc']} Номенклатура, размеры и цены без НДС.",
-                      body, active="produkciya.html")
+                      body, active="produkciya.html", image=f"assets/img/{cat['img']}")
+
+
+# --- Раздел «Полезное» ----------------------------------------------------
+def articles_grid():
+    """Сетка карточек статей на хаб-странице — те же .prod, что в каталоге."""
+    cards = []
+    for a in ARTICLES:
+        # Схему (SVG) кадрировать нельзя — она вписывается целиком.
+        pic = "prod__pic prod__pic--scheme" if a["img"].endswith(".svg") else "prod__pic"
+        cards.append(f'''      <article class="prod reveal">
+        <div class="{pic}">
+          <img src="assets/img/{a['img']}" alt="{a['name']}" loading="lazy"></div>
+        <div class="prod__body">
+          <h3 class="prod__t">{a['name']}</h3>
+          <p class="prod__d">{a['teaser']}</p>
+          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-{a['slug']}.html">
+            Читать статью {icon('arrow')}</a>
+        </div>
+      </article>''')
+    return "\n\n".join(cards)
+
+
+def article_faq(a):
+    """Мини-вопросы внизу статьи — тот же аккордеон, что в «Частых вопросах»."""
+    items = "".join(f'''
+      <div class="acc__item">
+        <button class="acc__btn" type="button" aria-expanded="false">{q}<span class="acc__ico">{icon('chev')}</span></button>
+        <div class="acc__panel"><div><p>{ans}</p></div></div>
+      </div>''' for q, ans in a["faq"])
+    return f'''<section class="section section--paper section--tight" id="faq">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">Ещё спрашивают</span>
+      <h2 class="h2 h2--tight">Коротко о том же</h2>
+    </div>
+    <div class="acc acc--frame reveal">{items}
+    </div>
+  </div>
+</section>'''
+
+
+def article_pick(a):
+    """Блок «Что выбрать у нас»: мостик из статьи в каталог или услугу."""
+    pick = a["pick"]
+    acts = "".join(
+        f'''<a class="btn btn--{"primary" if i == 0 else "ghost"}" href="{href}">{label}'''
+        + (f" {icon('arrow')}" if i == 0 else "") + "</a>"
+        for i, (href, label) in enumerate(pick["links"]))
+    return f'''<section class="section section--tight">
+  <div class="wrap">
+    <div class="cta cta--flat reveal">
+      <div class="cta__in">
+        <div>
+          <span class="eyebrow">Из нашего прайса</span>
+          <h2 class="h2 h2--tight">{pick['t']}</h2>
+          <p class="lead" style="margin-top:16px">{pick['d']}</p>
+          <div class="cta__acts">{acts}</div>
+        </div>
+        <div><img class="pdetail__pic" src="assets/img/{a.get('pick_img', a['img'])}"
+          alt="{a['name']}" loading="lazy"></div>
+      </div>
+    </div>
+  </div>
+</section>'''
+
+
+def article_schema(a):
+    """Микроразметка: Article на страницу и FAQPage на блок мини-вопросов."""
+    url = f"{SITE}/poleznoe-{a['slug']}.html"
+    article = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": a["h1"],
+        "description": a["desc"],
+        "image": f"{SITE}/assets/img/{a['img']}",
+        "inLanguage": "ru-RU",
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url},
+        "author":    {"@type": "Organization", "name": LEGAL, "url": SITE + "/"},
+        "publisher": {"@type": "Organization", "name": LEGAL, "url": SITE + "/"},
+    }
+    faq = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [{"@type": "Question", "name": q,
+                        "acceptedAnswer": {"@type": "Answer", "text": ans}}
+                       for q, ans in a["faq"]],
+    }
+    dump = lambda d: json.dumps(d, ensure_ascii=False, indent=2)
+    return (f'<script type="application/ld+json">\n{dump(article)}\n</script>\n'
+            f'<script type="application/ld+json">\n{dump(faq)}\n</script>\n')
+
+
+def article_page(a):
+    """Страница статьи: шапка, текст из src, блок каталога, мини-вопросы, CTA."""
+    with open(os.path.join(SRC, f"poleznoe-{a['slug']}.html"), encoding="utf-8") as fh:
+        text = fh.read()
+    body = f'''<section class="phead">
+  <div class="wrap">
+    <div class="phead__in">
+      <nav class="crumbs" aria-label="Хлебные крошки">
+        <a href="index.html">Главная</a><span class="crumbs__sep">{icon('crumb')}</span><a href="poleznoe.html">Полезное</a><span class="crumbs__sep">{icon('crumb')}</span><span>{a['name']}</span>
+      </nav>
+      <span class="eyebrow">Полезное</span>
+      <h1 class="{'h1 h1--long' if len(a['h1']) > 40 else 'h1'}">{a['h1']}</h1>
+      <p class="lead">{a['lead']}</p>
+    </div>
+  </div>
+  <a class="scroll-down" href="#dalee" aria-label="Перейти к содержимому страницы">{icon('down')}</a>
+</section>
+
+<section class="section" id="dalee">
+  <div class="wrap">
+    <article class="art reveal">
+{text}
+    </article>
+  </div>
+</section>
+
+{article_pick(a)}
+
+{article_faq(a)}
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="cta reveal">
+      <div class="cta__in">
+        <div>
+          <h2 class="h2">Остались вопросы по вашей задаче?</h2>
+          <p class="lead" style="margin-top:16px">Пришлите габариты и вес товара — подберём
+            конструкцию, марку картона и посчитаем тираж. Расчёт бесплатный.</p>
+          <div class="cta__acts">
+            <a class="btn btn--primary" href="korzina.html#zayavka">Оставить заявку {icon('arrow')}</a>
+            <a class="btn btn--ghost" href="poleznoe.html">Другие статьи</a>
+          </div>
+        </div>
+        <div>
+          <div class="ct" style="border-top:0"><div class="ct__ico">{icon('phone')}</div>
+            <div><div class="ct__l">Отдел продаж</div><div class="ct__v">{phones_html()}</div></div></div>
+          <div class="ct"><div class="ct__ico">{icon('mail')}</div>
+            <div><div class="ct__l">E-mail</div><div class="ct__v"><a href="mailto:{EMAIL}">{EMAIL}</a></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{article_schema(a)}'''
+    # og:image у соцсетей — растровая: со схемой в SVG превью не соберётся,
+    # поэтому у таких статей в соцсети уходит фото из блока «Что выбрать у нас».
+    img = a["img"] if a["img"].endswith((".jpg", ".png")) else a.get("pick_img")
+    return write_page(f"poleznoe-{a['slug']}.html",
+                      f"{a['title']} | {LEGAL}", a["desc"], body,
+                      active="poleznoe.html",
+                      image=f"assets/img/{img}" if img else None,
+                      og_type="article")
+
+
+def sitemap():
+    """sitemap.xml из тех же списков, по которым собирается сам сайт.
+
+    Руками его вести нельзя: добавили категорию или статью — карта должна
+    обновиться сама, иначе она разойдётся с сайтом на второй правке.
+    """
+    urls = ([n for n in PAGES]
+            + [f"produkciya-{c['slug']}.html" for c in CATEGORIES]
+            + [f"poleznoe-{a['slug']}.html" for a in ARTICLES])
+    # Главная живёт по корневому адресу, а не по /index.html.
+    body = "".join(f"\n  <url><loc>{SITE}/{'' if u == 'index.html' else u}</loc></url>"
+                   for u in urls)
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+           f'{body}\n</urlset>\n')
+    with open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8") as fh:
+        fh.write(xml)
+    return len(urls)
 
 
 def main():
@@ -698,6 +908,9 @@ def main():
         print(f"{name}: {render(name)} байт")
     for cat in CATEGORIES:
         print(f"produkciya-{cat['slug']}.html: {product_page(cat)} байт")
+    for a in ARTICLES:
+        print(f"poleznoe-{a['slug']}.html: {article_page(a)} байт")
+    print(f"sitemap.xml: {sitemap()} адресов")
 
 
 if __name__ == "__main__":

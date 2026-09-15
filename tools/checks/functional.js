@@ -576,9 +576,9 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
              && await p.locator('.header__cart .cart-badge').isHidden(); })());
 
   console.log('Меню:');
-  ok('в меню шесть пунктов, последний — «Корзина»', await (async () => {
+  ok('в меню семь пунктов, последний — «Корзина»', await (async () => {
       const items = await p.locator('.nav__list .nav__link').allInnerTexts();
-      return items.length === 6 && items[5].trim() === 'Корзина'; })());
+      return items.length === 7 && items[6].trim() === 'Корзина'; })());
   ok('страницы «Контакты и карта» больше нет ни в меню, ни на диске',
      !(await p.locator('.nav__list').innerText()).includes('Контакты')
      && !fs.existsSync(B + 'kontakty.html'));
