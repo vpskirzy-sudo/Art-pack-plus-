@@ -773,6 +773,7 @@ ul{ margin:0; padding:0; list-style:none; }
   background:rgba(224,123,38,.06); border-left:1px solid rgba(22,32,43,.08);
 }
 .ptable td{ padding:14px 16px; border-bottom:1px solid rgba(22,32,43,.07); vertical-align:middle; }
+.ptable tbody tr:nth-child(even){ background:var(--paper); }
 .ptable td:first-child{ color:var(--text-dim); font-variant-numeric:tabular-nums; }
 .ptable__nowrap{ white-space:nowrap; font-weight:600; }
 .ptable tbody tr:last-child td{ border-bottom:0; }
@@ -944,19 +945,28 @@ ul{ margin:0; padding:0; list-style:none; }
    карточек, плашек и таблиц. Статье нужен просто читаемый столбец текста,
    поэтому здесь только отбивки, кегль и ссылки. Всё остальное статья берёт
    готовым: заголовки — .h2--tight/.h3, списки — .ptext__list, таблицы —
-   .ptable (включая разбор в карточки на телефоне), вопросы внизу — .acc. */
-.art{ max-width:76ch; }
-.art > * + *{ margin-top:clamp(15px,1.7vw,21px); }
-.art p{ font-size:clamp(16px,1.5vw,17.5px); color:var(--text-soft); line-height:1.75; }
+   .ptable (включая разбор в карточки на телефоне), вопросы внизу — .acc.
+   Статья теперь во всю ширину своей колонки в .art-layout — никакого
+   max-width на самом блоке .art, размер колонки задаёт сетка. Отступы между
+   элементами — фиксированные и одинаковые во всех 10 статьях (никаких
+   clamp()-значений, которые на разной ширине экрана давали разный зазор). */
+.art p{ font-size:17px; color:var(--text-soft); line-height:1.75; margin:0 0 16px; }
 .art p b, .art p strong, .art li b{ color:var(--text); font-weight:700; }
+.art > :first-child{ margin-top:0; }
 /* Первый абзац — прямой ответ на вопрос заголовка: крупнее и темнее,
    чтобы его было видно, не читая всё остальное. */
 .art .art__answer{
-  font-size:clamp(17px,1.7vw,19.5px); color:var(--text); font-weight:500;
-  border-left:3px solid var(--kraft); padding-left:clamp(14px,1.6vw,20px);
+  font-size:19px; color:var(--text); font-weight:500;
+  border-left:3px solid var(--kraft); padding-left:18px;
 }
-.art .h2, .art .h3{ margin-top:clamp(30px,3.4vw,44px); }
-.art .ptable__wrap, .art .art__fig{ margin-top:clamp(22px,2.4vw,30px); }
+.art h2, .art .h2{ margin:48px 0 20px; }
+.art h3, .art .h3{ margin:32px 0 16px; }
+.art ul, .art ol{ margin:0 0 20px; }
+.art ul.ptext__list, .art ol.ptext__list{ margin-bottom:20px; }
+.art table, .art .ptable__wrap{ margin:24px 0; }
+.art img, .art figure, .art .art__fig{ margin:24px 0; }
+.art .art-card, .art .art-fact, .art .art-compare, .art .art-gallery,
+.art .art-checklist, .art .art-timeline, .art .art-steps, .art .art-warn{ margin:32px 0; }
 .art .ptext__list{ margin-top:0; }
 .art .ptext__list li{ font-size:clamp(15px,1.4vw,16.5px); }
 .art a{
@@ -988,6 +998,7 @@ ul{ margin:0; padding:0; list-style:none; }
    На узких — сайдбар просто переезжает под текст обычными блоками. */
 .art-layout{
   display:grid; grid-template-columns:minmax(0,1fr); gap:clamp(32px,4vw,52px);
+  max-width:1200px; margin-inline:auto;
 }
 .art-main{ min-width:0; }
 .art-aside{ display:grid; gap:clamp(18px,2vw,24px); align-content:start; min-width:0; }
@@ -1077,13 +1088,78 @@ ul{ margin:0; padding:0; list-style:none; }
 .art-compare__card--no .art-compare__tag{ color:#B23B1E; }
 .art-compare__card p{ margin-top:10px; font-size:14.5px; line-height:1.6; color:var(--text-soft); }
 
-@media (min-width:960px){
-  .art-layout{ grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr); align-items:start; }
+/* Чек-лист с галочками (мини-CTA-подобная карточка, но список проверок). */
+.art-checklist{
+  display:grid; gap:12px; list-style:none;
+  background:var(--white); border:1px solid rgba(22,32,43,.09);
+  border-radius:var(--r-lg); padding:clamp(20px,2.2vw,26px); box-shadow:var(--shadow-s);
+}
+.art-checklist li{
+  display:flex; gap:12px; align-items:flex-start; font-size:15px; line-height:1.55; color:var(--text-soft);
+}
+.art-checklist li::before{
+  content:"✓"; flex:none; width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(63,191,127,.15); color:#227C55; font-weight:800; font-size:13px;
+}
+
+/* Плашка-предупреждение (красный акцент вместо кракового) — для рисков
+   и требований, где несоблюдение стоит денег. */
+.art-warn{
+  display:flex; gap:14px; align-items:flex-start;
+  background:rgba(196,60,40,.06); border-left:4px solid #C0392B;
+  border-radius:var(--r); padding:clamp(16px,2vw,22px);
+}
+.art-warn__ico{
+  flex:none; width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(196,60,40,.14); color:#C0392B;
+}
+.art-warn__ico svg{ width:19px; height:19px; }
+.art-warn p{ margin:0; font-size:15px; line-height:1.6; color:var(--text); }
+
+/* Карточки-шаги («как выбрать за 3 шага», нумерованные пункты). */
+.art-steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(14px,1.8vw,20px); }
+.art-step{
+  background:var(--white); border:1px solid rgba(22,32,43,.09);
+  border-radius:var(--r-lg); padding:clamp(18px,2vw,22px); box-shadow:var(--shadow-s);
+}
+.art-step__num{
+  display:flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border-radius:50%; margin-bottom:12px;
+  background:var(--accent); color:#fff; font-family:var(--ff-head); font-weight:800; font-size:14px;
+}
+.art-step__t{ font-family:var(--ff-head); font-weight:800; font-size:15.5px; letter-spacing:-.01em; }
+.art-step__d{ margin-top:6px; font-size:14px; line-height:1.55; color:var(--text-dim); }
+
+/* Визуальный таймлайн этапов заказа. */
+.art-timeline{ display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(10px,1.4vw,16px); }
+.art-timeline__step{
+  position:relative; background:var(--white); border:1px solid rgba(22,32,43,.09);
+  border-radius:var(--r-lg); padding:clamp(16px,1.8vw,20px) clamp(12px,1.4vw,16px); box-shadow:var(--shadow-s);
+  text-align:center;
+}
+.art-timeline__num{
+  display:flex; align-items:center; justify-content:center; margin:0 auto 10px;
+  width:30px; height:30px; border-radius:50%;
+  background:var(--accent); color:#fff; font-family:var(--ff-head); font-weight:800; font-size:13px;
+}
+.art-timeline__t{ font-family:var(--ff-head); font-weight:800; font-size:14px; letter-spacing:-.01em; }
+.art-timeline__d{ margin-top:6px; font-size:12.5px; line-height:1.5; color:var(--text-dim); }
+
+@media (min-width:1024px){
+  .art-layout{ grid-template-columns:65fr 35fr; align-items:start; }
   .art-aside{ position:sticky; top:104px; }
+}
+@media (max-width:900px){
+  .art-steps{ grid-template-columns:1fr 1fr; }
+  .art-timeline{ grid-template-columns:1fr 1fr; }
 }
 @media (max-width:640px){
   .art-gallery{ grid-template-columns:1fr 1fr; }
   .art-compare{ grid-template-columns:1fr; }
+  .art-steps{ grid-template-columns:1fr; }
+  .art-timeline{ grid-template-columns:1fr; }
 }
 @media (max-width:479px){
   .art-gallery{ grid-template-columns:1fr; }
