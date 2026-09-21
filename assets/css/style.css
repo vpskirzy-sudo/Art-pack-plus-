@@ -973,6 +973,122 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .art__cap{ margin-top:10px; font-size:13.5px; color:var(--text-dim); line-height:1.6; }
 
+/* --- 10f-2. Полноширинная обложка статьи в шапке .phead -------------------
+   Раньше в .phead была только текстовая шапка; теперь под лидом — крупная
+   обложка на всю ширину контейнера, чтобы страница не начиналась с пустоты. */
+.art-cover{ margin-top:clamp(24px,3.4vw,40px); position:relative; z-index:2; }
+.art-cover img{
+  width:100%; max-height:420px; object-fit:cover; display:block;
+  border-radius:var(--r-lg); box-shadow:var(--shadow-l); background:var(--ink-2);
+}
+
+/* --- 10f-3. Двухколоночная раскладка статьи: текст + «липкий» сайдбар -----
+   На широких экранах текст занимает ~62%, справа — колонка с карточкой
+   фактов, доп. схемой, связанными статьями и мини-CTA (см. .art-aside).
+   На узких — сайдбар просто переезжает под текст обычными блоками. */
+.art-layout{
+  display:grid; grid-template-columns:minmax(0,1fr); gap:clamp(32px,4vw,52px);
+}
+.art-main{ min-width:0; }
+.art-aside{ display:grid; gap:clamp(18px,2vw,24px); align-content:start; min-width:0; }
+
+/* Карточка «Коротко» / «Важно знать» в сайдбаре — светлая .card-подобная
+   плашка с рядами факт/значение. */
+.art-card{
+  background:var(--white); border:1px solid rgba(22,32,43,.09);
+  border-radius:var(--r-lg); padding:clamp(22px,2.2vw,28px); box-shadow:var(--shadow-s);
+}
+.art-card__t{
+  font-family:var(--ff-head); font-weight:800; font-size:18px; letter-spacing:-.01em;
+}
+.art-kv{ display:grid; margin-top:14px; }
+.art-kv__row{
+  display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
+  padding:11px 0; border-bottom:1px dashed rgba(22,32,43,.13); font-size:14px;
+}
+.art-kv__row:last-child{ border-bottom:0; padding-bottom:0; }
+.art-kv__k{ color:var(--text-dim); line-height:1.45; }
+.art-kv__v{ font-weight:700; color:var(--text); text-align:right; line-height:1.45; flex:none; max-width:56%; }
+
+/* Тёмная карточка сайдбара — доп. схема/иллюстрация в рамке. */
+.art-card--dark{ background:var(--ink); border-color:transparent; }
+.art-card--dark .art-card__t{ color:var(--on-dark); }
+.art-card--dark img{ width:100%; border-radius:var(--r); margin-top:14px; display:block; }
+.art-card--dark p{ margin-top:10px; font-size:13.5px; line-height:1.6; color:var(--on-dark-dim); }
+
+/* Блок ссылок на связанные статьи раздела. */
+.art-links{ display:grid; margin-top:14px; }
+.art-links a{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:11px 0; border-bottom:1px solid rgba(22,32,43,.08);
+  font-size:14.5px; font-weight:600; color:var(--text); text-decoration:none;
+}
+.art-links a:last-child{ border-bottom:0; }
+.art-links a svg{ width:16px; height:16px; flex:none; color:var(--accent); transition:transform .2s; }
+.art-links a:hover{ color:var(--accent-ink); }
+.art-links a:hover svg{ transform:translateX(3px); }
+
+/* Мини-CTA в сайдбаре. */
+.art-cta{
+  border-radius:var(--r-lg); padding:clamp(20px,2.2vw,26px);
+  background:linear-gradient(150deg,#F3E7CF,#E7D5B4); color:var(--ink); box-shadow:var(--shadow-s);
+}
+.art-cta__t{ font-family:var(--ff-head); font-weight:800; font-size:17px; letter-spacing:-.01em; }
+.art-cta__d{ margin-top:8px; font-size:13.5px; line-height:1.55; color:var(--ink-3); }
+.art-cta .btn{ margin-top:14px; width:100%; justify-content:center; }
+
+/* --- 10f-4. Врезки внутри текста: плашка-факт, фотогалерея, сравнение ----- */
+.art-fact{
+  display:flex; gap:14px; align-items:flex-start;
+  background:var(--paper); border-left:4px solid var(--accent);
+  border-radius:var(--r); padding:clamp(16px,2vw,22px);
+}
+.art-fact__ico{
+  flex:none; width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(224,123,38,.14); color:var(--accent-ink);
+}
+.art-fact__ico svg{ width:19px; height:19px; }
+.art-fact p{ margin:0; font-size:15px; line-height:1.6; color:var(--text-soft); }
+.art-fact p b{ color:var(--text); }
+
+.art-gallery{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,1.4vw,14px);
+}
+.art-gallery figure{ margin:0; }
+.art-gallery img{
+  width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:var(--r);
+  box-shadow:var(--shadow-s); display:block;
+}
+.art-gallery figcaption{ margin-top:8px; font-size:12.5px; color:var(--text-dim); line-height:1.5; }
+
+.art-compare{ display:grid; grid-template-columns:1fr 1fr; gap:clamp(12px,1.6vw,18px); }
+.art-compare__card{
+  border-radius:var(--r-lg); padding:clamp(18px,2vw,22px);
+  background:var(--white); border:1px solid rgba(22,32,43,.09); box-shadow:var(--shadow-s);
+}
+.art-compare__card--no{ border-color:rgba(224,80,38,.25); background:rgba(224,80,38,.04); }
+.art-compare__card--yes{ border-color:rgba(63,191,127,.3); background:rgba(63,191,127,.05); }
+.art-compare__tag{
+  display:inline-flex; align-items:center; font-family:var(--ff-head); font-weight:800;
+  font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-ink);
+}
+.art-compare__card--yes .art-compare__tag{ color:#227C55; }
+.art-compare__card--no .art-compare__tag{ color:#B23B1E; }
+.art-compare__card p{ margin-top:10px; font-size:14.5px; line-height:1.6; color:var(--text-soft); }
+
+@media (min-width:960px){
+  .art-layout{ grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr); align-items:start; }
+  .art-aside{ position:sticky; top:104px; }
+}
+@media (max-width:640px){
+  .art-gallery{ grid-template-columns:1fr 1fr; }
+  .art-compare{ grid-template-columns:1fr; }
+}
+@media (max-width:479px){
+  .art-gallery{ grid-template-columns:1fr; }
+}
+
 /* --- 10d. Корзина: кнопка в прайсе, окошко тиража, счётчик и сама корзина --
    Заказ собирается прямо в таблице цен: «плюс» у номера позиции раскрывает
    окошко с тиражом, оттуда позиция улетает в корзину в шапке. Состав заказа
