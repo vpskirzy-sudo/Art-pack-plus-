@@ -100,13 +100,15 @@
 <main>
 <section class="phead">
   <div class="wrap">
-    <div class="phead__in">
+    <div class="phead__in phead__in--art">
+      <div class="phead__txt">
       <nav class="crumbs" aria-label="Хлебные крошки">
         <a href="index.html">Главная</a><span class="crumbs__sep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 15 12l-5.5 6.5" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a href="poleznoe.html">Полезное</a><span class="crumbs__sep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 15 12l-5.5 6.5" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Марки гофрокартона</span>
       </nav>
       <span class="eyebrow">Полезное</span>
       <h1 class="h1 h1--long">Марки гофрокартона: что значат Т-22, Т-23В и П-32</h1>
       <p class="lead">Буква говорит о числе слоёв, цифры — о количестве плоских слоёв и о прочности сырья. «Т» — трёхслойный картон, «П» — пятислойный.</p>
+      </div>
       <figure class="art-cover">
         <img src="assets/img/pl-cover-marki.jpg" alt="Листы гофрокартона разных марок на складе «Арт-Пак Плюс»" loading="eager" width="1800" height="1403">
       </figure>
@@ -126,10 +128,10 @@
   ступень прочности».</p>
 
 <figure class="art__fig">
-  <img src="assets/img/pl-sloi.svg" alt="Строение трёхслойного гофрокартона: лайнер, флютинг, лайнер"
-       width="1200" height="750">
-  <figcaption class="art__cap">Плоские слои (лайнеры) держат нагрузку, волна между ними
-    (флютинг) даёт жёсткость и гасит удар.</figcaption>
+  <img src="assets/img/pl-marka-decode.svg" alt="Как читать марку гофрокартона Т-23В: Т — число слоёв, 2 — плоских слоя, 3 — прочность сырья, В — профиль волны"
+       width="1000" height="540">
+  <figcaption class="art__cap">Буква — число слоёв, первая цифра — сколько из них плоских,
+    вторая — ступень прочности сырья, буква в конце — профиль волны.</figcaption>
 </figure>
 
 <h2 class="h2 h2--tight">Что означает буква</h2>
@@ -184,43 +186,63 @@
 </div>
 
 <h2 class="h2 h2--tight">Какие марки у нас в прайсе</h2>
+<h3 class="h3">Характеристики листа</h3>
 <div class="ptable__wrap">
   <table class="ptable">
     <thead><tr>
       <th style="text-align:left">Марка</th>
       <th style="text-align:left">Конструкция</th>
-      <th style="text-align:left">Толщина листа</th>
+      <th style="text-align:left">Толщина</th>
       <th style="text-align:left">Масса 1 м²</th>
       <th style="text-align:left">Прочность</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td data-label="Марка">Т-22</td>
+        <td data-label="Конструкция">Трёхслойный, два плоских слоя</td>
+        <td data-label="Толщина">3–4 мм</td>
+        <td data-label="Масса 1 м²">~450–500&nbsp;г</td>
+        <td data-label="Прочность">Стандартная</td>
+      </tr>
+      <tr>
+        <td data-label="Марка">Т-23В</td>
+        <td data-label="Конструкция">Трёхслойный, профиль «В»</td>
+        <td data-label="Толщина">3–4 мм</td>
+        <td data-label="Масса 1 м²">~480–520&nbsp;г</td>
+        <td data-label="Прочность">Повышенная</td>
+      </tr>
+      <tr>
+        <td data-label="Марка">П-32</td>
+        <td data-label="Конструкция">Пятислойный, три плоских слоя</td>
+        <td data-label="Толщина">5–7 мм</td>
+        <td data-label="Масса 1 м²">~650–700&nbsp;г</td>
+        <td data-label="Прочность">Высокая</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<h3 class="h3">Под какой товар и что есть в прайсе</h3>
+<div class="ptable__wrap">
+  <table class="ptable">
+    <thead><tr>
+      <th style="text-align:left">Марка</th>
       <th style="text-align:left">Под какой товар</th>
       <th style="text-align:left">Примеры позиций</th>
     </tr></thead>
     <tbody>
       <tr>
         <td data-label="Марка">Т-22</td>
-        <td data-label="Конструкция">Трёхслойный, два плоских слоя</td>
-        <td data-label="Толщина листа">3–4 мм</td>
-        <td data-label="Масса 1 м²">~450–500 г</td>
-        <td data-label="Прочность">Стандартная</td>
         <td data-label="Под какой товар">Товар обычного веса, ходовая транспортная тара</td>
         <td data-label="Примеры позиций">Короба 600×400×400, 400×300×300, 380×253×237,
           320×250×250 и 200×200×250 мм; лотки 380×285×120 и 380×285×90 мм</td>
       </tr>
       <tr>
         <td data-label="Марка">Т-23В</td>
-        <td data-label="Конструкция">Трёхслойный, профиль «В»</td>
-        <td data-label="Толщина листа">3–4 мм</td>
-        <td data-label="Масса 1 м²">~480–520 г</td>
-        <td data-label="Прочность">Повышенная</td>
         <td data-label="Под какой товар">Пищевая тара, в том числе для заморозки</td>
         <td data-label="Примеры позиций">Куриный лоток 538×378×108 и 545×380×110 мм</td>
       </tr>
       <tr>
         <td data-label="Марка">П-32</td>
-        <td data-label="Конструкция">Пятислойный, три плоских слоя</td>
-        <td data-label="Толщина листа">5–7 мм</td>
-        <td data-label="Масса 1 м²">~650–700 г</td>
-        <td data-label="Прочность">Высокая</td>
         <td data-label="Под какой товар">Тяжёлый и габаритный товар, дальняя перевозка</td>
         <td data-label="Примеры позиций">Короба 577×392×323 и 600×400×280 мм</td>
       </tr>
@@ -304,7 +326,7 @@
         </div>
         <div class="art-card art-card--dark reveal">
           <div class="art-card__t">Строение листа</div>
-          <img src="assets/img/pl-yashchik-lotok.svg" alt="Схема плоских слоёв и флютинга гофрокартона" loading="lazy">
+          <img src="assets/img/pl-3-5-razrez.svg" alt="Разрез трёхслойного и пятислойного гофрокартона: лайнеры и волны" loading="lazy">
           <p>Волна (флютинг) между лайнерами гасит удар и держит форму —
             чем выше волна, тем толще лист и лучше амортизация.</p>
         </div>
@@ -398,7 +420,7 @@
   "@type": "Article",
   "headline": "Марки гофрокартона: что значат Т-22, Т-23В и П-32",
   "description": "Что значит маркировка гофрокартона: буква — число слоёв, цифры — плоские слои и прочность сырья. Таблица марок и позиции из прайса «Арт-Пак Плюс».",
-  "image": "https://gofrocarton.by/assets/img/pl-sloi.svg",
+  "image": "https://gofrocarton.by/assets/img/pl-cover-marki.jpg",
   "inLanguage": "ru-RU",
   "mainEntityOfPage": {
     "@type": "WebPage",

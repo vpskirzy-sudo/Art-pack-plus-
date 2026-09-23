@@ -335,6 +335,39 @@
     totop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
   }
 
+  /* --- Кнопка «к списку» ---------------------------------------------------
+     Слева по центру экрана: со страницы товара или статьи — к сетке карточек
+     раздела, на самой странице раздела — обратно к карточкам, когда они
+     уже уехали вверх. Появляется только после прокрутки, чтобы не мешать
+     первому экрану. */
+  (function () {
+    var page = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '');
+    var cfg = null;
+    if (/^produkciya-/.test(page)) cfg = { href: 'produkciya.html#dalee', label: 'Вся продукция' };
+    else if (/^poleznoe-/.test(page)) cfg = { href: 'poleznoe.html#dalee', label: 'Все статьи' };
+    else if (page === 'produkciya') cfg = { href: '#dalee', label: 'Вся продукция', list: '#dalee' };
+    else if (page === 'poleznoe') cfg = { href: '#dalee', label: 'Все статьи', list: '#dalee' };
+    else if (page === 'uslugi') cfg = { href: '#dalee', label: 'Все услуги', list: '#dalee' };
+    if (!cfg) return;
+
+    var btn = document.createElement('a');
+    btn.className = 'backlist';
+    btn.href = cfg.href;
+    btn.setAttribute('aria-label', cfg.label);
+    btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '<span class="backlist__t">' + cfg.label + '</span>';
+    document.body.appendChild(btn);
+
+    var list = cfg.list ? $(cfg.list) : null;
+    var toggle = function () {
+      var show = list ? list.getBoundingClientRect().bottom < 120 : window.scrollY > 520;
+      btn.classList.toggle('is-shown', show);
+    };
+    toggle();
+    window.addEventListener('scroll', toggle, { passive: true });
+    window.addEventListener('resize', toggle);
+  })();
+
   /* --- Корзина ------------------------------------------------------------
      Состав заказа живёт в localStorage: сайт статический, между страницами
      ничего не передашь. Цена берётся из тиражной сетки прайса — какую
