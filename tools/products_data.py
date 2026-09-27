@@ -109,8 +109,9 @@ CATEGORIES = [
              "p1": "1,6", "p2": "1,2", "p3": "0,9"},
             {"photo": "pr-photo-gofroyashchiki.jpg", "name": "200×200×250, трёхслойный гофрокартон",
              "p1": "1,5", "p2": "1,0", "p3": "0,6"},
-            # Конструктивы со старого сайта. У пяти уже есть фото с диска —
-            # остальные три пока без фото (ждём, когда пришлют).
+            # Конструктивы со старого сайта. У восьми уже есть фото с диска —
+            # осталось только «Гофроящик усиленный» и «Крупногабаритный
+            # гофроящик» (ждём, когда пришлют).
             {"ask": True, "name": "Архивный гофрокороб",
              "photo": "pr-photo-gofroyashchiki-arhivny.jpg"},
             {"ask": True, "name": "Гофроящик усиленный"},
@@ -118,10 +119,13 @@ CATEGORIES = [
              "photo": "pr-photo-gofroyashchiki-kalendarnaya.jpg"},
             {"ask": True, "name": "Короб — крышка + дно",
              "photo": "pr-photo-gofroyashchiki-kryshka-dno.jpg"},
-            {"ask": True, "name": "Короб с ушками"},
+            {"ask": True, "name": "Короб с ушками",
+             "photo": "pr-photo-gofroyashchiki-ushki.jpg"},
             {"ask": True, "name": "Крупногабаритный гофроящик"},
-            {"ask": True, "name": "Четырёхклапанный короб (ЧКП)"},
-            {"ask": True, "name": "Четырёхклапанный короб без верха"},
+            {"ask": True, "name": "Четырёхклапанный короб (ЧКП)",
+             "photo": "pr-photo-gofroyashchiki-chkp.jpg"},
+            {"ask": True, "name": "Четырёхклапанный короб без верха",
+             "photo": "pr-photo-gofroyashchiki-bez-verha.jpg"},
             {"ask": True, "name": "Четырёхклапанный короб с перекрывающимися клапанами",
              "photo": "pr-photo-gofroyashchiki-chkp-perekr.jpg"},
             {"ask": True, "name": "Коробка-чемодан (с конструктивной или пластиковой ручкой)",
