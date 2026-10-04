@@ -192,6 +192,9 @@ DRIVE_PHOTOS = {
     "kak-hranit-gofrotaru": "pl-drive-hranenie.jpg",
     "pishchevaya-upakovka": "pl-drive-pishchevaya.jpg",
     "upakovka-dlya-marketpleysov": "pl-drive-marketpleysy.jpg",
+    "marki-gofrokartona": "pl-new-karton.jpg",
+    "gofroyashchik-ili-gofrolotok": "pl-new-yashchik-lotok.jpg",
+    "zashchitnye-ugolki-i-prokladki": "pl-new-prokladki.jpg",
 }
 
 
