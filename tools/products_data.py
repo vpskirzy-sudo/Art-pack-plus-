@@ -439,7 +439,7 @@ CATEGORIES = [
         "name": "Поддоны",
         # Старое фото убрано — временно готовая изометрическая иллюстрация
         # (tools/generate_products.py, p_container), до присылки своего фото.
-        "img": "pr-container.svg",
+        "img": "pr-photo-poddon.jpg",
         "badge": "",
         "cat": "korob",
         "desc": ("Картонный поддон (гофроподдон) — лёгкая замена деревянному под сыпучие "
