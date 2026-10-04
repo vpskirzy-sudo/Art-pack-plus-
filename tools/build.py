@@ -195,6 +195,8 @@ DRIVE_PHOTOS = {
     "marki-gofrokartona": "pl-new-karton.jpg",
     "gofroyashchik-ili-gofrolotok": "pl-new-yashchik-lotok.jpg",
     "zashchitnye-ugolki-i-prokladki": "pl-new-prokladki.jpg",
+    "kak-rasschitat-razmer-koroba": "pl-new-razmer-koroba.jpg",
+    "individualnyy-zakaz-sroki": "pl-new-zakaz-sroki.jpg",
 }
 
 
