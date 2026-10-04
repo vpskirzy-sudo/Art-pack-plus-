@@ -735,6 +735,8 @@ ul{ margin:0; padding:0; list-style:none; }
 /* Карточка статьи со схемой: схема нарисована в пропорции 16:10 и с текстом,
    поэтому её нельзя кадрировать под 4:3 — вписываем целиком на тёмный фон. */
 .prod__pic--scheme{ background:var(--ink); }
+/* Карточки «Полезного»: вместо фото — чёрный квадрат. */
+.prod .prod__pic--black,.grid--cat .prod__pic.prod__pic--black{ background:#000; aspect-ratio:1/1; }
 .prod__pic--scheme img{ object-fit:contain; }
 .prod__body{ padding:24px; display:flex; flex-direction:column; flex:1; gap:12px; }
 .prod__t{ font-family:var(--ff-head); font-weight:800; font-size:19px; letter-spacing:-.01em; }
