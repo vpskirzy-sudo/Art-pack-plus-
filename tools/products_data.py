@@ -83,7 +83,7 @@ CATEGORIES = [
     {
         "slug": "gofroyashchiki",
         "name": "Гофроящики",
-        "img": "pr-photo-gofroyashchiki.jpg",
+        "img": "pr-new-yashchik-lotok.jpg",
         "badge": "В наличии",
         "cat": "korob",
         "desc": ("Четырёхклапанные короба и ящики со склада в Заславле: ходовые размеры "
@@ -139,7 +139,7 @@ CATEGORIES = [
         "name": "Гофролотки",
         # Временно — то же фото, что у «Поддонов» (см. ниже), до присылки
         # своего фото для этой карточки.
-        "img": "pr-photo-konteynery.jpg",
+        "img": "pr-new-yashchik-lotok.jpg",
         "badge": "В наличии",
         "cat": "lotok food",
         "desc": ("Низкая открытая тара для групповой упаковки и выкладки товара: овощи, "
@@ -349,7 +349,7 @@ CATEGORIES = [
     {
         "slug": "gofrokarton",
         "name": "Гофрокартон",
-        "img": "pr-photo-gofrokarton.jpg",
+        "img": "pr-new-karton.jpg",
         "badge": "Материал",
         "cat": "material",
         "desc": ("Листовой гофрокартон: двухслойный, трёхслойный, пятислойный, "
@@ -397,7 +397,7 @@ CATEGORIES = [
     {
         "slug": "zashchitnye-ugolki",
         "name": "Защитные уголки",
-        "img": "pr-photo-ugolki.jpg",
+        "img": "pr-new-prokladki.jpg",
         "badge": "",
         "cat": "dop",
         "desc": ("Картонные уголки-профили для укрепления паллетной упаковки и защиты "
@@ -458,7 +458,7 @@ CATEGORIES = [
     {
         "slug": "prokladki-i-reshyotki",
         "name": "Прокладки и решётки",
-        "img": "pr-photo-bokaly.jpg",
+        "img": "pr-new-prokladki.jpg",
         "badge": "",
         "cat": "dop",
         "desc": ("Вкладыши, перегородки и прокладки, которые фиксируют товар внутри "
