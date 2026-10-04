@@ -733,11 +733,9 @@ def articles_grid():
     """Сетка карточек статей на хаб-странице — те же .prod, что в каталоге."""
     cards = []
     for a in ARTICLES:
-        # Схему (SVG) кадрировать нельзя — она вписывается целиком.
-        pic = "prod__pic prod__pic--scheme" if a["img"].endswith(".svg") else "prod__pic"
+        # Вместо фото — чёрный квадрат (.prod__pic--black).
         cards.append(f'''      <article class="prod reveal">
-        <div class="{pic}">
-          <img src="assets/img/{a['img']}" alt="{a['name']}" loading="lazy"></div>
+        <div class="prod__pic prod__pic--black" aria-hidden="true"></div>
         <div class="prod__body">
           <h3 class="prod__t">{a['name']}</h3>
           <p class="prod__d">{a['teaser']}</p>
