@@ -186,6 +186,15 @@ LOGO_MARK = '''<svg class="logo__mark" viewBox="0 0 48 48" aria-hidden="true">
     </svg>'''
 
 
+DRIVE_PHOTOS = {
+    "3-ili-5-sloev": "pl-drive-3-5-sloev.jpg",
+    "pererabotka-gofrokartona": "pl-drive-pererabotka.jpg",
+    "kak-hranit-gofrotaru": "pl-drive-hranenie.jpg",
+    "pishchevaya-upakovka": "pl-drive-pishchevaya.jpg",
+    "upakovka-dlya-marketpleysov": "pl-drive-marketpleysy.jpg",
+}
+
+
 def icon(name, cls=""):
     c = f' class="{cls}"' if cls else ""
     return f'<svg{c} viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>'
@@ -733,9 +742,13 @@ def articles_grid():
     """Сетка карточек статей на хаб-странице — те же .prod, что в каталоге."""
     cards = []
     for a in ARTICLES:
-        # Вместо фото — чёрный квадрат (.prod__pic--black).
+        # Фото из Google Drive (папка «змея/фотки») есть не у всех статей;
+        # у остальных вместо фото — чёрный квадрат (.prod__pic--black).
+        photo = DRIVE_PHOTOS.get(a["slug"])
+        pic = (f'<div class="prod__pic">\n          <img src="assets/img/{photo}?v=4" alt="{a["name"]}" loading="lazy"></div>'
+               if photo else '<div class="prod__pic prod__pic--black" aria-hidden="true"></div>')
         cards.append(f'''      <article class="prod reveal">
-        <div class="prod__pic prod__pic--black" aria-hidden="true"></div>
+        {pic}
         <div class="prod__body">
           <h3 class="prod__t">{a['name']}</h3>
           <p class="prod__d">{a['teaser']}</p>
