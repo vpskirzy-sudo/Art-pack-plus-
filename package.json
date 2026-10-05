@@ -13,9 +13,6 @@
     "check:functional": "node tools/checks/functional.js",
     "check": "npm run check:responsive && npm run check:functional"
   },
-  "dependencies": {
-    "nodemailer": "^10.0.3"
-  },
   "devDependencies": {
     "playwright-core": "^1.49.1"
   }
