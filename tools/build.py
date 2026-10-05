@@ -41,6 +41,13 @@ UNP       = "691817655"
 SITE      = "https://gofrocarton.by"
 OG_IMAGE  = "assets/img/hero-1.jpg"      # картинка по умолчанию для соцсетей
 
+# Редакция политики обработки персональных данных. Меняется при любой
+# правке src/politika-konfidencialnosti.html: дата показывается на странице
+# политики, а версия уходит вместе с согласием в заявку — по ней видно,
+# с какой редакцией согласился клиент.
+POLICY_DATE    = "5 октября 2026 г."
+POLICY_VERSION = "2026-10-05"
+
 NAV = [("index.html",       "Главная"),
        ("o-kompanii.html",  "О компании"),
        ("produkciya.html",  "Продукция"),
@@ -129,6 +136,10 @@ PAGES = {
     "korzina.html":     ("Корзина и заявка на расчёт — " + LEGAL,
                          "Соберите заказ из каталога и отправьте заявку на расчёт: "
                          "имя, телефон и e-mail — остальное подставится из корзины."),
+    "politika-konfidencialnosti.html": (
+        "Политика обработки персональных данных — " + LEGAL,
+        "Как ООО «Арт-Пак Плюс» обрабатывает персональные данные посетителей сайта "
+        "и клиентов: цели, сроки хранения, передача третьим лицам, права субъекта."),
 }
 
 # Картинка для соцсетей у страниц-разделов. Остальные страницы берут OG_IMAGE,
@@ -295,7 +306,7 @@ def footer():
       </div>
       <div class="footer__bottom">
         <span>© <span data-year>2026</span> {LEGAL_HTML}. УНП {UNP}</span>
-        <span>Все права защищены</span>
+        <a href="politika-konfidencialnosti.html">Политика обработки персональных данных</a>
       </div>
     </div>
   </footer>
@@ -342,6 +353,9 @@ def substitute(body):
     return (body.replace("{{email}}", EMAIL).replace("{{email2}}", EMAIL2)
                 .replace("{{address}}", ADDRESS).replace("{{hours}}", HOURS)
                 .replace("{{unp}}", UNP).replace("{{legal}}", LEGAL_HTML)
+                .replace("{{site}}", SITE)
+                .replace("{{policy_date}}", POLICY_DATE)
+                .replace("{{policy_version}}", POLICY_VERSION)
                 .replace("{{phones}}", phones_html())
                 .replace("{{phone1}}", PHONES[0][0]).replace("{{tel1}}", PHONES[0][1]))
 

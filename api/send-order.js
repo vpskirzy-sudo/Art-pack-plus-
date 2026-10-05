@@ -109,12 +109,17 @@ module.exports = async function handler(req, res) {
   var phone = sanitize(body.phone, 40);
   var email = sanitize(body.email, 160);
   var comment = sanitize(body.comment, 2000);
+  // Редакция политики, с которой клиент согласился (значение галочки
+  // согласия в форме). Без согласия обрабатывать заявку нельзя (Закон РБ
+  // № 99-З, ст. 5 и 9), поэтому проверяем его и на сервере.
+  var consent = sanitize(body.consent, 20);
   var cartIn = Array.isArray(body.cart) ? body.cart.slice(0, 100) : [];
 
   var fields = {};
   if (!name) fields.name = 'Укажите, пожалуйста, имя';
   if (!phone || phone.replace(/\D/g, '').length < 7) fields.phone = 'Укажите телефон для связи';
   if (email && !EMAIL_RE.test(email)) fields.email = 'Проверьте адрес электронной почты';
+  if (!consent) fields.consent = 'Нужно согласие на обработку персональных данных';
 
   if (Object.keys(fields).length) {
     res.status(400).json({ ok: false, error: 'validation', fields: fields });
@@ -156,7 +161,7 @@ module.exports = async function handler(req, res) {
     dateStr = now.toISOString();
   }
 
-  var data = { name: name, phone: phone, email: email, comment: comment, cart: cart, sum: sum, asksCount: asksCount, dateStr: dateStr };
+  var data = { name: name, phone: phone, email: email, comment: comment, cart: cart, sum: sum, asksCount: asksCount, dateStr: dateStr, consent: consent };
 
   try {
     await sendTelegramMessage(telegramTemplate.buildOrderTelegramMessage(data));
