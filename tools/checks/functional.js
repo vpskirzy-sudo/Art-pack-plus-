@@ -465,7 +465,7 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
 
   await p.goto('file://' + B + 'produkciya-gofrokarton.html', { waitUntil:'domcontentloaded' });
   ok('виды гофрокартона: 5 позиций без колонки цены',
-     await p.locator('.ptable tbody tr').count() === 5 &&
+     await p.locator('.ptable tbody tr.ptable__row').count() === 5 &&
      await p.locator('.ptable__group').count() === 0);
 
   await p.goto('file://' + B + 'produkciya-upakovka-dlya-marketpleysov.html', { waitUntil:'domcontentloaded' });
@@ -474,11 +474,15 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       const t = await p.locator('.ptext__grid').innerText();
       return t.includes('Wildberries') && t.includes('OZON'); })());
 
-  await p.goto('file://' + B + 'produkciya-gofrokonteynery.html', { waitUntil:'domcontentloaded' });
-  ok('пока прайса нет — показан честный блок «Цена по запросу», а не пустая таблица',
-     await p.locator('.ptable__empty').count() === 1 && await p.locator('.ptable').count() === 0);
-  ok('на странице подгруппы есть кнопка запроса цены',
-     (await p.locator('.ptable__empty .btn--primary').innerText()).includes('Запросить цену'));
+  for (const page of ['produkciya-gofrokonteynery.html', 'produkciya-bumazhnyy-organayzer.html']) {
+    await p.goto('file://' + B + page, { waitUntil:'domcontentloaded' });
+    ok(page + ': позиция «по запросу» с фото и кнопкой «в корзину»', await (async () => {
+        const row = p.locator('.ptable__row[data-ask="1"]');
+        return await row.count() === 1
+               && await row.locator('.padd').count() === 1
+               && await row.locator('.ptable__photo').count() === 1
+               && (await row.innerText()).includes('Цена по запросу'); })());
+  }
 
   console.log('Разделители «/»:');
   await p.goto('file://' + B + 'produkciya.html', { waitUntil:'domcontentloaded' });

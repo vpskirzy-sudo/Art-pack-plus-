@@ -131,6 +131,7 @@ module.exports = async function handler(req, res) {
       cat: sanitize(item && item.cat, 80),
       size: sanitize(item && item.size, 40),
       qty: Math.max(0, Math.round(Number(item && item.qty) || 0)),
+      unit: sanitize(item && item.unit, 10) || 'шт.',
       price: item && item.ask ? null : sanitize(item && item.price, 40),
       ask: !!(item && item.ask),
       lineSum: item && item.ask ? 0 : Math.max(0, Number(item && item.lineSum) || 0)

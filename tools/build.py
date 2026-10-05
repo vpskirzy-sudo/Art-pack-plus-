@@ -422,6 +422,12 @@ def add_button(cat, num):
             f'{icon("plus")}<span class="padd__t">В корзину</span></button>')
 
 
+def qty_unit(cat):
+    """Единица тиража из подписи поля: «Количество, м²» → «м²». Уходит
+    в корзину и в сообщение менеджеру, чтобы метры не стали штуками."""
+    return cat.get("qty_label", "Тираж, шт.").rsplit(", ", 1)[-1]
+
+
 def add_panel(cat, num, min_qty, span):
     """Окошко под строкой: тираж, пересчёт цены и кнопка «в корзину».
 
@@ -501,6 +507,7 @@ def price_table(cat):
                     f' data-size="{row_size(row.get("name", ""))}"'
                     f' data-cat="{esc(cat["name"])}"'
                     f' data-url="produkciya-{cat["slug"]}.html"'
+                    f' data-unit="{qty_unit(cat)}"'
                     f" data-tiers='{json.dumps(tiers, ensure_ascii=False)}'"
                     + (' data-ask="1"' if ask else ""))
         else:
@@ -634,6 +641,7 @@ def sizes_table(cat):
                 f' data-size="{s["size"]}"'
                 f' data-cat="{esc(cat["name"])}"'
                 f' data-url="produkciya-{cat["slug"]}.html"'
+                f' data-unit="{qty_unit(cat)}"'
                 f" data-tiers='{json.dumps(tiers, ensure_ascii=False)}'"
                 + ("" if tiers else ' data-ask="1"'))
         rows.append(f'''      <tr{data}>

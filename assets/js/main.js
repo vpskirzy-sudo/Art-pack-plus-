@@ -457,11 +457,12 @@
       if (!r.n) { qty.focus(); return; }
       var list = readCart();
       var same = list.filter(function (i) { return i.id === row.dataset.id; })[0];
-      if (same) { same.qty = r.n; same.price = r.unit; same.ask = ask; }
+      if (same) { same.qty = r.n; same.price = r.unit; same.ask = ask; same.unit = row.dataset.unit; }
       else {
         list.push({
           id: row.dataset.id, name: row.dataset.name, photo: row.dataset.photo,
           size: row.dataset.size, cat: row.dataset.cat, url: row.dataset.url,
+          unit: row.dataset.unit,
           tiers: tiers, qty: r.n, price: r.unit, ask: ask
         });
       }
@@ -584,7 +585,7 @@
           var lineSum = i.ask ? 0 : toRub(i.price) * i.qty;
           if (i.ask) asksCount++; else sum += lineSum;
           return {
-            name: i.name, cat: i.cat, size: i.size, qty: i.qty,
+            name: i.name, cat: i.cat, size: i.size, qty: i.qty, unit: i.unit,
             price: i.price, ask: !!i.ask, lineSum: lineSum
           };
         });
