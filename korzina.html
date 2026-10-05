@@ -212,13 +212,25 @@
               placeholder="Напишите Ваши пожелания к заказу"></textarea>
           </div>
           <p class="form__cart" data-cart-summary></p>
+          <!-- Согласие на обработку персональных данных (Закон РБ № 99-З, ст. 5 и 9):
+               отдельное поле, по умолчанию не отмечено. value — редакция политики,
+               она уходит в заявку вместе с фактом согласия. -->
+          <div class="field field--check">
+            <label for="f-consent">
+              <input id="f-consent" name="consent" type="checkbox" value="2026-10-05" required>
+              <span>Даю согласие на обработку моих персональных данных для ответа на заявку, включая
+                их передачу Vercel (США) и Telegram (ОАЭ). С
+                <a href="politika-konfidencialnosti.html" target="_blank" rel="noopener">Политикой обработки
+                персональных данных</a> и рисками передачи за рубеж ознакомлен(а).</span>
+            </label>
+            <span class="field__err">Без согласия заявку через сайт отправить нельзя — можно позвонить
+              по телефону 8 (017) 547 44 44.</span>
+          </div>
           <button class="btn btn--primary btn--wide" type="submit">Отправить на расчёт <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <p class="form__ok" role="status"></p>
           <p class="form__error" role="alert">Не получилось отправить заявку — проверьте связь с интернетом
             и попробуйте ещё раз. Не выходит — позвоните по телефону 8 (017) 547 44 44 или напишите на
             <a href="mailto:info@gofrocarton.by">info@gofrocarton.by</a>.</p>
-          <p class="form__note">Нажимая кнопку, вы соглашаетесь на обработку указанных данных
-            для ответа на обращение.</p>
         </form>
       </div>
     </div>
@@ -283,7 +295,7 @@
       </div>
       <div class="footer__bottom">
         <span>© <span data-year>2026</span> ООО «Арт-Пак <span class="brand-plus">Плюс</span>». УНП 691817655</span>
-        <span>Все права защищены</span>
+        <a href="politika-konfidencialnosti.html">Политика обработки персональных данных</a>
       </div>
     </div>
   </footer>

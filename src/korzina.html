@@ -112,13 +112,25 @@
               placeholder="Напишите Ваши пожелания к заказу"></textarea>
           </div>
           <p class="form__cart" data-cart-summary></p>
+          <!-- Согласие на обработку персональных данных (Закон РБ № 99-З, ст. 5 и 9):
+               отдельное поле, по умолчанию не отмечено. value — редакция политики,
+               она уходит в заявку вместе с фактом согласия. -->
+          <div class="field field--check">
+            <label for="f-consent">
+              <input id="f-consent" name="consent" type="checkbox" value="{{policy_version}}" required>
+              <span>Даю согласие на обработку моих персональных данных для ответа на заявку, включая
+                их передачу Vercel (США) и Telegram (ОАЭ). С
+                <a href="politika-konfidencialnosti.html" target="_blank" rel="noopener">Политикой обработки
+                персональных данных</a> и рисками передачи за рубеж ознакомлен(а).</span>
+            </label>
+            <span class="field__err">Без согласия заявку через сайт отправить нельзя — можно позвонить
+              по телефону {{phone1}}.</span>
+          </div>
           <button class="btn btn--primary btn--wide" type="submit">Отправить на расчёт {{icon:arrow}}</button>
           <p class="form__ok" role="status"></p>
           <p class="form__error" role="alert">Не получилось отправить заявку — проверьте связь с интернетом
             и попробуйте ещё раз. Не выходит — позвоните по телефону {{phone1}} или напишите на
             <a href="mailto:{{email}}">{{email}}</a>.</p>
-          <p class="form__note">Нажимая кнопку, вы соглашаетесь на обработку указанных данных
-            для ответа на обращение.</p>
         </form>
       </div>
     </div>

@@ -17,7 +17,9 @@
       var val = input.value.trim();
       var need = input.hasAttribute('required');
       var bad;
-      if (!val) {
+      if (input.type === 'checkbox') {
+        bad = need && !input.checked;                 // согласие: обязательная галочка
+      } else if (!val) {
         bad = need;                                   // пустое поле — ошибка только если обязательное
       } else if (input.type === 'email') {
         bad = !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val);
@@ -597,6 +599,9 @@
           body: JSON.stringify({
             name: name, phone: get('phone'), email: get('email'), comment: get('message'),
             cart: cartPayload, sum: sum, asksCount: asksCount,
+            // Согласие на обработку ПД: редакция политики, если галочка отмечена.
+            consent: cartForm.elements.consent && cartForm.elements.consent.checked
+              ? cartForm.elements.consent.value : '',
             company: get('company')                          // honeypot: у человека всегда пусто
           })
         }).then(function (res) {
@@ -624,9 +629,9 @@
       });
 
       $$('input, textarea', cartForm).forEach(function (input) {
-        input.addEventListener('input', function () {
-          input.closest('.field').classList.remove('has-error');
-        });
+        var clear = function () { input.closest('.field').classList.remove('has-error'); };
+        input.addEventListener('input', clear);
+        input.addEventListener('change', clear);      // галочка согласия в старых браузерах
       });
     }
   }

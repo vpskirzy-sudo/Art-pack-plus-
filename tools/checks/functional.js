@@ -585,8 +585,19 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   console.log('Форма заявки:');
   await p.goto('file://' + B + 'korzina.html', { waitUntil:'domcontentloaded' });
   await p.click('.form button[type=submit]');
-  ok('пустая форма не отправляется, поля подсвечены',
-     await p.locator('.field.has-error').count() === 2);
+  ok('пустая форма не отправляется: подсвечены имя, телефон и согласие',
+     await p.locator('.field.has-error').count() === 3
+     && await p.locator('.field--check.has-error').count() === 1);
+  ok('галочка согласия по умолчанию не отмечена и ведёт на политику', await (async () => {
+      return !(await p.locator('#f-consent').isChecked())
+             && await p.locator('.field--check a[href="politika-konfidencialnosti.html"]').count() === 1; })());
+  await p.check('#f-consent');
+  ok('отметка согласия снимает ошибку',
+     await p.locator('#f-consent').evaluate(e => !e.closest('.field').classList.contains('has-error')));
+  ok('страница политики существует и содержит обязательные разделы', await (async () => {
+      const html = fs.readFileSync(B + 'politika-konfidencialnosti.html', 'utf8');
+      return ['id="celi"', 'id="transgranichnaya"', 'id="soglasie"', 'id="prava"', 'id="zayavlenie"']
+        .every(s => html.includes(s)); })());
   await p.fill('#f-name', 'Иван');
   ok('ошибка снимается при вводе', await p.locator('#f-name').evaluate(e => !e.closest('.field').classList.contains('has-error')));
   await p.fill('#f-phone', '375291234567');
