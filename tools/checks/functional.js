@@ -463,12 +463,6 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('под таблицей — условия доставки со старого сайта',
      (await p.locator('.ptable__note').innerText()).includes('30 рублей'));
 
-  await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'domcontentloaded' });
-  // На этой странице две таблицы: прайс по тиражу и список типоразмеров,
-  // поэтому обращаемся именно к прайсовой — по её секции.
-  ok('у пиццы свои тиражи — от 3000 / 5000 / 10 000 шт.',
-     (await p.locator('#price .ptable thead').innerText()).includes('10 000'));
-
   await p.goto('file://' + B + 'produkciya-gofrokarton.html', { waitUntil:'domcontentloaded' });
   ok('виды гофрокартона: 5 позиций без колонки цены',
      await p.locator('.ptable tbody tr').count() === 5 &&
@@ -1023,12 +1017,12 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
   ok('фон карточек — тёмный градиент, а не прежний белый', await p.locator('.card--dark').first()
       .evaluate(e => getComputedStyle(e).backgroundImage.includes('gradient')));
 
-  console.log('Карточки услуг — тот же тёмный дизайн, что на «О компании»:');
+  console.log('Карточки услуг — тот же дизайн, что «Почему заказывают у нас» на главной:');
   await p.goto('file://' + B + 'uslugi.html', { waitUntil:'domcontentloaded' });
-  ok('карточек услуг шесть, все тёмные (card--dark)', await p.locator('.card--dark').count() === 6);
-  ok('заголовки — тот же фирменный оранжевый', await p.locator('.card--dark .card__t').first()
-      .evaluate(e => getComputedStyle(e).color === 'rgb(244, 155, 63)'));
-  ok('иконок на карточках нет — заголовок первым', await p.locator('.card--dark .card__ico').count() === 0);
+  ok('карточек услуг шесть, все card--kraft', await p.locator('#dalee .card--kraft').count() === 6);
+  ok('у каждой карточки внизу иконка и номер', await (async () => {
+      return await p.locator('#dalee .card--kraft .card__foot .card__ico').count() === 6
+             && await p.locator('#dalee .card--kraft .card__foot .card__num').count() === 6; })());
   ok('названия услуг сохранены', await (async () => {
       const t = await p.locator('#dalee').innerText();
       return t.includes('Флексографическая печать') && t.includes('Покраска продукции')
@@ -1156,13 +1150,6 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       return p.evaluate(() => document.querySelector('.viewer').hidden); })());
 
   console.log('Акции со старого сайта в каталоге:');
-  ok('коробки для пиццы: три ступени тиража с ценами старого сайта', await (async () => {
-      await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'domcontentloaded' });
-      const t = (await p.locator('#price .ptable').innerText()).replace(/\s+/g, ' ');
-      const note = (await p.locator('#price .ptable__note').innerText()).replace(/\s+/g, ' ');
-      return t.includes('320×320×30') && t.includes('33 коп.') && t.includes('31 коп.') && t.includes('29 коп.')
-             && t.includes('320×320×35') && t.includes('34 коп.') && t.includes('32 коп.') && t.includes('30 коп.')
-             && note.includes('МКАД') && note.includes('1 коп.'); })());
   ok('коробка для маркетплейсов 700×400×435 — 1,80 руб.', await (async () => {
       await p.goto('file://' + B + 'produkciya-upakovka-dlya-marketpleysov.html', { waitUntil:'domcontentloaded' });
       const t = (await p.locator('.ptable').innerText()).replace(/\s+/g, ' ');
@@ -1197,22 +1184,12 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
        const bg = lum(getComputedStyle(document.querySelector('.phead')).backgroundColor);
        return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05) >= 4.5; }));
 
-  ok('две складские позиции с бейджем «В наличии»', await (async () => {
-      return await p.locator('#sklad .pstock').count() === 2
-             && await p.locator('#sklad .pstatus--in').count() === 2; })());
-  ok('все четыре цены на 320×320×30 и цена на 320×320×35 на месте',
-     await p.locator('#sklad').evaluate(e => {
-       const t = e.innerText.replace(/\s+/g, ' ');
-       return t.includes('320×320×30') && t.includes('Профиль «E»')
-              && t.includes('0,40 руб.') && t.includes('0,42 руб.')
-              && t.includes('0,43 руб.') && t.includes('0,48 руб.')
-              && t.includes('320×320×35') && t.includes('Профиль «В»') && t.includes('0,39 руб.')
-              && t.includes('50 шт.'); }));
-  ok('условия печати логотипа перечислены полностью',
-     await p.locator('#sklad .band').evaluate(e => {
-       const t = e.innerText.replace(/\s+/g, ' ');
-       return t.includes('+0,02 руб.') && t.includes('+0,04 руб.')
-              && t.includes('от 3000 шт.') && /четырёх цветов/.test(t); }));
+  // Прайс-таблица, блок склада и форма внизу со страницы убраны ("price": False
+  // в products_data.py): размеры и условия — в «Типоразмерах», заявка — через корзину.
+  ok('без прайса, склада и mailto-формы; «Перейти к деталям» ведёт к типоразмерам',
+     await p.evaluate(() => !document.querySelector('#price, #sklad, #zakaz, form.form')
+       && [...document.querySelectorAll('a')].some(a =>
+            a.getAttribute('href') === '#razmery' && /Перейти к деталям/.test(a.textContent))));
 
   ok('в таблице типоразмеров все 22 позиции из прайса', await (async () => {
       const rows = await p.locator('#razmery .ptable tbody tr').count();
@@ -1223,10 +1200,9 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
                      '430×430×40','445×445×40','460×460×30','460×460×45',
                      '350×250×50','400×300×30','600×300×50'];
       return rows === sizes.length && sizes.every(s => t.includes(s)); })());
-  ok('у каждого размера указан статус и стоит кнопка расчёта', await (async () => {
+  ok('у каждого размера указан статус', await (async () => {
       const rows = await p.locator('#razmery .ptable tbody tr').count();
       return await p.locator('#razmery .pstatus').count() === rows
-             && await p.locator('#razmery .pcalc[data-size]').count() === rows
              && await p.locator('#razmery .pstatus--in').count() === 2; })());
   ok('ходовые размеры помечены отдельно', await (async () => {
       const tags = await p.locator('#razmery .psize__tag').evaluateAll(
@@ -1239,16 +1215,6 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
          /350×250×50|400×300×30|600×300×50/.test(r.querySelector('.psize').textContent));
        return rows.length === 3 && rows.every(r => r.innerText.includes('прямоугольная')
                                                   && /римская/i.test(r.innerText)); }));
-  ok('кнопка «Рассчитать» подставляет размер в форму заявки', await (async () => {
-      await p.locator('#razmery .pcalc[data-size="390×390×40"]').click();
-      await p.waitForTimeout(500);
-      const v = await p.locator('#pf-msg').inputValue();
-      // повторный клик по тому же размеру не дублирует его
-      await p.locator('#razmery .pcalc[data-size="390×390×40"]').click();
-      await p.waitForTimeout(400);
-      const again = await p.locator('#pf-msg').inputValue();
-      return v.startsWith('390×390×40') && again === v; })());
-
   ok('две технологические карточки: горячая доставка и заморозка',
      await p.locator('#tehnologiya .svc').evaluateAll(list => {
        if (list.length !== 2) return false;
@@ -1263,17 +1229,6 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
        const t = e.innerText.replace(/\s+/g, ' ');
        return /поддон/i.test(t) && /стрейч/i.test(t) && /упаковочным листом/i.test(t)
               && /пыли и влаги/i.test(t) && /вырубаются по ножам/i.test(t); }));
-  ok('внизу раздела есть рабочая форма заявки со своими id',
-     await p.locator('#zakaz form.form').evaluate(f => {
-       const ids = [...f.querySelectorAll('[id]')].map(e => e.id);
-       return f.getAttribute('data-subject').includes('коробки для пиццы')
-              && ids.includes('pf-name') && ids.includes('pf-phone') && ids.includes('pf-msg')
-              && !!f.querySelector('[data-size-target]')
-              && !!f.querySelector('button[type=submit]'); }));
-  ok('форма проверяет обязательные поля так же, как на «Корзине»', await (async () => {
-      await p.locator('#zakaz .form button[type=submit]').click();
-      await p.waitForTimeout(250);
-      return p.locator('#pf-name').evaluate(e => e.closest('.field').classList.contains('has-error')); })());
   ok('на телефоне таблица размеров превращается в карточки, а не режется', await (async () => {
       await p.setViewportSize({ width: 390, height: 900 });
       await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'load' });

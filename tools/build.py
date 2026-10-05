@@ -186,20 +186,6 @@ LOGO_MARK = '''<svg class="logo__mark" viewBox="0 0 48 48" aria-hidden="true">
     </svg>'''
 
 
-DRIVE_PHOTOS = {
-    "3-ili-5-sloev": "pl-drive-3-5-sloev.jpg",
-    "pererabotka-gofrokartona": "pl-drive-pererabotka.jpg",
-    "kak-hranit-gofrotaru": "pl-drive-hranenie.jpg",
-    "pishchevaya-upakovka": "pl-drive-pishchevaya.jpg",
-    "upakovka-dlya-marketpleysov": "pl-drive-marketpleysy.jpg",
-    "marki-gofrokartona": "pl-new-karton.jpg",
-    "gofroyashchik-ili-gofrolotok": "pl-new-yashchik-lotok.jpg",
-    "zashchitnye-ugolki-i-prokladki": "pl-new-prokladki.jpg",
-    "kak-rasschitat-razmer-koroba": "pl-new-razmer-koroba.jpg",
-    "individualnyy-zakaz-sroki": "pl-new-zakaz-sroki.jpg",
-}
-
-
 def icon(name, cls=""):
     c = f' class="{cls}"' if cls else ""
     return f'<svg{c} viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>'
@@ -611,7 +597,7 @@ def hero_facts(cat):
 
 
 def sizes_table(cat):
-    """Таблица типоразмеров: размер, углы, назначение, статус и кнопка расчёта.
+    """Таблица типоразмеров: размер, углы, назначение и статус.
 
     Та же .ptable, что и у прайса, поэтому на узком экране она так же
     разбирается на карточки по data-label, а не скроллится вбок.
@@ -633,9 +619,6 @@ def sizes_table(cat):
         <td data-label="Углы">{s['corners']}</td>
         <td data-label="Назначение">{s['use']}</td>
         <td data-label="Статус">{badge}</td>
-        <td data-label="" class="pcalc__cell">
-          <a class="btn btn--outline btn--sm pcalc" href="#zakaz" data-size="{s['size']}">Рассчитать</a>
-        </td>
       </tr>''')
     body = "\n".join(rows)
     return f'''<div class="ptable__wrap reveal">
@@ -645,7 +628,6 @@ def sizes_table(cat):
         <th style="text-align:left">Углы</th>
         <th style="text-align:left">Назначение</th>
         <th style="text-align:left">Статус</th>
-        <th><span class="visually-hidden">Расчёт</span></th>
       </tr></thead>
       <tbody>
 {body}
@@ -667,6 +649,24 @@ def extra_blocks(cat):
         return ""
     with open(os.path.join(SRC, f"{name}.html"), encoding="utf-8") as fh:
         return fh.read().replace("{{sizes}}", sizes_table(cat))
+
+def price_section(cat):
+    """Секция прайса на странице подгруппы; "price": False в данных её убирает."""
+    if cat.get("price") is False:
+        return ""
+    return f'''<section class="section section--paper" id="price">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow">{cat.get("table_eyebrow", "Прайс")}</span>
+      <h2 class="h2">{cat.get("table_t", "Номенклатура и цены")}</h2>
+      {'<p class="lead">Выберите позицию, нажмите «плюс» рядом с номером, укажите тираж — и добавьте в корзину.</p>' if has_cart(cat) else ''}
+    </div>
+    {price_table(cat)}
+  </div>
+</section>
+
+'''
+
 
 def product_page(cat):
     """Страница одной подгруппы: описание, таблица прайса, заявка."""
@@ -693,7 +693,7 @@ def product_page(cat):
         <h2 class="h2 h2--tight">Что это за упаковка</h2>
         <p class="lead" style="margin-top:18px">{cat['long']}</p>
         <div class="cta__acts" style="margin-top:22px">
-          <a class="btn btn--primary" href="#price">Перейти к деталям {icon('down')}</a>
+          <a class="btn btn--primary" href="#{cat.get('details', 'price')}">Перейти к деталям {icon('down')}</a>
           <a class="btn btn--outline" href="produkciya.html">Вся продукция</a>
         </div>
       </div>
@@ -701,18 +701,7 @@ def product_page(cat):
   </div>
 </section>
 
-<section class="section section--paper" id="price">
-  <div class="wrap">
-    <div class="head reveal">
-      <span class="eyebrow">{cat.get("table_eyebrow", "Прайс")}</span>
-      <h2 class="h2">{cat.get("table_t", "Номенклатура и цены")}</h2>
-      {'<p class="lead">Выберите позицию, нажмите «плюс» рядом с номером, укажите тираж — и добавьте в корзину.</p>' if has_cart(cat) else ''}
-    </div>
-    {price_table(cat)}
-  </div>
-</section>
-
-{extra_blocks(cat)}{text_sections(cat)}<section class="section section--tight">
+{price_section(cat)}{extra_blocks(cat)}{text_sections(cat)}<section class="section section--tight">
   <div class="wrap">
     <div class="cta reveal">
       <div class="cta__in">
@@ -747,11 +736,11 @@ def articles_grid():
     """Сетка карточек статей на хаб-странице — те же .prod, что в каталоге."""
     cards = []
     for a in ARTICLES:
-        # Фото из Google Drive (папка «змея/фотки») есть не у всех статей;
-        # у остальных вместо фото — чёрный квадрат (.prod__pic--black).
-        photo = DRIVE_PHOTOS.get(a["slug"])
-        pic = (f'<div class="prod__pic">\n          <img src="assets/img/{photo}?v=4" alt="{a["name"]}" loading="lazy"></div>'
-               if photo else '<div class="prod__pic prod__pic--black" aria-hidden="true"></div>')
+        # Фото карточки — обложка статьи из articles_data; без обложки —
+        # чёрный квадрат (.prod__pic--black).
+        cover = a.get("cover")
+        pic = (f'<div class="prod__pic">\n          <img src="assets/img/{cover[0]}" alt="{cover[1]}" loading="lazy"></div>'
+               if cover else '<div class="prod__pic prod__pic--black" aria-hidden="true"></div>')
         cards.append(f'''      <article class="prod reveal">
         {pic}
         <div class="prod__body">
@@ -800,8 +789,6 @@ def article_pick(a):
           <p class="lead" style="margin-top:16px">{pick['d']}</p>
           <div class="cta__acts">{acts}</div>
         </div>
-        <div><img class="pdetail__pic" src="assets/img/{a.get('pick_img', a['img'])}"
-          alt="{a['name']}" loading="lazy"></div>
       </div>
     </div>
   </div>
@@ -834,19 +821,33 @@ def article_schema(a):
             f'<script type="application/ld+json">\n{dump(faq)}\n</script>\n')
 
 
+ASIDE_MARK = "<!-- aside -->\n"
+
+
 def article_page(a):
-    """Страница статьи: шапка, текст из src, блок каталога, мини-вопросы, CTA."""
+    """Страница статьи: шапка с обложкой, текст и боковая колонка из src,
+    блок каталога, мини-вопросы, CTA.
+
+    src/poleznoe-<slug>.html делится меткой <!-- aside -->: до неё — текст
+    статьи, после — содержимое боковой колонки (.art-aside).
+    """
     with open(os.path.join(SRC, f"poleznoe-{a['slug']}.html"), encoding="utf-8") as fh:
-        text = fh.read()
+        text, aside = fh.read().split(ASIDE_MARK, 1)
+    cover, alt, w, h = a["cover"]
     body = f'''<section class="phead">
   <div class="wrap">
-    <div class="phead__in">
+    <div class="phead__in phead__in--art">
+      <div class="phead__txt">
       <nav class="crumbs" aria-label="Хлебные крошки">
         <a href="index.html">Главная</a><span class="crumbs__sep">{icon('crumb')}</span><a href="poleznoe.html">Полезное</a><span class="crumbs__sep">{icon('crumb')}</span><span>{a['name']}</span>
       </nav>
       <span class="eyebrow">Полезное</span>
       <h1 class="{'h1 h1--long' if len(a['h1']) > 40 else 'h1'}">{a['h1']}</h1>
       <p class="lead">{a['lead']}</p>
+      </div>
+      <figure class="art-cover">
+        <img src="assets/img/{cover}" alt="{alt}" loading="eager" width="{w}" height="{h}">
+      </figure>
     </div>
   </div>
   <a class="scroll-down" href="#dalee" aria-label="Перейти к содержимому страницы">{icon('down')}</a>
@@ -854,9 +855,17 @@ def article_page(a):
 
 <section class="section" id="dalee">
   <div class="wrap">
-    <article class="art reveal">
-{text}
-    </article>
+    <div class="art-layout">
+      <div class="art-main">
+        <article class="art reveal">
+{text.rstrip()}
+
+        </article>
+      </div>
+      <aside class="art-aside">
+{aside.rstrip()}
+      </aside>
+    </div>
   </div>
 </section>
 
@@ -889,13 +898,10 @@ def article_page(a):
 </section>
 
 {article_schema(a)}'''
-    # og:image у соцсетей — растровая: со схемой в SVG превью не соберётся,
-    # поэтому у таких статей в соцсети уходит фото из блока «Что выбрать у нас».
-    img = a["img"] if a["img"].endswith((".jpg", ".png")) else a.get("pick_img")
     return write_page(f"poleznoe-{a['slug']}.html",
                       f"{a['title']} | {LEGAL}", a["desc"], body,
                       active="poleznoe.html",
-                      image=f"assets/img/{img}" if img else None,
+                      image=f"assets/img/{a['img']}",
                       og_type="article")
 
 
