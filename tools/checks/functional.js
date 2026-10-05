@@ -1192,7 +1192,7 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
             a.getAttribute('href') === '#razmery' && /Перейти к деталям/.test(a.textContent))));
 
   ok('в таблице типоразмеров все 22 позиции из прайса', await (async () => {
-      const rows = await p.locator('#razmery .ptable tbody tr').count();
+      const rows = await p.locator('#razmery .ptable tbody tr.ptable__row').count();
       const t = (await p.locator('#razmery .ptable').innerText()).replace(/\s+/g, ' ');
       const sizes = ['220×220×30','230×230×40','240×240×35','250×250×30','280×280×30',
                      '280×280×40','295×295×40','305×305×40','320×320×30','320×320×35',
@@ -1200,10 +1200,31 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
                      '430×430×40','445×445×40','460×460×30','460×460×45',
                      '350×250×50','400×300×30','600×300×50'];
       return rows === sizes.length && sizes.every(s => t.includes(s)); })());
-  ok('у каждого размера указан статус', await (async () => {
-      const rows = await p.locator('#razmery .ptable tbody tr').count();
+  ok('у каждого размера указан статус и есть кнопка «в корзину»', await (async () => {
+      const rows = await p.locator('#razmery .ptable tbody tr.ptable__row').count();
       return await p.locator('#razmery .pstatus').count() === rows
+             && await p.locator('#razmery .ptable__row .padd').count() === rows
+             && await p.locator('#razmery .pform').count() === rows
              && await p.locator('#razmery .pstatus--in').count() === 2; })());
+  ok('размер из прайса кладётся в корзину по цене тиража, остальные — по запросу', await (async () => {
+      await p.evaluate(() => localStorage.removeItem('apk-cart'));
+      const add = async (size, qty) => {
+        const row = p.locator(`#razmery .ptable__row[data-size="${size}"]`);
+        await row.locator('.padd').click();
+        await p.waitForTimeout(350);                  // панель тиража раскрывается анимацией
+        const panel = p.locator(`#razmery .ptable__row[data-size="${size}"] + .pform`);
+        await panel.locator('.pform__qty').fill(String(qty));
+        await panel.locator('.pform__go').click();
+        await p.waitForTimeout(150);
+      };
+      await add('320×320×30', 5000);
+      await add('390×390×40', 2000);
+      const cart = await p.evaluate(() => JSON.parse(localStorage.getItem('apk-cart') || '[]'));
+      await p.evaluate(() => localStorage.removeItem('apk-cart'));
+      const a = cart.find(i => i.size === '320×320×30');
+      const b = cart.find(i => i.size === '390×390×40');
+      return cart.length === 2 && a && a.price === '31 коп.' && !a.ask
+             && b && b.ask && b.qty === 2000 && /Коробка для пиццы 390×390×40/.test(b.name); })());
   ok('ходовые размеры помечены отдельно', await (async () => {
       const tags = await p.locator('#razmery .psize__tag').evaluateAll(
         list => list.map(e => e.closest('tr').querySelector('.psize').textContent));
@@ -1211,7 +1232,7 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
         .every(s => tags.includes(s)); })());
   ok('римские прямоугольные форматы отмечены как прямоугольные',
      await p.locator('#razmery .ptable').evaluate(e => {
-       const rows = [...e.querySelectorAll('tbody tr')].filter(r =>
+       const rows = [...e.querySelectorAll('tbody tr.ptable__row')].filter(r =>
          /350×250×50|400×300×30|600×300×50/.test(r.querySelector('.psize').textContent));
        return rows.length === 3 && rows.every(r => r.innerText.includes('прямоугольная')
                                                   && /римская/i.test(r.innerText)); }));
@@ -1233,7 +1254,7 @@ const ok = (n, c) => { c ? (pass++, console.log('  ✓ ' + n)) : (fail++, consol
       await p.setViewportSize({ width: 390, height: 900 });
       await p.goto('file://' + B + 'produkciya-korobki-dlya-piccy.html', { waitUntil:'load' });
       const st = await p.evaluate(() => {
-        const td = document.querySelector('#razmery .ptable tbody td');
+        const td = document.querySelector('#razmery .ptable tbody td[data-label^="Размер"]');
         const tbl = document.querySelector('#razmery .ptable');
         return { td: getComputedStyle(td).display,
                  label: getComputedStyle(td, '::before').content,

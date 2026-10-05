@@ -598,15 +598,22 @@ def hero_facts(cat):
 
 
 def sizes_table(cat):
-    """Таблица типоразмеров: размер, углы, назначение и статус.
+    """Таблица типоразмеров: номер с кнопкой «в корзину», размер, углы,
+    назначение, статус и цена.
 
     Та же .ptable, что и у прайса, поэтому на узком экране она так же
-    разбирается на карточки по data-label, а не скроллится вбок.
+    разбирается на карточки по data-label, а не скроллится вбок, и та же
+    механика корзины: плюсик → окошко тиража → позиция в корзине. Цена
+    по тиражу берётся из `rows` категории, если там есть позиция этого
+    размера; у остальных размеров — «по запросу», цену считает менеджер.
     """
     if not cat.get("sizes"):
         return ""
+    cols = cat["columns"]
+    priced = {row_size(r.get("name", "")): r for r in cat["rows"]}
+    span = 6
     rows = []
-    for s in cat["sizes"]:
+    for num, s in enumerate(cat["sizes"], 1):
         stock = s.get("stock")
         badge = ('<span class="pstatus pstatus--in">В наличии</span>' if stock
                  else '<span class="pstatus">Под заказ</span>')
@@ -615,20 +622,39 @@ def sizes_table(cat):
         # бы двумя flex-элементами, которые не переносятся. Внутри обёртки
         # между ними стоит пробел — единственная точка переноса.
         tag = '<span class="psize__tag">ходовой</span>' if s.get("tag") else ""
-        rows.append(f'''      <tr>
+        row = priced.get(s["size"])
+        tiers = row_tiers(cols, row) if row else []
+        name = row["name"] if row else f"{cat.get('item', cat['name'])} {s['size']}, {s['corners']}"
+        photo = (row or {}).get("photo") or cat["img"]
+        price = (f'{tiers[0][1]} <span class="ptable__cat">от {tiers[0][0]} шт.</span>' if tiers
+                 else '<span class="ptable__ask">Цена по запросу</span>')
+        data = (f' class="ptable__row" data-id="{cat["slug"]}-{s["size"]}"'
+                f' data-name="{esc(name)}"'
+                f' data-photo="assets/img/{photo}"'
+                f' data-size="{s["size"]}"'
+                f' data-cat="{esc(cat["name"])}"'
+                f' data-url="produkciya-{cat["slug"]}.html"'
+                f" data-tiers='{json.dumps(tiers, ensure_ascii=False)}'"
+                + ("" if tiers else ' data-ask="1"'))
+        rows.append(f'''      <tr{data}>
+        <td class="ptable__c ptable__c--no" style="text-align:center" data-label="№"><span class="ptable__n">{num}</span>{add_button(cat, num)}</td>
         <td data-label="Размер, мм"><span class="psize__cell"><span class="psize">{s['size']}</span> {tag}</span></td>
         <td data-label="Углы">{s['corners']}</td>
         <td data-label="Назначение">{s['use']}</td>
         <td data-label="Статус">{badge}</td>
-      </tr>''')
+        <td data-label="Цена без НДС" style="text-align:right">{price}</td>
+      </tr>
+      {add_panel(cat, num, tiers[0][0] if tiers else 1, span)}''')
     body = "\n".join(rows)
     return f'''<div class="ptable__wrap reveal">
     <table class="ptable">
       <thead><tr>
+        <th style="text-align:center">№</th>
         <th style="text-align:left">Размер, мм</th>
         <th style="text-align:left">Углы</th>
         <th style="text-align:left">Назначение</th>
         <th style="text-align:left">Статус</th>
+        <th style="text-align:right">Цена без НДС</th>
       </tr></thead>
       <tbody>
 {body}
