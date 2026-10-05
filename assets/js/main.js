@@ -9,9 +9,7 @@
   var $  = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
-  // Проверка обязательных полей, e-mail и телефона — общая для всех форм
-  // сайта (обычная mailto-форма и форма заявки в корзине с отправкой на
-  // сервер сверяют поля одинаково, чтобы сообщения об ошибках не расходились).
+  // Проверка обязательных полей, e-mail и телефона в форме заявки.
   var validateForm = function (form) {
     var valid = true;
     $$('[required], input[type=email], input[type=tel]', form).forEach(function (input) {
@@ -301,30 +299,6 @@
       acc.addEventListener('mouseenter', holdClose);
     }
   });
-
-  /* --- Кнопки «Рассчитать» у типоразмеров --------------------------------
-     Кнопка и так ведёт якорем к форме — здесь только подставляем размер
-     в комментарий, чтобы его не пришлось перепечатывать вручную. Если
-     посетитель уже что-то написал, текст не затираем: дописываем размер
-     в начало. Работает поверх обычной ссылки, поэтому без JS кнопка
-     всё равно приводит к форме. ---------------------------------------- */
-  var sizeField = $('[data-size-target]');
-  if (sizeField) {
-    $$('.pcalc[data-size]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var size = btn.getAttribute('data-size');
-        var was = sizeField.value.trim();
-        if (was.indexOf(size) === -1) {
-          sizeField.value = was ? size + ', ' + was : size + ', ';
-        }
-        // Фокус — после перехода по якорю, иначе браузер прокрутит дважды.
-        setTimeout(function () {
-          sizeField.focus();
-          sizeField.setSelectionRange(sizeField.value.length, sizeField.value.length);
-        }, 320);
-      });
-    });
-  }
 
   /* --- Кнопка «наверх» ---------------------------------------------------- */
   var totop = $('.totop');
@@ -633,7 +607,7 @@
           if (result.ok) {
             if (okMsg) {
               okMsg.textContent = 'Спасибо, ' + name + '! Заявка успешно принята. ' +
-                'Владимир свяжется с вами в ближайшее время.';
+                'Менеджер свяжется с вами в ближайшее время.';
               okMsg.classList.add('is-shown');
             }
             writeCart([]);
@@ -655,42 +629,6 @@
       });
     }
   }
-
-  /* --- Форма заявки -------------------------------------------------------
-     Единственная оставшаяся форма на mailto: — на странице пиццы, отдельно
-     от корзины и без бэкенда. Форма заявки в корзине (data-cart-form) сюда
-     не попадает — у неё свой обработчик выше, с отправкой на сервер.
-     ---------------------------------------------------------------------- */
-  $$('.form').forEach(function (form) {
-    if (form.hasAttribute('data-cart-form')) return;   // у неё свой обработчик, см. выше
-    var ok = $('.form__ok', form);
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (!validateForm(form)) return;
-
-      var get = function (n) { var el = form.elements[n]; return el ? el.value.trim() : ''; };
-      var lines = [
-        'Имя: '     + get('name'),
-        'Телефон: ' + get('phone'),
-        'E-mail: '  + get('email'),
-        '',
-        get('message')
-      ].filter(Boolean);
-
-      window.location.href = 'mailto:info@gofrocarton.by'
-        + '?subject=' + encodeURIComponent(form.dataset.subject || 'Заявка с сайта gofrocarton.by')
-        + '&body='    + encodeURIComponent(lines.join('\n'));
-
-      if (ok) { ok.classList.add('is-shown'); }
-      form.reset();
-    });
-
-    $$('input, textarea', form).forEach(function (input) {
-      input.addEventListener('input', function () {
-        input.closest('.field').classList.remove('has-error');
-      });
-    });
-  });
 
   /* --- Год в подвале ------------------------------------------------------ */
   $$('[data-year]').forEach(function (el) { el.textContent = new Date().getFullYear(); });

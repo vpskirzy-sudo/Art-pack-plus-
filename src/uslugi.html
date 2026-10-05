@@ -15,27 +15,63 @@
 
 <section id="dalee" class="section">
   <div class="wrap">
-    <!-- Тот же дизайн, что у карточек принципов работы на «О компании»:
-         тёмно-синий фон, заголовок первым и акцентным, без иконок. -->
-    <div class="grid grid--3">
-      <article class="card card--dark reveal" id="usluga-flexopechat"><h3 class="card__t">Флексографическая печать</h3>
+    <!-- Тот же дизайн карточек, что в блоке «Почему заказывают у нас»
+         на главной: панель card--kraft, внизу иконка и номер «Art. №0X». -->
+    <div class="grid grid--4">
+      <article class="card card--kraft reveal" id="usluga-flexopechat">
+        <h3 class="card__t">Флексографическая печать</h3>
         <p class="card__d">Многокрасочная печать в 1–4 краски на любой упаковке из гофрокартона:
-          логотип, состав, маркировка, полноцветное оформление.</p></article>
-      <article class="card card--dark reveal" id="usluga-pokraska"><h3 class="card__t">Покраска продукции</h3>
+          логотип, состав, маркировка, полноцветное оформление.</p>
+        <div class="card__foot">
+          <span class="card__ico">{{icon:print}}</span>
+          <span class="card__num" aria-hidden="true"></span>
+        </div>
+      </article>
+      <article class="card card--kraft reveal" id="usluga-pokraska">
+        <h3 class="card__t">Покраска продукции</h3>
         <p class="card__d">Сплошная запечатка и нанесение фонового цвета на гофротару —
-          когда упаковка должна выглядеть как часть бренда.</p></article>
-      <article class="card card--dark reveal" id="usluga-konstrukciya"><h3 class="card__t">Разработка конструкции</h3>
+          когда упаковка должна выглядеть как часть бренда.</p>
+        <div class="card__foot">
+          <span class="card__ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="12" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M10 10v3a2 2 0 0 0 2 2h3a2 2 0 0 1 2 2v3" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="20" r="1.4" stroke="currentColor" stroke-width="1.8" fill="none"/></svg></span>
+          <span class="card__num" aria-hidden="true"></span>
+        </div>
+      </article>
+      <article class="card card--kraft reveal" id="usluga-konstrukciya">
+        <h3 class="card__t">Разработка конструкции</h3>
         <p class="card__d">Конструкторы рассчитают короб под вес, габарит и способ перевозки,
-          подберут марку картона и подготовят чертёж.</p></article>
-      <article class="card card--dark reveal" id="usluga-vysechka"><h3 class="card__t">Высечка и рилёвка</h3>
+          подберут марку картона и подготовят чертёж.</p>
+        <div class="card__foot">
+          <span class="card__ico">{{icon:gear}}</span>
+          <span class="card__num" aria-hidden="true"></span>
+        </div>
+      </article>
+      <article class="card card--kraft reveal" id="usluga-vysechka">
+        <h3 class="card__t">Высечка и рилёвка</h3>
         <p class="card__d">Изготовление изделий сложной формы, вкладышей, решёток и прокладок
-          по индивидуальной оснастке.</p></article>
-      <article class="card card--dark reveal" id="usluga-razmery"><h3 class="card__t">Изготовление по размерам</h3>
+          по индивидуальной оснастке.</p>
+        <div class="card__foot">
+          <span class="card__ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M4 12h16" stroke="currentColor" stroke-width="1.8" stroke-dasharray="2.4 2.4" stroke-linecap="round"/><path d="M8 4v16" stroke="currentColor" stroke-width="1.8" stroke-dasharray="2.4 2.4" stroke-linecap="round" opacity=".6"/></svg></span>
+          <span class="card__num" aria-hidden="true"></span>
+        </div>
+      </article>
+      <article class="card card--kraft reveal" id="usluga-razmery">
+        <h3 class="card__t">Изготовление по размерам</h3>
         <p class="card__d">Нестандартная упаковка под конкретный товар — от единичного образца
-          до серийного тиража.</p></article>
-      <article class="card card--dark reveal" id="usluga-dostavka"><h3 class="card__t">Доставка</h3>
+          до серийного тиража.</p>
+        <div class="card__foot">
+          <span class="card__ico">{{icon:ruler}}</span>
+          <span class="card__num" aria-hidden="true"></span>
+        </div>
+      </article>
+      <article class="card card--kraft reveal" id="usluga-dostavka">
+        <h3 class="card__t">Доставка</h3>
         <p class="card__d">Доставляем готовый тираж по Минску и всей Беларуси. Возможен
-          самовывоз с производства в Заславле.</p></article>
+          самовывоз с производства в Заславле.</p>
+        <div class="card__foot">
+          <span class="card__ico">{{icon:truck}}</span>
+          <span class="card__num" aria-hidden="true"></span>
+        </div>
+      </article>
     </div>
   </div>
 </section>

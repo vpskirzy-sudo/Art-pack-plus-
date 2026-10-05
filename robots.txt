@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /api/
+Disallow: /src/
+Disallow: /tools/
+Disallow: /lib/
+
+Sitemap: https://gofrocarton.by/sitemap.xml

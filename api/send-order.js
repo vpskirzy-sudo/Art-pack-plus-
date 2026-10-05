@@ -1,27 +1,24 @@
 /**
  * POST /api/send-order — принимает заявку на расчёт из корзины (см.
- * assets/js/main.js, обработчик формы data-cart-form) и рассылает её
- * менеджеру сразу тремя независимыми каналами: в Telegram-бота, письмом
- * через SMTP и письмом через Web3Forms. Serverless-функция Vercel: любой
- * файл в api/ становится отдельным эндпоинтом автоматически, отдельного
+ * assets/js/main.js, обработчик формы data-cart-form) и отправляет её
+ * в Telegram-чат отдела продаж. Serverless-функция Vercel: любой файл
+ * в api/ становится отдельным эндпоинтом автоматически, отдельного
  * роутера не нужно.
  *
- * Секреты (токен Telegram-бота, ключ Web3Forms, SMTP-логин/пароль, адрес
- * администратора) — только в переменных окружения (см. .env.example и
- * README): в браузер и в код репозитория они никогда не попадают. Каналы
- * независимы: настроен хоть один — заявка уходит туда; отказавший канал
- * не должен «терять» заявку целиком, пока хотя бы один настроенный канал
- * доставил её.
+ * Секреты (токен бота и id чата) — только в переменных окружения (см.
+ * .env.example и README): в браузер и в код репозитория они не попадают.
  */
 'use strict';
 
-var nodemailer = require('nodemailer');
-var emailTemplate = require('../lib/email-template');
 var telegramTemplate = require('../lib/telegram-template');
 
-var DEFAULT_ADMIN_EMAIL = 'vps.kirzis@gmail.com';
-
 var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Сколько ждать ответа Telegram на одну попытку. Две попытки с запасом
+// укладываются в лимит времени функции на Vercel: иначе зависший запрос
+// обрывался бы платформой, клиент видел бы ошибку и отправлял заявку снова.
+var TELEGRAM_TIMEOUT_MS = 4000;
+var RETRY_DELAY_MS = 800;
 
 function sanitize(v, max) {
   return String(v == null ? '' : v).trim().slice(0, max);
@@ -39,75 +36,54 @@ function readJsonBody(req) {
   return {};
 }
 
-// Транспорт создаём один раз и переиспользуем между вызовами: контейнер
-// serverless-функции обычно живёт дольше одного запроса («тёплый старт»),
-// а на новое TCP-соединение к SMTP уходит куда больше времени, чем на сам
-// вызов sendMail.
-var cachedTransporter = null;
-function getTransporter() {
-  if (cachedTransporter) return cachedTransporter;
-  var port = Number(process.env.SMTP_PORT) || 465;
-  cachedTransporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: port,
-    secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : port === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-  });
-  return cachedTransporter;
+function wait(ms) {
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
 }
 
-/** Отправка сообщения через Telegram Bot API — обычный HTTPS POST,
- *  библиотека не нужна. Бросает исключение при неуспехе — вызывающий код
- *  сам решает, что делать со сбоем одного из каналов. */
-async function sendTelegramMessage(text) {
+/** Одна попытка отправки через Telegram Bot API — обычный HTTPS POST,
+ *  библиотека не нужна. Бросает исключение при неуспехе; у ошибки флаг
+ *  `retry` — имеет ли смысл повторить (сбой сети, 429, 5xx). */
+async function sendTelegramOnce(text) {
   var token = process.env.TELEGRAM_BOT_TOKEN;
   var chatId = process.env.TELEGRAM_CHAT_ID;
-  var resp = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: text,
-      parse_mode: 'HTML',
-      disable_web_page_preview: true
-    })
-  });
+  var resp;
+  try {
+    resp = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
+      }),
+      signal: AbortSignal.timeout(TELEGRAM_TIMEOUT_MS)
+    });
+  } catch (e) {
+    var err = new Error('telegram: ' + (e && e.name === 'TimeoutError' ? 'timeout' : (e && e.message)));
+    // По таймауту не повторяем: Telegram мог уже принять сообщение, и
+    // повтор дал бы менеджеру дубль заявки.
+    err.retry = !(e && e.name === 'TimeoutError');
+    throw err;
+  }
   var json = null;
   try { json = await resp.json(); } catch (e) { /* тело не JSON — json останется null */ }
   if (!resp.ok || !json || !json.ok) {
-    throw new Error('telegram: ' + (json && json.description ? json.description : resp.status));
+    var fail = new Error('telegram: ' + (json && json.description ? json.description : resp.status));
+    fail.retry = resp.status === 429 || resp.status >= 500;
+    throw fail;
   }
 }
 
-/** Отправка письма через Web3Forms — сторонний сервис, который сам
- *  доставляет письмо на адрес, привязанный к access-ключу в личном
- *  кабинете Web3Forms (не здесь: ключ только пересылает данные, адрес
- *  получателя настраивается на их стороне). Ключ читается из переменной
- *  окружения WEB3FORMS_KEY — в код и в репозиторий не попадает. */
-async function sendWeb3Forms(data, subject) {
-  var key = process.env.WEB3FORMS_KEY;
-  var resp = await fetch('https://api.web3forms.com/submit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify({
-      access_key: key,
-      subject: subject,
-      from_name: 'Арт-Пак Плюс — сайт',
-      name: data.name,
-      email: data.email || undefined,
-      replyto: data.email || undefined,
-      message: emailTemplate.buildOrderEmailText(data)
-    })
-  });
-  var raw = await resp.text();
-  var json = null;
-  try { json = JSON.parse(raw); } catch (e) { /* тело не JSON — json останется null */ }
-  // ВРЕМЕННАЯ диагностика: показывает в логах Vercel, что именно вернул
-  // Web3Forms — статус и тело ответа, ключ доступа не логируется. Убрать
-  // после того, как канал подтверждённо заработает.
-  console.log('send-order: web3forms ответил', resp.status, raw);
-  if (!resp.ok || !json || !json.success) {
-    throw new Error('web3forms: status=' + resp.status + ' body=' + raw);
+/** Отправка с одной повторной попыткой при временном сбое. */
+async function sendTelegramMessage(text) {
+  try {
+    await sendTelegramOnce(text);
+  } catch (e) {
+    if (!e.retry) throw e;
+    console.error('send-order: временный сбой, повторяем', e);
+    await wait(RETRY_DELAY_MS);
+    await sendTelegramOnce(text);
   }
 }
 
@@ -145,7 +121,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  // Строки корзины — только то, что реально идёт в письмо; сумма и цена
+  // Строки корзины — только то, что реально идёт в сообщение; сумма и цена
   // уже посчитаны на клиенте (та же логика, что рисует таблицу в корзине),
   // здесь пересчитывать их незачем — это заявка на расчёт, а не платёж,
   // и итоговую цену в любом случае подтверждает менеджер.
@@ -163,15 +139,10 @@ module.exports = async function handler(req, res) {
   var sum = Math.max(0, Number(body.sum) || 0);
   var asksCount = Math.max(0, Math.round(Number(body.asksCount) || 0));
 
-  var telegramConfigured = !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
-  var emailConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
-  var web3formsConfigured = !!process.env.WEB3FORMS_KEY;
-
-  if (!telegramConfigured && !emailConfigured && !web3formsConfigured) {
-    // Так молча не «теряем» заявку в логах: любой, кто откроет логи
-    // функции, сразу увидит, что заявка не ушла из-за настроек, а не
-    // из-за ошибки клиента.
-    console.error('send-order: не настроен ни один канал — проверьте TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID, SMTP_HOST/SMTP_USER/SMTP_PASS или WEB3FORMS_KEY в переменных окружения');
+  if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID) {
+    // Так молча не «теряем» заявку: любой, кто откроет логи функции,
+    // сразу увидит, что заявка не ушла из-за настроек, а не из-за клиента.
+    console.error('send-order: не настроен Telegram — проверьте TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID в переменных окружения');
     res.status(500).json({ ok: false, error: 'server_not_configured' });
     return;
   }
@@ -185,42 +156,12 @@ module.exports = async function handler(req, res) {
   }
 
   var data = { name: name, phone: phone, email: email, comment: comment, cart: cart, sum: sum, asksCount: asksCount, dateStr: dateStr };
-  var subject = '[Заказы Артпак+] Новый расчёт от ' + name + ' — ' + phone;
 
-  var jobs = [];
-  if (telegramConfigured) {
-    jobs.push(sendTelegramMessage(telegramTemplate.buildOrderTelegramMessage(data))
-      .then(function () { return { channel: 'telegram', ok: true }; })
-      .catch(function (err) { return { channel: 'telegram', ok: false, err: err }; }));
-  }
-  if (emailConfigured) {
-    var transporter = getTransporter();
-    jobs.push(transporter.sendMail({
-      from: '"Арт-Пак Плюс — сайт" <' + process.env.SMTP_USER + '>',
-      to: process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL,
-      replyTo: email || undefined,
-      subject: subject,
-      html: emailTemplate.buildOrderEmailHtml(data),
-      text: emailTemplate.buildOrderEmailText(data)
-    }).then(function () { return { channel: 'email', ok: true }; })
-      .catch(function (err) { return { channel: 'email', ok: false, err: err }; }));
-  }
-  if (web3formsConfigured) {
-    jobs.push(sendWeb3Forms(data, subject)
-      .then(function () { return { channel: 'web3forms', ok: true }; })
-      .catch(function (err) { return { channel: 'web3forms', ok: false, err: err }; }));
-  }
-
-  var results = await Promise.all(jobs);
-  results.filter(function (r) { return !r.ok; }).forEach(function (r) {
-    console.error('send-order: канал «' + r.channel + '» не доставил заявку', r.err);
-  });
-
-  // Успех — если доставил хотя бы один настроенный канал: неполадка с
-  // одним из них не должна превращать реальную заявку клиента в ошибку 502.
-  if (results.some(function (r) { return r.ok; })) {
+  try {
+    await sendTelegramMessage(telegramTemplate.buildOrderTelegramMessage(data));
     res.status(200).json({ ok: true });
-  } else {
+  } catch (e) {
+    console.error('send-order: Telegram не доставил заявку', e);
     res.status(502).json({ ok: false, error: 'send_failed' });
   }
 };

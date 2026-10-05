@@ -79,6 +79,8 @@ COLS_MATERIAL = [
 # rows     — строки прайса; "head" вместо ключей = подзаголовок внутри таблицы
 # note     — сноска под таблицей
 # sections — дополнительные текстовые блоки внизу страницы
+# price    — False: не выводить секцию прайса на странице подгруппы
+# details  — якорь для кнопки «Перейти к деталям» (по умолчанию price)
 CATEGORIES = [
     {
         "slug": "gofroyashchiki",
@@ -247,6 +249,10 @@ CATEGORIES = [
             {"size": "600×300×50", "corners": "прямоугольная",   "use": "римская пицца, большой формат"},
         ],
         "blocks": "produkciya-korobki-dlya-piccy",
+        # Прайс-таблицу на странице не показываем: размеры и условия — в блоке
+        # «Типоразмеры» из blocks, кнопка «Перейти к деталям» ведёт туда.
+        "price": False,
+        "details": "razmery",
         "columns": COLS_PIZZA,
         "rows": [
             {"photo": "pr-photo-piccy.jpg",

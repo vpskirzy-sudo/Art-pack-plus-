@@ -11,10 +11,8 @@
     "art": "python3 tools/generate_art.py && python3 tools/generate_products.py",
     "check:responsive": "node tools/checks/responsive.js",
     "check:functional": "node tools/checks/functional.js",
-    "check": "npm run check:responsive && npm run check:functional"
-  },
-  "dependencies": {
-    "nodemailer": "^10.0.3"
+    "check:build": "python3 tools/build.py && git diff --exit-code -- *.html sitemap.xml robots.txt",
+    "check": "npm run check:build && npm run check:responsive && npm run check:functional"
   },
   "devDependencies": {
     "playwright-core": "^1.49.1"

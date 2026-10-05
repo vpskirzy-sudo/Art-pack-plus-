@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python3 tools/build.py && rm -rf src tools README.md",
   "redirects": [
     {
       "source": "/ящик-для-бокалов",
