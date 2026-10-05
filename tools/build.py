@@ -35,8 +35,9 @@ ADDRESS   = "223036, Минский р-н, г. Заславль, ул. Вокз�
 HOURS     = "Пн–Пт 8:00–17:00, обед 12:00–13:00"
 UNP       = "691817655"
 
-# Адрес сайта: нужен только для абсолютных ссылок в метатегах (og:image
-# и og:url обязаны быть абсолютными). Переезд на другой домен = правка строки.
+# Адрес сайта: нужен для абсолютных ссылок в метатегах (og:image и og:url
+# обязаны быть абсолютными), в sitemap.xml, robots.txt и микроразметке.
+# Переезд на другой домен = правка этой строки и пересборка.
 SITE      = "https://gofrocarton.by"
 OG_IMAGE  = "assets/img/hero-1.jpg"      # картинка по умолчанию для соцсетей
 
@@ -925,6 +926,21 @@ def sitemap():
     return len(urls)
 
 
+def robots():
+    """robots.txt: индексировать всё, кроме служебных адресов, карта сайта —
+    по абсолютному адресу из SITE (правило формата). Служебные папки на
+    хостинге и так удаляются после сборки (buildCommand в vercel.json);
+    Disallow — вторая страховка, если где-то их всё же выложат."""
+    txt = ("User-agent: *\n"
+           "Disallow: /api/\n"
+           "Disallow: /src/\n"
+           "Disallow: /tools/\n"
+           "Disallow: /lib/\n"
+           f"\nSitemap: {SITE}/sitemap.xml\n")
+    with open(os.path.join(ROOT, "robots.txt"), "w", encoding="utf-8") as fh:
+        fh.write(txt)
+
+
 def main():
     for name in PAGES:
         print(f"{name}: {render(name)} байт")
@@ -933,6 +949,8 @@ def main():
     for a in ARTICLES:
         print(f"poleznoe-{a['slug']}.html: {article_page(a)} байт")
     print(f"sitemap.xml: {sitemap()} адресов")
+    robots()
+    print("robots.txt")
 
 
 if __name__ == "__main__":
