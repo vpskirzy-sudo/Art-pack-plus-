@@ -14,8 +14,10 @@
 import json
 import os
 import re
+from html import escape
 
-from articles_data import ARTICLES
+from article_diagrams import render_diagram
+from articles_data import ARTICLES, by_slug
 from products_data import CATEGORIES
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
@@ -782,22 +784,20 @@ def product_page(cat):
 
 # --- Раздел «Полезное» ----------------------------------------------------
 def articles_grid():
-    """Сетка карточек статей на хаб-странице — те же .prod, что в каталоге."""
     cards = []
     for a in ARTICLES:
-        # Фото карточки — обложка статьи из articles_data; без обложки —
-        # чёрный квадрат (.prod__pic--black).
-        cover = a.get("cover")
-        pic = (f'<div class="prod__pic">\n          <img src="assets/img/{cover[0]}" alt="{cover[1]}" loading="lazy"></div>'
-               if cover else '<div class="prod__pic prod__pic--black" aria-hidden="true"></div>')
-        cards.append(f'''      <article class="prod reveal">
-        {pic}
-        <div class="prod__body">
-          <h3 class="prod__t">{a['name']}</h3>
-          <p class="prod__d">{a['teaser']}</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-{a['slug']}.html">
-            Читать статью {icon('arrow')}</a>
-        </div>
+        cover, _, width, height = a["cover"]
+        cards.append(f'''      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-{a['slug']}.html" aria-labelledby="guide-{a['slug']}">
+          <div class="prod__pic">
+            <img src="assets/img/{cover}" alt="" width="{width}" height="{height}" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-{a['slug']}">{escape(a['name'])}</h2>
+            <p class="prod__d">{escape(a['teaser'])}</p>
+            <span class="guide-tile__action">Читать статью {icon('arrow')}</span>
+          </div>
+        </a>
       </article>''')
     return "\n\n".join(cards)
 
@@ -809,14 +809,9 @@ def article_faq(a):
         <button class="acc__btn" type="button" aria-expanded="false">{q}<span class="acc__ico">{icon('chev')}</span></button>
         <div class="acc__panel"><div><p>{ans}</p></div></div>
       </div>''' for q, ans in a["faq"])
-    return f'''<section class="section section--paper section--tight" id="faq">
-  <div class="wrap">
-    <div class="head reveal">
-      <span class="eyebrow">Ещё спрашивают</span>
-      <h2 class="h2 h2--tight">Коротко о том же</h2>
-    </div>
-    <div class="acc acc--frame reveal">{items}
-    </div>
+    return f'''<section class="guide-faq" id="faq">
+  <h2 class="h2 h2--tight">Частые вопросы</h2>
+  <div class="acc acc--frame">{items}
   </div>
 </section>'''
 
@@ -828,20 +823,41 @@ def article_pick(a):
         f'''<a class="btn btn--{"primary" if i == 0 else "ghost"}" href="{href}">{label}'''
         + (f" {icon('arrow')}" if i == 0 else "") + "</a>"
         for i, (href, label) in enumerate(pick["links"]))
-    return f'''<section class="section section--tight">
-  <div class="wrap">
-    <div class="cta cta--flat reveal">
-      <div class="cta__in">
-        <div>
-          <span class="eyebrow">Из нашего прайса</span>
-          <h2 class="h2 h2--tight">{pick['t']}</h2>
-          <p class="lead" style="margin-top:16px">{pick['d']}</p>
-          <div class="cta__acts">{acts}</div>
-        </div>
-      </div>
-    </div>
-  </div>
+    return f'''<section class="guide-pick" id="podbor">
+  <h2 class="h2 h2--tight">{escape(pick['t'])}</h2>
+  <p>{escape(pick['d'])}</p>
+  <div class="guide-actions">{acts}</div>
 </section>'''
+
+
+def article_contents(text):
+    items = "".join(
+        f'<li><a href="#{anchor}">{title}</a></li>'
+        for anchor, title in re.findall(r'<h2 class="h2 h2--tight" id="([^"]+)">([^<]+)</h2>', text)
+    )
+    return f'''<nav class="guide-contents" id="soderzhanie" aria-label="Содержание статьи">
+  <h2>Содержание</h2>
+  <ul role="list">{items}<li><a href="#podbor">Подбор и заказ</a></li></ul>
+</nav>'''
+
+
+def article_recommendations(a):
+    cards = []
+    for slug in a["related"]:
+        related = by_slug(slug)
+        cover, _, width, height = related["cover"]
+        cards.append(f'''
+      <li><a class="guide-related__link" href="poleznoe-{slug}.html">
+        <img src="assets/img/{cover}" alt="" width="{width}" height="{height}" loading="lazy" decoding="async">
+        <span><strong>{escape(related['name'])}</strong>
+          <span class="guide-related__desc">{escape(related['teaser'])}</span></span>
+        {icon('arrow')}
+      </a></li>''')
+    return f'''<nav class="guide-related art-card" aria-labelledby="guide-related-title">
+  <h2 class="art-card__t" id="guide-related-title">Читайте дальше</h2>
+  <ul role="list">{"".join(cards)}</ul>
+  <a class="guide-related__all" href="poleznoe.html#dalee">Все статьи об упаковке {icon('arrow')}</a>
+</nav>'''
 
 
 def article_schema(a):
@@ -852,7 +868,7 @@ def article_schema(a):
         "@type": "Article",
         "headline": a["h1"],
         "description": a["desc"],
-        "image": f"{SITE}/assets/img/{a['img']}",
+        "image": f"{SITE}/assets/img/{a['cover'][0]}",
         "inLanguage": "ru-RU",
         "mainEntityOfPage": {"@type": "WebPage", "@id": url},
         "author":    {"@type": "Organization", "name": LEGAL, "url": SITE + "/"},
@@ -870,20 +886,17 @@ def article_schema(a):
             f'<script type="application/ld+json">\n{dump(faq)}\n</script>\n')
 
 
-ASIDE_MARK = "<!-- aside -->\n"
+ASIDE_MARK = "<!-- summary -->\n"
 
 
 def article_page(a):
-    """Страница статьи: шапка с обложкой, текст и боковая колонка из src,
-    блок каталога, мини-вопросы, CTA.
-
-    src/poleznoe-<slug>.html делится меткой <!-- aside -->: до неё — текст
-    статьи, после — содержимое боковой колонки (.art-aside).
-    """
+    """Основной текст и «Коротко» берём из src, общий каркас собираем здесь."""
     with open(os.path.join(SRC, f"poleznoe-{a['slug']}.html"), encoding="utf-8") as fh:
-        text, aside = fh.read().split(ASIDE_MARK, 1)
+        text, summary = fh.read().split(ASIDE_MARK, 1)
+    text = text.replace("<!-- diagram -->", render_diagram(a["slug"]))
     cover, alt, w, h = a["cover"]
-    body = f'''<section class="phead">
+    href, label = a["pick"]["links"][0]
+    body = f'''<section class="phead guide-hero">
   <div class="wrap">
     <div class="phead__in phead__in--art">
       <div class="phead__txt">
@@ -893,55 +906,43 @@ def article_page(a):
       <span class="eyebrow">Полезное</span>
       <h1 class="{'h1 h1--long' if len(a['h1']) > 40 else 'h1'}">{a['h1']}</h1>
       <p class="lead">{a['lead']}</p>
+      <div class="guide-actions">
+        <a class="btn btn--primary" href="{href}">{escape(label)} {icon('arrow')}</a>
+        <a class="guide-hero__jump" href="#soderzhanie">К содержанию {icon('down')}</a>
+      </div>
       </div>
       <figure class="art-cover">
-        <img src="assets/img/{cover}" alt="{alt}" loading="eager" width="{w}" height="{h}">
+        <img src="assets/img/{cover}" alt="{escape(alt)}" fetchpriority="high" width="{w}" height="{h}">
       </figure>
     </div>
   </div>
-  <a class="scroll-down" href="#dalee" aria-label="Перейти к содержимому страницы">{icon('down')}</a>
 </section>
 
-<section class="section" id="dalee">
+<section class="guide-section" id="dalee" aria-label="Материалы статьи">
   <div class="wrap">
     <div class="art-layout">
-      <div class="art-main">
-        <article class="art reveal">
-{text.rstrip()}
-
-        </article>
-      </div>
-      <aside class="art-aside">
-{aside.rstrip()}
+      <aside class="guide-summary art-card" aria-labelledby="guide-summary-title">
+        <h2 class="art-card__t" id="guide-summary-title">Коротко</h2>
+        <dl class="art-kv">
+{summary.rstrip()}
+        </dl>
       </aside>
-    </div>
-  </div>
-</section>
-
+      <div class="art-main">
+{article_contents(text)}
+        <article class="art">
+{text.rstrip()}
+        </article>
 {article_pick(a)}
-
 {article_faq(a)}
-
-<section class="section section--tight">
-  <div class="wrap">
-    <div class="cta reveal">
-      <div class="cta__in">
-        <div>
-          <h2 class="h2">Остались вопросы по вашей задаче?</h2>
-          <p class="lead" style="margin-top:16px">Пришлите габариты и вес товара — подберём
-            конструкцию, марку картона и посчитаем тираж. Расчёт бесплатный.</p>
-          <div class="cta__acts">
-            <a class="btn btn--primary" href="korzina.html#zayavka">Оставить заявку {icon('arrow')}</a>
-            <a class="btn btn--ghost" href="poleznoe.html">Другие статьи</a>
-          </div>
-        </div>
-        <div>
-          <div class="ct" style="border-top:0"><div class="ct__ico">{icon('phone')}</div>
-            <div><div class="ct__l">Отдел продаж</div><div class="ct__v">{phones_html()}</div></div></div>
-          <div class="ct"><div class="ct__ico">{icon('mail')}</div>
-            <div><div class="ct__l">E-mail</div><div class="ct__v"><a href="mailto:{EMAIL}">{EMAIL}</a></div></div></div>
-        </div>
       </div>
+      <aside class="art-aside" aria-label="Подбор и другие статьи">
+{article_recommendations(a)}
+        <section class="guide-next art-card">
+          <h2 class="art-card__t">{escape(a['next'])}</h2>
+          <a class="btn btn--primary" href="{href}">{escape(label)} {icon('arrow')}</a>
+          <a class="guide-related__all" href="korzina.html#zayavka">Оставить заявку {icon('arrow')}</a>
+        </section>
+      </aside>
     </div>
   </div>
 </section>
@@ -950,7 +951,7 @@ def article_page(a):
     return write_page(f"poleznoe-{a['slug']}.html",
                       f"{a['title']} | {LEGAL}", a["desc"], body,
                       active="poleznoe.html",
-                      image=f"assets/img/{a['img']}",
+                      image=f"assets/img/{cover}",
                       og_type="article")
 
 

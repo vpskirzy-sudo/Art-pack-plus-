@@ -941,137 +941,153 @@ ul{ margin:0; padding:0; list-style:none; }
 .ptext__after{ margin-top:16px; font-size:14.5px; line-height:1.65; color:var(--text-dim); }
 @media (max-width:860px){ .ptext__grid{ columns:1; } }
 
-/* --- 10f. Текст статьи раздела «Полезное» --------------------------------
-   Отдельного «типографского» блока на сайте не было: страницы собраны из
-   карточек, плашек и таблиц. Статье нужен просто читаемый столбец текста,
-   поэтому здесь только отбивки, кегль и ссылки. Всё остальное статья берёт
-   готовым: заголовки — .h2--tight/.h3, списки — .ptext__list, таблицы —
-   .ptable (включая разбор в карточки на телефоне), вопросы внизу — .acc.
-   Статья теперь во всю ширину своей колонки в .art-layout — никакого
-   max-width на самом блоке .art, размер колонки задаёт сетка. Отступы между
-   элементами — фиксированные и одинаковые во всех 10 статьях (никаких
-   clamp()-значений, которые на разной ширине экрана давали разный зазор). */
-/* Основной текст — почти чёрный #2A3540 (контраст ~12:1 на бумажном фоне):
-   серый --text-soft читался слишком бледно на длинных абзацах. */
-.art p{ font-size:17px; color:#2A3540; line-height:1.75; margin:0 0 16px; }
-.art p b, .art p strong, .art li b{ color:var(--text); font-weight:700; }
-.art > :first-child{ margin-top:0; }
-/* Первый абзац — прямой ответ на вопрос заголовка: крупнее и темнее,
-   чтобы его было видно, не читая всё остальное. */
-.art .art__answer{
-  font-size:19px; color:var(--text); font-weight:500;
-  border-left:3px solid var(--kraft); padding-left:18px;
+/* --- 10f. Раздел «Полезное» ----------------------------------------------- */
+.guide-grid .guide-tile .prod__pic{ aspect-ratio:3/2; }
+.guide-tile__link{ display:flex; flex:1; flex-direction:column; }
+.guide-tile__link:hover .prod__t, .guide-tile__link:focus-visible .prod__t{ color:var(--accent-ink); }
+.guide-tile__action, .guide-related__all, .guide-hero__jump{
+  display:inline-flex; align-items:center; gap:9px; font-weight:700;
 }
-.art h2, .art .h2{ margin:48px 0 20px; font-size:clamp(24px,2.4vw,32px); letter-spacing:-.025em; line-height:1.2; }
-.art h3, .art .h3{ margin:32px 0 16px; }
-.art ul, .art ol{ margin:0 0 20px; }
-.art ul.ptext__list, .art ol.ptext__list{ margin-bottom:20px; }
-.art table, .art .ptable__wrap{ margin:24px 0; }
-.art > img, .art > figure, .art > .art__fig{ margin:24px 0; }
-.art .art-card, .art .art-fact, .art .art-compare, .art .art-gallery,
-.art .art-checklist, .art .art-timeline, .art .art-steps, .art .art-warn{ margin:32px 0; }
-.art .ptext__list{ margin-top:0; }
-.art .ptext__list li{ font-size:16.5px; color:#2A3540; }
-/* Таблицы в статье: все строки одного цвета (без «зебры» и подсветки
-   строки под курсором), первая колонка — жирная и тёмная, текст переносится. */
-.art .ptable{ font-size:15.5px; }
-.art .ptable th{ white-space:normal; color:var(--text); }
-.art .ptable td{ color:#2A3540; line-height:1.55; vertical-align:top; }
-.art .ptable td:first-child{ color:var(--text); font-weight:700; }
-.art .ptable tbody tr,
-.art .ptable tbody tr:hover{ background:var(--white); }
-.art-step__d, .art-compare__card p, .art-fact p, .art-checklist li, .art-timeline__d{ color:#3A4652 !important; }
-.art a{
-  color:var(--accent-ink); font-weight:600;
-  text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px;
-  text-decoration-color:var(--warm-hi); transition:color .2s, text-decoration-color .2s;
-}
-.art a:hover{ color:var(--kraft-dark); text-decoration-color:var(--kraft); }
-/* Схема в статье: тот же светлый «бумажный» кадр, что у фото товара. */
-.art__fig{ margin:0; }
-.art__fig img{
-  display:block; width:100%; height:auto; border-radius:var(--r-lg);
-  border:1px solid rgba(22,32,43,.08); box-shadow:var(--shadow-s);
-}
-.art__cap{ margin-top:10px; font-size:13.5px; color:var(--text-dim); line-height:1.6; }
-
-/* --- 10f-2. Шапка статьи: текст слева, фото справа ------------------------
-   Фото-обложки — это иллюстрации с подписями («трёхслойный», Д/Ш/В), поэтому
-   их нельзя обрезать баннером: фото показывается целиком в своих пропорциях.
-   На широком экране оно стоит справа от заголовка и закрывает пустоту шапки,
-   на планшете и телефоне — под лидом на всю ширину. */
+.guide-tile__action{ align-self:flex-start; margin-top:auto; padding-top:4px; color:var(--accent-ink); }
+.guide-tile__action svg, .guide-related svg, .guide-related__all svg, .guide-hero__jump svg{ width:18px; height:18px; flex:none; }
+.guide-tile__link:focus-visible{ outline-offset:-4px; }
+.guide-actions{ display:flex; flex-wrap:wrap; gap:12px 16px; align-items:center; margin-top:22px; }
+.guide-actions a, .guide-next .btn{ max-width:100%; white-space:normal; }
+.guide-hero__jump{ min-height:44px; color:var(--on-dark); }
+.guide-hero__jump:hover{ color:var(--accent-2); }
 .phead .phead__in--art{ max-width:none; }
-.art-cover{ margin:clamp(24px,3.4vw,40px) 0 0; position:relative; z-index:2; }
+.phead__in--art .h1{ font-size:clamp(32px, 4vw, 62px); overflow-wrap:break-word; }
+.art-cover{ margin:clamp(22px, 3vw, 36px) 0 0; min-width:0; }
 .art-cover img{
-  display:block; width:100%; height:auto;
-  border-radius:var(--r-lg); box-shadow:var(--shadow-l); background:var(--paper);
-}
-@media (min-width:1024px){
-  .phead .phead__in--art{
-    display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);
-    gap:clamp(32px,4vw,64px); align-items:center;
-  }
-  .phead__in--art .art-cover{ margin-top:0; }
-  .phead__in--art .art-cover img{ max-height:520px; width:auto; max-width:100%; margin-left:auto; }
+  width:100%; height:auto; aspect-ratio:3/2; object-fit:cover;
+  border-radius:var(--r-lg); box-shadow:var(--shadow-l); background:var(--paper-2);
 }
 
-/* --- 10f-3. Двухколоночная раскладка статьи: текст + «липкий» сайдбар -----
-   На широких экранах текст занимает ~62%, справа — колонка с карточкой
-   фактов, доп. схемой, связанными статьями и мини-CTA (см. .art-aside).
-   На узких — сайдбар просто переезжает под текст обычными блоками. */
+.guide-section{ padding:clamp(28px, 4vw, 64px) 0 clamp(44px, 6vw, 88px); }
+.guide-section .wrap, .guide-hero .wrap{ padding-inline:clamp(16px, 3.4vw, 48px); }
 .art-layout{
-  display:grid; grid-template-columns:minmax(0,1fr); gap:clamp(32px,4vw,52px);
-  max-width:1200px; margin-inline:auto;
+  display:grid; grid-template-columns:minmax(0, 1fr);
+  grid-template-areas:"summary" "main" "related";
+  gap:clamp(22px, 3vw, 40px);
+  align-items:start; overflow-wrap:anywhere;
 }
-.art-main{ min-width:0; }
-.art-aside{ display:grid; gap:clamp(18px,2vw,24px); align-content:start; min-width:0; }
+.art-main{ grid-area:main; min-width:0; }
+.guide-summary{ grid-area:summary; }
+.art-aside{ grid-area:related; min-width:0; display:grid; gap:20px; }
+.art-card, .guide-contents, .guide-pick{
+  min-width:0; padding:clamp(16px, 2.2vw, 26px); border-radius:var(--r-lg);
+  background:var(--white); border:1px solid rgba(22,32,43,.1); box-shadow:var(--shadow-s);
+}
+.art-card__t, .guide-contents h2{ font-size:clamp(19px, 1.5vw, 23px); line-height:1.2; }
 
-/* Карточка «Коротко» / «Важно знать» в сайдбаре — светлая .card-подобная
-   плашка с рядами факт/значение. */
-.art-card{
-  background:var(--white); border:1px solid rgba(22,32,43,.09);
-  border-radius:var(--r-lg); padding:clamp(22px,2.2vw,28px); box-shadow:var(--shadow-s);
-}
-.art-card__t{
-  font-family:var(--ff-head); font-weight:800; font-size:18px; letter-spacing:-.01em;
-}
-.art-kv{ display:grid; margin-top:14px; }
+.art-kv{ display:grid; gap:0; margin:12px 0 0; }
 .art-kv__row{
-  display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
-  padding:11px 0; border-bottom:1px dashed rgba(22,32,43,.13); font-size:14px;
+  display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 3fr);
+  gap:12px; padding:10px 0; border-bottom:1px solid var(--paper-2);
+  font-size:clamp(14px, .95vw, 16px); line-height:1.45;
 }
 .art-kv__row:last-child{ border-bottom:0; padding-bottom:0; }
-.art-kv__k{ color:var(--text-soft); line-height:1.45; }
-.art-kv__v{ font-weight:700; color:var(--text); text-align:right; line-height:1.45; flex:none; max-width:56%; }
+.art-kv__row dt{ color:var(--text-soft); }
+.art-kv__row dd{ margin:0; font-weight:650; }
 
-/* Тёмная карточка сайдбара — доп. схема/иллюстрация в рамке. */
-.art-card--dark{ background:var(--ink); border-color:transparent; }
-.art-card--dark .art-card__t{ color:var(--on-dark); }
-.art-card--dark img{ width:100%; border-radius:var(--r); margin-top:14px; display:block; }
-.art-card--dark p{ margin-top:10px; font-size:13.5px; line-height:1.6; color:var(--on-dark-dim); }
-
-/* Блок ссылок на связанные статьи раздела. */
-.art-links{ display:grid; margin-top:14px; }
-.art-links a{
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
-  padding:11px 0; border-bottom:1px solid rgba(22,32,43,.08);
-  font-size:14.5px; font-weight:600; color:var(--text); text-decoration:none;
+.guide-contents{ margin-bottom:clamp(24px, 3vw, 42px); background:var(--warm); border-color:var(--warm-line); }
+.guide-contents ul{
+  margin-top:10px; display:grid; gap:2px 24px;
+  grid-template-columns:repeat(auto-fit, minmax(min(100%, 260px), 1fr));
 }
-.art-links a:last-child{ border-bottom:0; }
-.art-links a svg{ width:16px; height:16px; flex:none; color:var(--accent); transition:transform .2s; }
-.art-links a:hover{ color:var(--accent-ink); }
-.art-links a:hover svg{ transform:translateX(3px); }
-
-/* Мини-CTA в сайдбаре. */
-.art-cta{
-  border-radius:var(--r-lg); padding:clamp(20px,2.2vw,26px);
-  background:linear-gradient(150deg,#F3E7CF,#E7D5B4); color:var(--ink); box-shadow:var(--shadow-s);
+.guide-contents a, .guide-related__all{
+  color:var(--accent-ink); text-decoration:underline; text-underline-offset:3px;
 }
-.art-cta__t{ font-family:var(--ff-head); font-weight:800; font-size:17px; letter-spacing:-.01em; }
-.art-cta__d{ margin-top:8px; font-size:13.5px; line-height:1.55; color:var(--ink-3); }
-.art-cta .btn{ margin-top:14px; width:100%; justify-content:center; }
+.guide-contents a{ display:inline-block; padding-block:7px; font-weight:650; }
+.guide-next{ background:var(--warm); border-color:var(--warm-line); }
+.guide-next .btn{ width:100%; justify-content:space-between; margin-top:14px; }
+.guide-next .guide-related__all{ margin-top:8px; }
+.guide-related ul{ margin-top:8px; }
+.guide-related li{ border-bottom:1px solid var(--paper-2); }
+.guide-related__link{
+  display:grid; grid-template-columns:clamp(56px, 5vw, 74px) minmax(0, 1fr) auto;
+  align-items:start; gap:12px; padding:14px 0;
+  font-size:15px; line-height:1.35;
+}
+.guide-related__link:hover strong, .guide-related__link:focus-visible strong{ color:var(--accent-ink); text-decoration:underline; }
+.guide-related__link img{ aspect-ratio:1; width:100%; height:auto; object-fit:cover; border-radius:var(--r-sm); }
+.guide-related__link svg{ align-self:center; color:var(--accent-ink); }
+.guide-related__desc{ display:block; margin-top:5px; color:var(--text-soft); font-size:13px; line-height:1.45; }
+.guide-related__all{ min-height:44px; font-size:14px; padding-top:4px; }
 
-/* --- 10f-4. Врезки внутри текста: плашка-факт, фотогалерея, сравнение ----- */
+.art{ --guide-text:clamp(1rem, calc(.885rem + .4vw), 1.25rem); }
+.art p, .art .ptext__list li{ font-size:var(--guide-text); line-height:1.65; color:#2A3540; }
+.art p{ margin:0 0 .85em; }
+.art > p, .art > .ptext__list{ max-width:85ch; }
+.art p b, .art p strong, .art li b{ color:var(--text); font-weight:700; }
+.art .art__answer{
+  font-size:clamp(1.06rem, calc(.91rem + .65vw), 1.45rem); font-weight:550;
+  color:var(--text); border-left:3px solid var(--kraft); padding-left:clamp(12px, 1.4vw, 20px);
+}
+.art .h2, .guide-pick .h2, .guide-faq .h2{
+  font-size:clamp(24px, 1.9vw, 35px); line-height:1.2; letter-spacing:-.025em;
+}
+.art .h2{ margin:clamp(34px, 4vw, 60px) 0 16px; padding-top:18px; border-top:1px solid #decfbd; }
+.art .h3{ font-size:clamp(19px, 1.5vw, 25px); line-height:1.25; margin:24px 0 10px; }
+.art .ptext__list{ margin:0 0 20px; }
+.art .ptable__wrap{ margin:18px 0; }
+.art .ptable{ font-size:clamp(.875rem, .78rem + .32vw, 1.06rem); }
+.art .ptable th{ white-space:normal; text-align:left; color:var(--text); }
+.art .ptable td{ color:#2A3540; line-height:1.5; vertical-align:top; }
+.art .ptable td:first-child{ color:var(--text); font-weight:700; }
+.art .ptable tbody tr, .art .ptable tbody tr:hover{ background:var(--white); }
+.art .ptable__note{ font-size:clamp(.875rem, .83rem + .25vw, 1rem); color:var(--text-soft); }
+.art a{ color:var(--accent-ink); font-weight:650; text-decoration:underline; text-underline-offset:3px; }
+.art a:hover{ color:var(--text); }
+
+.diagram{
+  margin:18px 0 24px; padding:clamp(14px, 2.3vw, 28px);
+  background:var(--warm); border:1px solid var(--warm-line); border-radius:var(--r-lg);
+}
+.diagram figcaption{ font-family:var(--ff-head); font-weight:800; font-size:clamp(17px, 1.45vw, 23px); }
+.diagram__list{
+  display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr);
+  gap:clamp(10px, 1.5vw, 24px); padding:0; margin:14px 0 0; list-style:none;
+}
+.diagram__list li{
+  position:relative; min-width:0; background:#fffdfa; padding:clamp(10px, 1.4vw, 18px);
+  border:1px solid var(--paper-2); border-radius:var(--r);
+  font-size:clamp(.9rem, .825rem + .24vw, 1.1rem); line-height:1.4;
+}
+.diagram__list svg{
+  width:100%; height:clamp(54px, 7.1vw, 102px); margin-bottom:8px;
+  fill:none; stroke:#7e4b24; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
+}
+.diagram__kraft{ fill:#ecd0ac; }
+.diagram__edge{ fill:#e7ab6f; }
+.diagram__detail{ display:block; margin-top:5px; color:var(--text-soft); }
+.diagram__symbol{ display:block; font-size:clamp(26px, 3vw, 40px); line-height:1.05; color:var(--accent-ink); }
+.diagram__arrow{
+  position:absolute; inset-inline-start:0; top:40%; z-index:1;
+  transform:translate(-70%, -50%); color:var(--accent-ink);
+  font-weight:800; background:var(--warm); padding-inline:2px;
+}
+
+.guide-pick{ margin-top:clamp(28px, 4vw, 48px); background:var(--warm); border-color:var(--warm-line); }
+.guide-pick p{ margin-top:12px; max-width:76ch; font-size:clamp(1rem, .9rem + .38vw, 1.2rem); }
+.guide-faq{ margin-top:clamp(26px, 4vw, 48px); }
+.guide-faq .acc{ margin-top:16px; }
+
+@media (min-width:960px){
+  .phead .phead__in--art{
+    display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(0, 1fr);
+    gap:clamp(28px, 3.5vw, 62px); align-items:center;
+  }
+  .art-cover{ margin:0; }
+  .art-layout{
+    grid-template-columns:minmax(0, 1fr) clamp(310px, 26vw, 430px);
+    grid-template-rows:auto 1fr;
+    grid-template-areas:"main summary" "main related";
+    column-gap:clamp(26px, 4vw, 60px); row-gap:20px;
+  }
+}
+
+/* Сноски, сравнения и последовательности в тексте статьи. */
 .art-fact{
   display:flex; gap:14px; align-items:flex-start;
   background:var(--paper); border-left:4px solid var(--accent);
@@ -1085,16 +1101,6 @@ ul{ margin:0; padding:0; list-style:none; }
 .art-fact__ico svg{ width:19px; height:19px; }
 .art-fact p{ margin:0; font-size:15px; line-height:1.6; color:var(--text-soft); }
 .art-fact p b{ color:var(--text); }
-
-.art-gallery{
-  display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,1.4vw,14px);
-}
-.art-gallery figure{ margin:0; }
-.art-gallery img{
-  width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:var(--r);
-  box-shadow:var(--shadow-s); display:block;
-}
-.art-gallery figcaption{ margin-top:8px; font-size:12.5px; color:var(--text-dim); line-height:1.5; }
 
 .art-compare{ display:grid; grid-template-columns:1fr 1fr; gap:clamp(12px,1.6vw,18px); }
 .art-compare__card{
@@ -1155,37 +1161,31 @@ ul{ margin:0; padding:0; list-style:none; }
 .art-step__t{ font-family:var(--ff-head); font-weight:800; font-size:15.5px; letter-spacing:-.01em; }
 .art-step__d{ margin-top:6px; font-size:14px; line-height:1.55; color:var(--text-dim); }
 
-/* Визуальный таймлайн этапов заказа. */
-.art-timeline{ display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(10px,1.4vw,16px); }
-.art-timeline__step{
-  position:relative; background:var(--white); border:1px solid rgba(22,32,43,.09);
-  border-radius:var(--r-lg); padding:clamp(16px,1.8vw,20px) clamp(12px,1.4vw,16px); box-shadow:var(--shadow-s);
-  text-align:center;
+.art .art-fact, .art .art-compare, .art .art-checklist,
+.art .art-steps, .art .art-warn{ margin:16px 0 24px; }
+.art .art-compare p, .art .art-fact p, .art .art-warn p{ font-size:clamp(.94rem, .86rem + .32vw, 1.06rem); margin-bottom:0; }
+.art-step__d{ font-size:.95rem; color:var(--text-soft); }
+@media (max-width:720px){
+  .art-steps{ grid-template-columns:repeat(auto-fit, minmax(min(100%, 186px), 1fr)); }
+  .art-compare{ grid-template-columns:minmax(0, 1fr); }
+  .art .ptable td::before{ flex:0 1 42%; color:var(--text-soft); }
+  .art .ptable td{ gap:10px; }
 }
-.art-timeline__num{
-  display:flex; align-items:center; justify-content:center; margin:0 auto 10px;
-  width:30px; height:30px; border-radius:50%;
-  background:var(--accent); color:#fff; font-family:var(--ff-head); font-weight:800; font-size:13px;
+@media (max-width:600px){
+  .diagram__list{ grid-auto-flow:row; grid-auto-columns:auto; }
+  .diagram__list li:has(.diagram__symbol){ display:flex; gap:12px; align-items:center; }
+  .diagram__list li:has(svg){
+    display:grid; grid-template-columns:clamp(54px, 15vw, 90px) minmax(0, 1fr);
+    align-items:center; gap:0 12px;
+  }
+  .diagram__list svg{ grid-row:span 2; margin:0; }
+  .diagram__arrow{ inset-inline-start:36px; top:0; transform:translate(-50%, -70%) rotate(90deg); }
+  .diagram__symbol{ min-width:1em; text-align:center; }
+  .diagram__detail{ margin-top:3px; }
 }
-.art-timeline__t{ font-family:var(--ff-head); font-weight:800; font-size:14px; letter-spacing:-.01em; }
-.art-timeline__d{ margin-top:6px; font-size:12.5px; line-height:1.5; color:var(--text-dim); }
-
-@media (min-width:1024px){
-  .art-layout{ grid-template-columns:65fr 35fr; align-items:start; }
-  .art-aside{ position:sticky; top:104px; }
-}
-@media (max-width:900px){
-  .art-steps{ grid-template-columns:1fr 1fr; }
-  .art-timeline{ grid-template-columns:1fr 1fr; }
-}
-@media (max-width:640px){
-  .art-gallery{ grid-template-columns:1fr 1fr; }
-  .art-compare{ grid-template-columns:1fr; }
-  .art-steps{ grid-template-columns:1fr; }
-  .art-timeline{ grid-template-columns:1fr; }
-}
-@media (max-width:479px){
-  .art-gallery{ grid-template-columns:1fr; }
+@media (max-width:380px){
+  .art .ptable td{ display:block; }
+  .art .ptable td::before{ display:block; margin-bottom:4px; }
 }
 
 /* --- 10d. Корзина: кнопка в прайсе, окошко тиража, счётчик и сама корзина --
