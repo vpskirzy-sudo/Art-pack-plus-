@@ -106,9 +106,8 @@
       </nav>
       <span class="eyebrow">Полезное</span>
       <h1 class="h1">Полезное об упаковке</h1>
-      <p class="lead">Короткие ответы на вопросы, которые чаще всего задают перед заказом:
-        марка картона, размер короба, требования площадок, хранение и переработка.
-        Без теории — только то, что влияет на ваш заказ.</p>
+      <p class="lead">Подберите упаковку под товар, проверьте размер короба перед заказом
+        и узнайте, как подготовить партию к отгрузке или хранению.</p>
     </div>
   </div>
   <a class="scroll-down" href="#dalee" aria-label="Перейти к содержимому страницы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
@@ -116,117 +115,135 @@
 
 <section id="dalee" class="section">
   <div class="wrap">
-    <!-- Карточки статей собираются из tools/articles_data.py — тот же
-         компонент .prod, что и у карточек подгрупп в каталоге. -->
-    <div class="grid grid--3 grid--cat">
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-new-karton.jpg?v=6" alt="Какой гофрокартон выбрать: марки Т и П" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Марки гофрокартона</h3>
-          <p class="prod__d">Разбираем обозначения по буквам и цифрам и показываем, какие марки стоят в нашем прайсе и под какой товар они идут.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-marki-gofrokartona.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+    <div class="grid grid--3 grid--cat guide-grid">
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-marki-gofrokartona.html" aria-labelledby="guide-marki-gofrokartona">
+          <div class="prod__pic">
+            <img src="assets/img/guide-marki.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-marki-gofrokartona">Марки гофрокартона</h2>
+            <p class="prod__d">Какая марка выдержит ваш груз? Разбираем Т-22, Т-23В и П-32 на примерах из каталога.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-drive-3-5-sloev.jpg?v=4" alt="Пятислойный гофрокартон рядом с трёхслойным на складе «Арт-Пак Плюс»" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">3 или 5 слоёв</h3>
-          <p class="prod__d">Простое правило выбора: когда трёхслойного короба достаточно, а когда экономия обернётся порванной коробкой.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-3-ili-5-sloev.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-3-ili-5-sloev.html" aria-labelledby="guide-3-ili-5-sloev">
+          <div class="prod__pic">
+            <img src="assets/img/guide-sloi.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-3-ili-5-sloev">3 или 5 слоёв</h2>
+            <p class="prod__d">Сравните конструкции в разрезе и узнайте, когда пятислойный короб оправдывает свою цену.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-new-razmer-koroba.jpg?v=7" alt="Как рассчитать размер гофрокороба" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Как рассчитать размер короба</h3>
-          <p class="prod__d">Внутренний размер, внешний размер и зазор на упаковку — и почему на этом чаще всего ошибаются.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-kak-rasschitat-razmer-koroba.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-kak-rasschitat-razmer-koroba.html" aria-labelledby="guide-kak-rasschitat-razmer-koroba">
+          <div class="prod__pic">
+            <img src="assets/img/guide-razmer.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-kak-rasschitat-razmer-koroba">Как рассчитать размер короба</h2>
+            <p class="prod__d">Проверьте зазор для защиты товара и найдите ближайший готовый размер короба.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-new-yashchik-lotok.jpg?v=6" alt="Гофроящик или гофролоток: что выбрать" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Гофроящик или гофролоток</h3>
-          <p class="prod__d">Ящик закрывается клапанами и едет, лоток открыт и стоит на полке. Сравнение в таблице.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-gofroyashchik-ili-gofrolotok.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-gofroyashchik-ili-gofrolotok.html" aria-labelledby="guide-gofroyashchik-ili-gofrolotok">
+          <div class="prod__pic">
+            <img src="assets/img/guide-lotok.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-gofroyashchik-ili-gofrolotok">Гофроящик или гофролоток</h2>
+            <p class="prod__d">Выберите тару под перевозку, хранение или выкладку и посмотрите примеры для разных товаров.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-drive-marketpleysy.jpg?v=4" alt="Короба для отгрузки товара на маркетплейс на складе «Арт-Пак Плюс»" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Упаковка для маркетплейсов</h3>
-          <p class="prod__d">Габариты и вес отправления, цельный короб, маркировка — и почему правила нужно сверять перед каждой крупной отгрузкой.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-upakovka-dlya-marketpleysov.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-upakovka-dlya-marketpleysov.html" aria-labelledby="guide-upakovka-dlya-marketpleysov">
+          <div class="prod__pic">
+            <img src="assets/img/guide-market.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-upakovka-dlya-marketpleysov">Упаковка для маркетплейсов</h2>
+            <p class="prod__d">Пройдите проверку перед поставкой: от прочности короба до габаритов и маркировки.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-drive-pishchevaya.jpg?v=4" alt="Готовые коробки для пиццы и гофролотки — пищевая упаковка «Арт-Пак Плюс»" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Упаковка для пищевых продуктов</h3>
-          <p class="prod__d">Не любой гофрокартон можно класть рядом с едой. Что мы используем для пищевых производств и какие готовые решения есть.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-pishchevaya-upakovka.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-pishchevaya-upakovka.html" aria-labelledby="guide-pishchevaya-upakovka">
+          <div class="prod__pic">
+            <img src="assets/img/guide-pishcha.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-pishchevaya-upakovka">Упаковка для пищевых продуктов</h2>
+            <p class="prod__d">Разберитесь, когда картон соприкасается с продуктом, и подберите упаковку для пиццы, овощей или птицы.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-drive-hranenie.jpg?v=4" alt="Стопки гофрокоробов на поддонах на складе готовой продукции «Арт-Пак Плюс»" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Как хранить гофротару</h3>
-          <p class="prod__d">Сырость и солнце убивают прочность картона. Простые правила хранения и вариант не хранить тираж у себя вообще.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-kak-hranit-gofrotaru.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-kak-hranit-gofrotaru.html" aria-labelledby="guide-kak-hranit-gofrotaru">
+          <div class="prod__pic">
+            <img src="assets/img/guide-hranenie.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-kak-hranit-gofrotaru">Как хранить гофротару</h2>
+            <p class="prod__d">Сохраните прочность коробов на складе или узнайте, как забирать готовый тираж частями.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-new-zakaz-sroki.jpg?v=7" alt="Индивидуальный заказ: тираж и сроки" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Индивидуальный заказ: тираж и сроки</h3>
-          <p class="prod__d">Из чего складывается срок, зачем нужна оснастка и почему второй заказ всегда быстрее первого.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-individualnyy-zakaz-sroki.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-individualnyy-zakaz-sroki.html" aria-labelledby="guide-individualnyy-zakaz-sroki">
+          <div class="prod__pic">
+            <img src="assets/img/guide-zakaz.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-individualnyy-zakaz-sroki">Индивидуальный заказ: тираж и сроки</h2>
+            <p class="prod__d">Узнайте, что прислать для расчёта, как согласовать образец и почему повторный тираж быстрее.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-new-prokladki.jpg?v=6" alt="Защитные уголки, прокладки и вкладыши: для чего они нужны" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Защитные уголки и прокладки</h3>
-          <p class="prod__d">Уголок бережёт рёбра паллеты при стяжке, прокладка держит товар внутри короба. Где без них не обойтись.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-zashchitnye-ugolki-i-prokladki.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-zashchitnye-ugolki-i-prokladki.html" aria-labelledby="guide-zashchitnye-ugolki-i-prokladki">
+          <div class="prod__pic">
+            <img src="assets/img/guide-ugolki.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-zashchitnye-ugolki-i-prokladki">Защитные уголки и прокладки</h2>
+            <p class="prod__d">Узнайте, когда защитить рёбра паллеты уголками, а когда зафиксировать товар внутри короба.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
 
-      <article class="prod reveal">
-        <div class="prod__pic">
-          <img src="assets/img/pl-drive-pererabotka.jpg?v=4" alt="Приём и сортировка макулатуры и гофрокартона на пункте «Арт-Пак Плюс»" loading="lazy"></div>
-        <div class="prod__body">
-          <h3 class="prod__t">Переработка гофрокартона</h3>
-          <p class="prod__d">Картон делают из вторсырья, и он снова становится сырьём. Макулатуру мы принимаем сами — в Заславле и с выездом.</p>
-          <a class="btn btn--outline btn--sm prod__more" href="poleznoe-pererabotka-gofrokartona.html">
-            Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        </div>
+      <article class="prod guide-tile reveal">
+        <a class="guide-tile__link" href="poleznoe-pererabotka-gofrokartona.html" aria-labelledby="guide-pererabotka-gofrokartona">
+          <div class="prod__pic">
+            <img src="assets/img/guide-pererabotka.webp" alt="" width="1200" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="prod__body">
+            <h2 class="prod__t" id="guide-pererabotka-gofrokartona">Переработка гофрокартона</h2>
+            <p class="prod__d">Посмотрите, как старые короба снова становятся картоном, что сдать и как оформить вывоз.</p>
+            <span class="guide-tile__action">Читать статью <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
       </article>
     </div>
   </div>
