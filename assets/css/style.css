@@ -1028,7 +1028,7 @@ ul{ margin:0; padding:0; list-style:none; }
 .art p{ margin:0 0 .85em; }
 .art > p, .art > .ptext__list{ max-width:85ch; }
 .art p b, .art p strong, .art li b{ color:var(--text); font-weight:700; }
-.art .art__answer{
+.art .art__answer, .guide-opening .art__answer{
   font-size:clamp(1.06rem, calc(.91rem + .65vw), 1.45rem); font-weight:550;
   color:var(--text); border-left:3px solid var(--kraft); padding-left:clamp(12px, 1.4vw, 20px);
 }
@@ -1198,7 +1198,44 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 
 /* Марки гофрокартона */
-.art .grades-plain-heading{ border-top:0; padding-top:0; }
+/* Пустое место сохраняет размер кнопок после удаления стрелок. */
+.guide-actions--text .btn::after, .guide-actions--text .guide-hero__jump::after{
+  content:""; flex:none; width:17px; height:17px;
+}
+.guide-actions--text .guide-hero__jump::after{ width:18px; height:18px; }
+.art-layout--grades{
+  /* Прежний зазор перед «Какую марку выбрать?» с учётом линии и отбивки. */
+  --grades-section-gap:clamp(53px, 4vw + 19px, 79px);
+  --grades-subsection-gap:clamp(24px, 2.4vw, 36px);
+  --grades-item-gap:16px;
+  --grades-grid-gap:clamp(22px, 3vw, 40px);
+  row-gap:var(--grades-grid-gap);
+}
+.guide-opening{
+  grid-area:contents; min-width:0;
+  padding-bottom:calc(var(--grades-section-gap) - var(--grades-grid-gap));
+}
+.guide-opening .art__answer{
+  margin:var(--grades-section-gap) 0 0; max-width:72ch;
+  padding-block:4px; border-left-color:var(--accent);
+}
+.art-layout--grades .art > .h2{
+  margin:var(--grades-section-gap) 0 var(--grades-item-gap); border-top:0; padding-top:0;
+}
+.art-layout--grades .art > .h2:first-child{ margin-top:0; }
+.art-layout--grades .art > .h3{ margin:var(--grades-subsection-gap) 0 var(--grades-item-gap); }
+.art-layout--grades .art > p,
+.art-layout--grades .art > .ptext__list{ margin-bottom:var(--grades-item-gap); }
+.art-layout--grades .art > :is(.grades-decode, .grades-note, .grades-table-frame, .grades-steps){
+  margin-block:var(--grades-item-gap);
+}
+.art-layout--grades :is(.guide-pick, .guide-faq){ margin-top:var(--grades-section-gap); }
+@media (max-width:959px){
+  .art-layout--grades .art-main{ margin-top:calc(var(--grades-section-gap) - var(--grades-grid-gap)); }
+}
+@media (min-width:960px){
+  .art-layout--grades{ --grades-grid-gap:20px; }
+}
 .grades-decode{
   --grades-rule:#b99470;
   margin:18px 0 24px; overflow:auto;
