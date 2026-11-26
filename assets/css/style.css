@@ -1204,9 +1204,8 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .guide-actions--text .guide-hero__jump::after{ width:18px; height:18px; }
 .art-layout--grades{
-  /* Прежний зазор перед «Какую марку выбрать?» с учётом линии и отбивки. */
-  --grades-section-gap:clamp(53px, 4vw + 19px, 79px);
-  --grades-subsection-gap:clamp(24px, 2.4vw, 36px);
+  /* Интервал между самостоятельными блоками в полтора раза больше прежнего. */
+  --grades-section-gap:calc(clamp(53px, 4vw + 19px, 79px) * 1.5);
   --grades-item-gap:16px;
   --grades-grid-gap:clamp(22px, 3vw, 40px);
   row-gap:var(--grades-grid-gap);
@@ -1219,11 +1218,12 @@ ul{ margin:0; padding:0; list-style:none; }
   margin:var(--grades-section-gap) 0 0; max-width:72ch;
   padding-block:4px; border-left-color:var(--accent);
 }
-.art-layout--grades .art > .h2{
-  margin:var(--grades-section-gap) 0 var(--grades-item-gap); border-top:0; padding-top:0;
+.art-layout--grades .art > :is(.h2, .h3){
+  margin:var(--grades-section-gap) 0 var(--grades-item-gap);
 }
+.art-layout--grades .art > .h2{ border-top:0; padding-top:0; }
 .art-layout--grades .art > .h2:first-child{ margin-top:0; }
-.art-layout--grades .art > .h3{ margin:var(--grades-subsection-gap) 0 var(--grades-item-gap); }
+.art-layout--grades .art > .h2 + .h3{ margin-top:var(--grades-item-gap); }
 .art-layout--grades .art > p,
 .art-layout--grades .art > .ptext__list{ margin-bottom:var(--grades-item-gap); }
 .art-layout--grades .art > :is(.grades-decode, .grades-note, .grades-table-frame, .grades-steps){
@@ -1252,13 +1252,13 @@ ul{ margin:0; padding:0; list-style:none; }
 .grades-decode thead tr{ border-bottom:1px solid var(--grades-rule); }
 .grades-decode tr > * + *{ border-left:1px solid var(--grades-rule); }
 .grades-decode .grades-decode__key{
-  padding:clamp(16px, 2.5vw, 30px); background:#e8ceb1;
+  padding:clamp(12px, 1.5vw, 20px); background:#e8ceb1;
 }
 .grades-decode__key span{
   display:block; color:var(--text); font-size:.875rem; font-weight:650;
 }
 .grades-decode__key strong{
-  display:block; margin-top:8px; font:italic 800 clamp(2.5rem, 5vw, 5.25rem)/1 var(--ff-head);
+  display:block; margin-top:4px; font:italic 800 clamp(1.75rem, 3vw, 2.75rem)/1 var(--ff-head);
   letter-spacing:-.045em; color:var(--ink); white-space:nowrap;
 }
 .grades-decode th{
