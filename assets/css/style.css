@@ -1204,8 +1204,7 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .guide-actions--text .guide-hero__jump::after{ width:18px; height:18px; }
 .art-layout--grades{
-  /* Интервал между самостоятельными блоками в полтора раза больше прежнего. */
-  --grades-section-gap:calc(clamp(53px, 4vw + 19px, 79px) * 1.5);
+  --grades-section-gap:clamp(53px, 4vw + 19px, 79px);
   --grades-item-gap:16px;
   --grades-grid-gap:clamp(22px, 3vw, 40px);
   row-gap:var(--grades-grid-gap);
