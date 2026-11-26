@@ -893,7 +893,8 @@ def article_page(a):
     """Основной текст и «Коротко» берём из src, общий каркас собираем здесь."""
     with open(os.path.join(SRC, f"poleznoe-{a['slug']}.html"), encoding="utf-8") as fh:
         text, summary = fh.read().split(ASIDE_MARK, 1)
-    text = text.replace("<!-- diagram -->", render_diagram(a["slug"]))
+    if "<!-- diagram -->" in text:
+        text = text.replace("<!-- diagram -->", render_diagram(a["slug"]))
     cover, alt, w, h = a["cover"]
     href, label = a["pick"]["links"][0]
     body = f'''<section class="phead guide-hero">

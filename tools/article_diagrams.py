@@ -37,14 +37,6 @@ SIGN = '<circle class="diagram__kraft" cx="60" cy="34" r="24"/><path d="m48 34 8
 
 # Строки под графикой остаются читаемыми при увеличении шрифта.
 DIAGRAMS = {
-    "marki-gofrokartona": (
-        "Как прочитать Т-23В", False, (
-            ("Т", "Три слоя картона", ""),
-            ("2", "Два плоских слоя", ""),
-            ("3", "Показатель прочности сырья", ""),
-            ("В", "Профиль волны гофры", ""),
-        ),
-    ),
     "3-ili-5-sloev": (
         "Слои в разрезе", False, (
             ("Три слоя", "Две плоские стенки и одна волна между ними.", board(1)),
@@ -111,11 +103,8 @@ def render_diagram(slug):
     tag = "ol" if ordered else "ul"
     cells = []
     for label, description, art in items:
-        if art:
-            visual = (f'<svg viewBox="0 0 120 70" aria-hidden="true" focusable="false">'
-                      f'{art}</svg><strong>{escape(label)}</strong>')
-        else:
-            visual = f'<strong class="diagram__symbol">{escape(label)}</strong>'
+        visual = (f'<svg viewBox="0 0 120 70" aria-hidden="true" focusable="false">'
+                  f'{art}</svg><strong>{escape(label)}</strong>')
         connector = '<span class="diagram__arrow" aria-hidden="true">→</span>' if ordered and cells else ""
         cells.append(
             f'<li>{connector}{visual}<span class="diagram__detail">{escape(description)}</span></li>'
