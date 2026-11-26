@@ -905,6 +905,17 @@ def article_page(a):
     layout_class = " art-layout--wide-contents" if wide_links else ""
     wide_contents = f"\n{contents}" if wide_links else ""
     inline_contents = f"{contents}\n" if not wide_links else ""
+    if wide_links and a.get("intro"):
+        layout_class += " art-layout--grades"
+        wide_contents = f'''
+      <div class="guide-opening">
+{contents}
+        <p class="art__answer">{a['intro']}</p>
+      </div>'''
+    text_actions = a["slug"] == "marki-gofrokartona"
+    actions_class = " guide-actions--text" if text_actions else ""
+    catalogue_arrow = "" if text_actions else f" {icon('arrow')}"
+    contents_arrow = "" if text_actions else f" {icon('down')}"
     cover, alt, w, h = a["cover"]
     href, label = a["pick"]["links"][0]
     body = f'''<section class="phead guide-hero">
@@ -917,9 +928,9 @@ def article_page(a):
       <span class="eyebrow">Полезное</span>
       <h1 class="{'h1 h1--long' if len(a['h1']) > 40 else 'h1'}">{a['h1']}</h1>
       <p class="lead">{a['lead']}</p>
-      <div class="guide-actions">
-        <a class="btn btn--primary" href="{href}">{escape(label)} {icon('arrow')}</a>
-        <a class="guide-hero__jump" href="#soderzhanie">К содержанию {icon('down')}</a>
+      <div class="guide-actions{actions_class}">
+        <a class="btn btn--primary" href="{href}">{escape(label)}{catalogue_arrow}</a>
+        <a class="guide-hero__jump" href="#soderzhanie">К содержанию{contents_arrow}</a>
       </div>
       </div>
       <figure class="art-cover">
