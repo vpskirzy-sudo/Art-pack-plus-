@@ -122,7 +122,11 @@
 
 <section class="guide-section" id="dalee" aria-label="Материалы статьи">
   <div class="wrap">
-    <div class="art-layout">
+    <div class="art-layout art-layout--wide-contents">
+<nav class="guide-contents guide-contents--wide" id="soderzhanie" aria-label="Содержание статьи">
+  <h2>Содержание</h2>
+  <ul role="list"><li><a href="#vybor">Какую марку выбрать?</a></li><li><a href="#sortiment">Марки в нашем прайсе</a></li><li><a href="#oshibki">Что проверить перед заказом?</a></li><li><a href="#podbor">Подбор и заказ</a></li><li><a href="#markirovka">Как читать маркировку?</a></li></ul>
+</nav>
       <aside class="guide-summary art-card" aria-labelledby="guide-summary-title">
         <h2 class="art-card__t" id="guide-summary-title">Коротко</h2>
         <dl class="art-kv">
@@ -132,27 +136,37 @@
         </dl>
       </aside>
       <div class="art-main">
-<nav class="guide-contents" id="soderzhanie" aria-label="Содержание статьи">
-  <h2>Содержание</h2>
-  <ul role="list"><li><a href="#vybor">Какую марку выбрать?</a></li><li><a href="#sortiment">Марки в нашем прайсе</a></li><li><a href="#oshibki">Что проверить перед заказом</a></li><li><a href="#podbor">Подбор и заказ</a></li></ul>
-</nav>
         <article class="art">
 <p class="art__answer">По марке можно сравнить листы гофрокартона. Чтобы выбрать
   короб, учитывайте также вес и хрупкость товара, укладку на паллете и условия перевозки.</p>
 
-<h2 class="h2 h2--tight grades-reading" id="markirovka">Как читать маркировку</h2>
-<figure class="grades-decode">
-  <figcaption class="grades-decode__key">
-    <span>Пример маркировки</span>
-    <strong>Т-23В</strong>
-  </figcaption>
-  <dl class="grades-decode__parts">
-    <div><dt>Т</dt><dd>Трёхслойный картон</dd></div>
-    <div><dt>2</dt><dd>Класс 2 для трёхслойного картона. У листа два плоских слоя</dd></div>
-    <div><dt>3</dt><dd>Ступень прочности листа в этой серии</dd></div>
-    <div><dt>В</dt><dd>Профиль гофры</dd></div>
-  </dl>
-</figure>
+<h2 class="h2 h2--tight grades-plain-heading" id="markirovka">Как читать маркировку</h2>
+<div class="grades-decode" role="region" aria-label="Расшифровка маркировки" tabindex="0">
+  <table aria-labelledby="grades-code">
+    <thead>
+      <tr>
+        <td colspan="4" class="grades-decode__key">
+          <span>Пример маркировки</span>
+          <strong id="grades-code">Т-23В</strong>
+        </td>
+      </tr>
+      <tr>
+        <th scope="col">Т</th>
+        <th scope="col">2</th>
+        <th scope="col">3</th>
+        <th scope="col">В</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Трёхслойный картон</td>
+        <td>Класс 2 для трёхслойного картона. У листа два плоских слоя</td>
+        <td>Ступень прочности листа в этой серии</td>
+        <td>Профиль гофры</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <p>Сравните листы в разрезе. Так проще понять, чем отличаются
   <a href="poleznoe-3-ili-5-sloev.html#trehsloynyy">трёхслойный гофрокартон</a>
@@ -202,7 +216,7 @@
 
 <h2 class="h2 h2--tight" id="sortiment">Марки в нашем прайсе</h2>
 <h3 class="h3">Характеристики листа</h3>
-<div class="ptable__wrap">
+<div class="ptable__wrap grades-table-frame">
   <table class="ptable">
     <thead><tr>
       <th style="text-align:left">Марка</th>
@@ -237,7 +251,7 @@
   </table>
 </div>
 <h3 class="h3" id="grades-examples">Примеры изделий по маркам</h3>
-<div class="ptable__wrap grades-examples">
+<div class="ptable__wrap grades-table-frame grades-examples">
   <table class="ptable" aria-labelledby="grades-examples">
     <colgroup><col class="grades-examples__grade"><col class="grades-examples__use"><col></colgroup>
     <thead><tr>
@@ -301,7 +315,7 @@
 <p class="ptable__note">Цены по каждой позиции и тиражу — в таблице на странице
   <a href="produkciya-gofroyashchiki.html">«Гофроящики»</a>.</p>
 
-<h2 class="h2 h2--tight" id="oshibki">Что проверить перед заказом</h2>
+<h2 class="h2 h2--tight grades-plain-heading" id="oshibki">Что проверить перед заказом</h2>
 <ul class="ptext__list">
   <li>Подбирайте марку по весу и хрупкости товара, нагрузке при штабелировании
     и условиям перевозки. Для груза обычного веса при стандартной перевозке

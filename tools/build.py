@@ -830,14 +830,19 @@ def article_pick(a):
 </section>'''
 
 
-def article_contents(text):
+def article_contents(text, wide_links=None):
+    links = wide_links
+    if links is None:
+        links = re.findall(r'<h2 class="h2 h2--tight" id="([^"]+)">([^<]+)</h2>', text)
+        links.append(("podbor", "Подбор и заказ"))
     items = "".join(
         f'<li><a href="#{anchor}">{title}</a></li>'
-        for anchor, title in re.findall(r'<h2 class="h2 h2--tight" id="([^"]+)">([^<]+)</h2>', text)
+        for anchor, title in links
     )
-    return f'''<nav class="guide-contents" id="soderzhanie" aria-label="Содержание статьи">
+    css_class = " guide-contents--wide" if wide_links else ""
+    return f'''<nav class="guide-contents{css_class}" id="soderzhanie" aria-label="Содержание статьи">
   <h2>Содержание</h2>
-  <ul role="list">{items}<li><a href="#podbor">Подбор и заказ</a></li></ul>
+  <ul role="list">{items}</ul>
 </nav>'''
 
 
@@ -895,6 +900,11 @@ def article_page(a):
         text, summary = fh.read().split(ASIDE_MARK, 1)
     if "<!-- diagram -->" in text:
         text = text.replace("<!-- diagram -->", render_diagram(a["slug"]))
+    wide_links = a.get("contents")
+    contents = article_contents(text, wide_links)
+    layout_class = " art-layout--wide-contents" if wide_links else ""
+    wide_contents = f"\n{contents}" if wide_links else ""
+    inline_contents = f"{contents}\n" if not wide_links else ""
     cover, alt, w, h = a["cover"]
     href, label = a["pick"]["links"][0]
     body = f'''<section class="phead guide-hero">
@@ -921,7 +931,7 @@ def article_page(a):
 
 <section class="guide-section" id="dalee" aria-label="Материалы статьи">
   <div class="wrap">
-    <div class="art-layout">
+    <div class="art-layout{layout_class}">{wide_contents}
       <aside class="guide-summary art-card" aria-labelledby="guide-summary-title">
         <h2 class="art-card__t" id="guide-summary-title">Коротко</h2>
         <dl class="art-kv">
@@ -929,8 +939,7 @@ def article_page(a):
         </dl>
       </aside>
       <div class="art-main">
-{article_contents(text)}
-        <article class="art">
+{inline_contents}        <article class="art">
 {text.rstrip()}
         </article>
 {article_pick(a)}
