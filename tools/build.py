@@ -206,7 +206,9 @@ def icon(name, cls=""):
 
 
 def header_cart_icon():
-    return f'<span class="cart-motion" data-cart-motion aria-hidden="true">{icon("cart")}</span>'
+    return ('<span class="cart-motion" data-cart-motion aria-hidden="true">'
+            '<img class="cart-motion__still" src="assets/img/cart-rest.png" alt="" width="96" height="96">'
+            '</span>')
 
 
 def phones_html(sep="<br>"):
