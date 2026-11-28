@@ -1036,6 +1036,9 @@ ul{ margin:0; padding:0; list-style:none; }
 
 .art{ --guide-text:clamp(1rem, calc(.885rem + .4vw), 1.25rem); }
 .art p, .art .ptext__list li{ font-size:var(--guide-text); line-height:1.65; color:#2A3540; }
+.art ol.ptext__list{ list-style:decimal; padding-left:1.6em; }
+.art ol.ptext__list li{ padding-left:0; }
+.art ol.ptext__list li::before{ content:none; }
 .art p{ margin:0 0 .85em; }
 .art > p, .art > .ptext__list{ max-width:85ch; }
 .art p b, .art p strong, .art li b{ color:var(--text); font-weight:700; }
@@ -1295,14 +1298,14 @@ ul{ margin:0; padding:0; list-style:none; }
   position:relative; display:inline-grid; place-items:center;
   width:17px; height:17px; flex:none;
 }
-.cart-motion > svg{ width:100%; height:100%; }
-.cart-motion__animation{
-  visibility:hidden; position:absolute; top:50%; left:50%;
+.cart-motion__still, .cart-motion__animation{
+  position:absolute; top:50%; left:50%;
   width:32px; height:32px; max-width:none; transform:translate(-50%,-50%);
   filter:drop-shadow(0 0 .45px var(--kraft-dark)); pointer-events:none;
 }
+.cart-motion__animation{ visibility:hidden; }
 @media (prefers-reduced-motion:no-preference){
-  .cart-motion.is-playing > svg{ visibility:hidden; }
+  .cart-motion.is-playing .cart-motion__still{ visibility:hidden; }
   .cart-motion.is-playing .cart-motion__animation{ visibility:visible; }
 }
 .cart-badge{
@@ -1963,14 +1966,16 @@ ul{ margin:0; padding:0; list-style:none; }
   .logo__sub{ display:none; }
 }
 @media (max-width:479px){
-  /* На самых узких экранах логотип + корзина-значок + бургер не помещаются
-     в строку. «Корзина» и так первым пунктом видна в открытом меню со
-     своим счётчиком — прячем дублирующий значок, а не логотип. */
-  .header__in{ gap:10px; }
-  .header__cart{ display:none; }
+  .header__in{ gap:8px; }
+  .header__in > .burger{ margin-left:0; }
   /* Длинный текст кнопки («Весь каталог продукции» и т. п.) на nowrap
      не помещается в 320px — на самом узком экране даём ему перенестись. */
   .btn{ white-space:normal; text-align:center; }
+}
+@media (max-width:360px){
+  .header__in .logo{ gap:8px; }
+  .header__in .logo__mark{ width:34px; height:34px; }
+  .header__in .logo__name{ font-size:16px; }
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
