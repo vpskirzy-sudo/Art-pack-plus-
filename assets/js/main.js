@@ -47,6 +47,56 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
+  /* Гифка загружается только при наведении или фокусе с клавиатуры. */
+  if (!calm && window.matchMedia) {
+    var hasHover = window.matchMedia('(any-hover: hover)');
+    $$('[data-cart-motion]').forEach(function (icon) {
+      var link = icon.closest('a');
+      var hovered = false, focused = false, animation = null;
+      var stop = function () {
+        if (animation) animation.remove();
+        animation = null;
+        icon.classList.remove('is-playing');
+      };
+      var update = function () {
+        if (!hovered && !focused) {
+          stop();
+          return;
+        }
+        if (animation) return;
+        var image = new Image();
+        animation = image;
+        image.className = 'cart-motion__animation';
+        image.alt = '';
+        image.onload = function () {
+          if (animation === image) icon.classList.add('is-playing');
+        };
+        image.onerror = function () {
+          if (animation === image) stop();
+        };
+        icon.appendChild(image);
+        image.src = 'assets/img/cart-hover.gif';
+      };
+      link.addEventListener('pointerenter', function (event) {
+        if (event.pointerType === 'touch' || !hasHover.matches) return;
+        hovered = true;
+        update();
+      });
+      link.addEventListener('pointerleave', function () {
+        hovered = false;
+        update();
+      });
+      link.addEventListener('focus', function () {
+        focused = link.matches(':focus-visible');
+        if (focused) update();
+      });
+      link.addEventListener('blur', function () {
+        focused = false;
+        update();
+      });
+    });
+  }
+
   /* --- Мобильное меню ---------------------------------------------------- */
   var burger = $('.burger'), nav = $('.nav');
   if (burger && nav) {
