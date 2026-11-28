@@ -205,6 +205,10 @@ def icon(name, cls=""):
     return f'<svg{c} viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>'
 
 
+def header_cart_icon():
+    return f'<span class="cart-motion" data-cart-motion aria-hidden="true">{icon("cart")}</span>'
+
+
 def phones_html(sep="<br>"):
     return sep.join(f'<a href="tel:{t}">{d}</a>' for d, t in PHONES)
 
@@ -231,7 +235,7 @@ def nav_item(f, t, active):
     label = t
     if f == "korzina.html":
         cls += " nav__link--cart"
-        label += f'{icon("cart", "nav__cart-ico")}<span class="cart-badge" data-cart-badge hidden>0</span>'
+        label += f'{header_cart_icon()}<span class="cart-badge" data-cart-badge hidden>0</span>'
     sections = NAV_SECTIONS.get(f)
     if not sections:
         return f'<li><a class="{cls}" href="{f}">{label}</a></li>'
@@ -262,7 +266,7 @@ def header(active):
         </span>
       </a>
       <a class="header__cart" href="korzina.html" aria-label="Корзина" data-cart-target>
-        {icon('cart')}<span class="cart-badge" data-cart-badge hidden>0</span>
+        {header_cart_icon()}<span class="cart-badge" data-cart-badge hidden>0</span>
       </a>
       <button class="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
       <nav class="nav" aria-label="Основное меню"><ul class="nav__list">{links}</ul></nav>

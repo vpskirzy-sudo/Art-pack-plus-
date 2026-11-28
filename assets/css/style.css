@@ -1291,7 +1291,20 @@ ul{ margin:0; padding:0; list-style:none; }
 
 /* счётчик позиций на пункте меню и на кнопке-корзине для узких экранов */
 .nav__link--cart{ display:inline-flex; align-items:center; gap:7px; }
-.nav__cart-ico{ width:17px; height:17px; }
+.cart-motion{
+  position:relative; display:inline-grid; place-items:center;
+  width:17px; height:17px; flex:none;
+}
+.cart-motion > svg{ width:100%; height:100%; }
+.cart-motion__animation{
+  visibility:hidden; position:absolute; top:50%; left:50%;
+  width:32px; height:32px; max-width:none; transform:translate(-50%,-50%);
+  filter:drop-shadow(0 0 .45px var(--kraft-dark)); pointer-events:none;
+}
+@media (prefers-reduced-motion:no-preference){
+  .cart-motion.is-playing > svg{ visibility:hidden; }
+  .cart-motion.is-playing .cart-motion__animation{ visibility:visible; }
+}
 .cart-badge{
   display:inline-flex; align-items:center; justify-content:center;
   min-width:19px; height:19px; padding:0 5px; border-radius:100px;
@@ -1306,7 +1319,7 @@ ul{ margin:0; padding:0; list-style:none; }
   transition:border-color .2s, color .2s;
 }
 .header__cart:hover{ border-color:var(--accent); color:var(--accent); }
-.header__cart svg{ width:20px; height:20px; }
+.header__cart .cart-motion{ width:20px; height:20px; }
 .header__cart .cart-badge{ position:absolute; top:-4px; right:-4px; }
 
 /* коробка, улетающая в корзину */
