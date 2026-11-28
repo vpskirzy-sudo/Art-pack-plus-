@@ -830,8 +830,7 @@ def article_pick(a):
 </section>'''
 
 
-def article_contents(text, wide_links=None):
-    links = wide_links
+def article_contents(text, links=None):
     if links is None:
         links = re.findall(r'<h2 class="h2 h2--tight" id="([^"]+)">([^<]+)</h2>', text)
         links.append(("podbor", "Подбор и заказ"))
@@ -839,8 +838,7 @@ def article_contents(text, wide_links=None):
         f'<li><a href="#{anchor}">{title}</a></li>'
         for anchor, title in links
     )
-    css_class = " guide-contents--wide" if wide_links else ""
-    return f'''<nav class="guide-contents{css_class}" id="soderzhanie" aria-label="Содержание статьи">
+    return f'''<nav class="guide-contents" id="soderzhanie" aria-label="Содержание статьи">
   <h2>Содержание</h2>
   <ul role="list">{items}</ul>
 </nav>'''
@@ -892,30 +890,18 @@ def article_schema(a):
 
 
 ASIDE_MARK = "<!-- summary -->\n"
+INTRO_MARK = "<!-- intro -->\n"
 
 
 def article_page(a):
-    """Основной текст и «Коротко» берём из src, общий каркас собираем здесь."""
+    """Введение, основной текст и «Коротко» берём из src."""
     with open(os.path.join(SRC, f"poleznoe-{a['slug']}.html"), encoding="utf-8") as fh:
         text, summary = fh.read().split(ASIDE_MARK, 1)
+    intro, text = text.split(INTRO_MARK, 1)
+    text = text.lstrip()
     if "<!-- diagram -->" in text:
         text = text.replace("<!-- diagram -->", render_diagram(a["slug"]))
-    wide_links = a.get("contents")
-    contents = article_contents(text, wide_links)
-    layout_class = " art-layout--wide-contents" if wide_links else ""
-    wide_contents = f"\n{contents}" if wide_links else ""
-    inline_contents = f"{contents}\n" if not wide_links else ""
-    if wide_links and a.get("intro"):
-        layout_class += " art-layout--grades"
-        wide_contents = f'''
-      <div class="guide-opening">
-{contents}
-        <p class="art__answer">{a['intro']}</p>
-      </div>'''
-    text_actions = a["slug"] == "marki-gofrokartona"
-    actions_class = " guide-actions--text" if text_actions else ""
-    catalogue_arrow = "" if text_actions else f" {icon('arrow')}"
-    contents_arrow = "" if text_actions else f" {icon('down')}"
+    contents = article_contents(text, a.get("contents"))
     cover, alt, w, h = a["cover"]
     href, label = a["pick"]["links"][0]
     body = f'''<section class="phead guide-hero">
@@ -928,9 +914,9 @@ def article_page(a):
       <span class="eyebrow">Полезное</span>
       <h1 class="{'h1 h1--long' if len(a['h1']) > 40 else 'h1'}">{a['h1']}</h1>
       <p class="lead">{a['lead']}</p>
-      <div class="guide-actions{actions_class}">
-        <a class="btn btn--primary" href="{href}">{escape(label)}{catalogue_arrow}</a>
-        <a class="guide-hero__jump" href="#soderzhanie">К содержанию{contents_arrow}</a>
+      <div class="guide-actions">
+        <a class="btn btn--primary" href="{href}">{escape(label)}</a>
+        <a class="guide-hero__jump" href="#soderzhanie">К содержанию</a>
       </div>
       </div>
       <figure class="art-cover">
@@ -942,7 +928,11 @@ def article_page(a):
 
 <section class="guide-section" id="dalee" aria-label="Материалы статьи">
   <div class="wrap">
-    <div class="art-layout{layout_class}">{wide_contents}
+    <div class="art-layout">
+      <div class="guide-opening">
+{contents}
+        {intro.strip()}
+      </div>
       <aside class="guide-summary art-card" aria-labelledby="guide-summary-title">
         <h2 class="art-card__t" id="guide-summary-title">Коротко</h2>
         <dl class="art-kv">
@@ -950,7 +940,7 @@ def article_page(a):
         </dl>
       </aside>
       <div class="art-main">
-{inline_contents}        <article class="art">
+        <article class="art">
 {text.rstrip()}
         </article>
 {article_pick(a)}
